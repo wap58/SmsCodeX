@@ -1,11 +1,14 @@
-name: Build APK (MT-mod rebuild)
+name: Build APK
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
     paths:
-      - 'base/**'
-      - 'patch/**'
+      - 'app/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - 'gradle/wrapper/*'
       - '.github/workflows/build.yml'
   workflow_dispatch:
 
@@ -26,53 +29,21 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Android build-tools (zipalign + apksigner)
+      - name: Decode signing keystore
+        env:
+          CI_KEYSTORE_B64: ${{ secrets.CI_KEYSTORE_B64 }}
         run: |
-          yes | "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
-          "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager "build-tools;34.0.0" > /dev/null
+          echo "$CI_KEYSTORE_B64" | base64 -d > ci.keystore
+          ls -la ci.keystore
 
-      - name: Download apktool
+      - name: Build release APK
         run: |
-          curl -sL -o apktool.jar "https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar"
-          ls -la apktool.jar
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --console=plain
 
-      - name: Decode MT-modified APK
-        run: |
-          java -jar apktool.jar d -f -o dec base/XposedSmsCode_2.5.1.apk
-          echo "decoded ok"
-
-      - name: Apply patches (remove QQ/Alipay/menu)
-        run: |
-          cp -f patch/res/xml/e.xml dec/res/xml/e.xml
-          cp -f patch/res/menu/e.xml dec/res/menu/e.xml
-          cp -f patch/res/xml/f.xml dec/res/xml/f.xml
-          echo "patched ok"
-
-      - name: Rebuild APK
-        run: |
-          java -jar apktool.jar b dec -o unsigned.apk --use-aapt2
-          ls -la unsigned.apk
-
-      - name: Zipalign & Sign
-        run: |
-          BT="$ANDROID_HOME"/build-tools/34.0.0
-          "$BT"/zipalign -f 4 unsigned.apk aligned.apk
-          "$BT"/apksigner sign \
-            --ks ci.keystore \
-            --ks-pass pass:minis123456 \
-            --key-pass pass:minis123456 \
-            --ks-key-alias minis \
-            --out signed.apk aligned.apk
-          "$BT"/apksigner verify signed.apk
-          echo "signed ok"
-
-      - name: Rename
-        run: |
-          mkdir -p out
-          cp signed.apk out/SmsCodeX-v2.6.3.apk
-
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SmsCodeX-apk
-          path: out/SmsCodeX-v2.6.3.apk
+          name: SmsCodeX-release-apk
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
