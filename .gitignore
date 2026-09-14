@@ -1,0 +1,20 @@
+# Build artifacts
+build/
+app/build/
+.gradle/
+local.properties
+
+# IDE
+.idea/
+*.iml
+captures/
+
+# Keystore — 签名密钥不入库（自行备份保存）
+ci.keystore
+*.jks
+*.keystore
+
+# Logs / temp
+*.log
+captures/
+.cxx/

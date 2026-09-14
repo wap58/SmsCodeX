@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 可折叠分类：点击头部切换下方选项，默认折叠 -->
+    <Preference
+        android:icon="@drawable/ic_palette"
+        android:layout="@layout/preference_header_card"
+        android:key="@string/pref_general_header"
+        android:summary="@string/pref_general_header_summary"
+        android:title="@string/pref_general_title"/>
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:icon="@drawable/ic_lock_open"
+            android:key="@string/pref_enable"
+            android:summary="@string/pref_enable_summary"
+            android:title="@string/pref_enable_title"/>
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_hide"
+            android:key="@string/pref_hide_launcher_icon"
+            android:summary="@string/pref_hide_launcher_icon_summary"
+            android:title="@string/pref_hide_launcher_icon_title"/>
+
+        <Preference
+            android:icon="@drawable/ic_palette"
+            android:key="@string/pref_choose_theme"
+            android:title="@string/pref_choose_theme_title"/>
+
+    <Preference
+        android:icon="@drawable/ic_copy"
+        android:layout="@layout/preference_header_card"
+        android:key="@string/pref_sms_code_header"
+        android:summary="@string/pref_sms_code_header_summary"
+        android:title="@string/pref_sms_code_title"/>
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:dependency="@string/pref_enable"
+            android:icon="@drawable/ic_toast"
+            android:key="@string/pref_show_toast"
+            android:summary="@string/pref_show_toast_summary"
+            android:title="@string/pref_show_toast_title"/>
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:dependency="@string/pref_enable"
+            android:icon="@drawable/ic_copy"
+            android:key="@string/pref_copy_to_clipboard"
+            android:summary="@string/pref_copy_to_clipboard_summary"
+            android:title="@string/pref_copy_to_clipboard_title"/>
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:dependency="@string/pref_enable"
+            android:icon="@drawable/ic_intercept"
+            android:key="@string/pref_block_sms"
+            android:summary="@string/pref_block_sms_summary"
+            android:title="@string/pref_block_sms_title"/>
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:dependency="@string/pref_enable"
+            android:icon="@drawable/ic_filter"
+            android:key="@string/pref_deduplicate_sms"
+            android:title="@string/pref_deduplicate_sms_title"
+            android:summary="@string/pref_deduplicate_sms_summary"/>
+
+    <Preference
+        android:icon="@drawable/ic_automatic"
+        android:layout="@layout/preference_header_card"
+        android:key="@string/pref_auto_input_header"
+        android:summary="@string/pref_auto_input_header_summary"
+        android:title="@string/pref_category_auto_input_title"/>
+        <SwitchPreference
+            android:defaultValue="true"
+            android:dependency="@string/pref_enable"
+            android:icon="@drawable/ic_automatic"
+            android:key="@string/pref_enable_auto_input_code"
+            android:summary="@string/pref_enable_auto_input_code_summary"
+            android:title="@string/pref_enable_auto_input_code_title"/>
+
+        <Preference
+            android:dependency="@string/pref_enable_auto_input_code"
+            android:icon="@drawable/ic_block"
+            android:key="@string/pref_app_block_entry"
+            android:summary="@string/app_block_summary"
+            android:title="@string/app_block_settings"/>
+
+    <Preference
+        android:icon="@drawable/ic_notification"
+        android:layout="@layout/preference_header_card"
+        android:key="@string/pref_notification_header"
+        android:summary="@string/pref_notification_header_summary"
+        android:title="@string/pref_notification_title"/>
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:dependency="@string/pref_enable"
+            android:icon="@drawable/ic_notification"
+            android:key="@string/pref_show_code_notification"
+            android:summary="@string/pref_show_code_notification_summary"
+            android:title="@string/pref_show_code_notification_title"/>
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:dependency="@string/pref_show_code_notification"
+            android:icon="@drawable/ic_clear"
+            android:key="@string/pref_auto_cancel_notification"
+            android:summary="@string/pref_auto_cancel_notification_summary"
+            android:title="@string/pref_auto_cancel_notification_title"/>
+
+        <ListPreference
+            android:defaultValue="@string/notification_retention_time_5_secs"
+            android:dependency="@string/pref_auto_cancel_notification"
+            android:entries="@array/notification_retention_time_entry_list"
+            android:entryValues="@array/notification_retention_time_list"
+            android:icon="@drawable/ic_time"
+            android:key="@string/pref_notification_retention_time"
+            android:summary="@string/pref_notification_retention_time_summary"
+            android:title="@string/pref_notification_retention_time_title"/>
+
+    <Preference
+        android:icon="@drawable/ic_forward"
+        android:layout="@layout/preference_header_card"
+        android:key="@string/pref_forward_header"
+        android:summary="@string/pref_forward_header_summary"
+        android:title="@string/pref_forward_title"/>
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:dependency="@string/pref_enable"
+            android:icon="@drawable/ic_forward"
+            android:key="@string/pref_enable_forward"
+            android:summary="@string/pref_enable_forward_summary"
+            android:title="@string/pref_enable_forward_title"/>
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:dependency="@string/pref_enable_forward"
+            android:key="@string/pref_forward_wecom_corpid"
+            android:summary="@string/pref_forward_wecom_corpid_summary"
+            android:title="@string/pref_forward_wecom_corpid_title"/>
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:dependency="@string/pref_enable_forward"
+            android:key="@string/pref_forward_wecom_agentid"
+            android:summary="@string/pref_forward_wecom_agentid_summary"
+            android:title="@string/pref_forward_wecom_agentid_title"/>
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:dependency="@string/pref_enable_forward"
+            android:key="@string/pref_forward_wecom_secret"
+            android:summary="@string/pref_forward_wecom_secret_summary"
+            android:title="@string/pref_forward_wecom_secret_title"/>
+
+        <EditTextPreference
+            android:defaultValue="@all"
+            android:dependency="@string/pref_enable_forward"
+            android:key="@string/pref_forward_wecom_touser"
+            android:summary="@string/pref_forward_wecom_touser_summary"
+            android:title="@string/pref_forward_wecom_touser_title"/>
+
+    <Preference
+        android:icon="@drawable/ic_records"
+        android:layout="@layout/preference_header_card"
+        android:key="@string/pref_code_records_header"
+        android:summary="@string/pref_code_records_header_summary"
+        android:title="@string/pref_code_records_title"/>
+        <SwitchPreference
+            android:defaultValue="true"
+            android:dependency="@string/pref_enable"
+            android:icon="@drawable/ic_lock_open"
+            android:key="@string/pref_enable_code_records"
+            android:title="@string/pref_enable_code_records_title"/>
+
+    <Preference
+        android:icon="@drawable/ic_rules"
+        android:layout="@layout/preference_header_card"
+        android:key="@string/pref_match_rules_header"
+        android:summary="@string/pref_match_rules_header_summary"
+        android:title="@string/pref_match_rules"/>
+
+        <com.tianma.xsmscode.common.preference.ResetEditPreference
+            android:defaultValue="@string/default_smscode_keywords"
+            android:hint="@string/code_keywords_hint"
+            android:icon="@drawable/ic_key_words"
+            android:key="@string/pref_smscode_keywords"
+            android:negativeButtonText="@string/reset"
+            android:summary="@string/pref_smscode_keywords_summary"
+            android:title="@string/pref_smscode_keywords_title"/>
+
+        <Preference
+            android:icon="@drawable/ic_rules"
+            android:key="@string/pref_code_rules"
+            android:persistent="false"
+            android:summary="@string/pref_code_rules_summary"
+            android:title="@string/pref_code_rules_title"/>
+
+        <Preference
+            android:hint="@string/sms_content_hint"
+            android:icon="@drawable/ic_test"
+            android:key="@string/pref_smscode_test"
+            android:persistent="false"
+            android:positiveButtonText="@string/test"
+            android:summary="@string/pref_smscode_test_summary"
+            android:title="@string/pref_smscode_test_title"/>
+
+    <Preference
+        android:icon="@drawable/ic_test"
+        android:layout="@layout/preference_header_card"
+        android:key="@string/pref_experimental"
+        android:summary="@string/pref_experimental_header_summary"
+        android:title="@string/pref_experimental_title"/>
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:dependency="@string/pref_enable"
+            android:icon="@drawable/ic_mark_as_read"
+            android:key="@string/pref_mark_as_read"
+            android:summary="@string/pref_mark_as_read_summary"
+            android:title="@string/pref_mark_as_read_title"/>
+
+        <SwitchPreference
+            android:dependency="@string/pref_enable"
+            android:icon="@drawable/ic_delete"
+            android:key="@string/pref_delete_sms"
+            android:summary="@string/pref_delete_sms_summary"
+            android:title="@string/pref_delete_sms_title"/>
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:dependency="@string/pref_enable"
+            android:icon="@drawable/ic_kill"
+            android:key="@string/pref_kill_me"
+            android:summary="@string/pref_kill_me_summary"
+            android:title="@string/pref_kill_me_title"/>
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:dependency="@string/pref_enable"
+            android:icon="@drawable/ic_log"
+            android:key="@string/pref_verbose_log_mode"
+            android:summary="@string/pref_verbose_log_mode_summary"
+            android:title="@string/pref_verbose_log_mode_title"/>
+
+    <!-- about 区可折叠：头部点击切换下方三项显示（默认折叠） -->
+    <Preference
+        android:icon="@drawable/ic_info"
+        android:layout="@layout/preference_header_card"
+        android:key="@string/pref_about"
+        android:summary="@string/pref_about_header_summary"
+        android:title="@string/pref_about_title"/>
+
+    <Preference
+        android:icon="@drawable/ic_info"
+        android:key="@string/pref_version"
+        android:summary="@string/pref_version_summary"
+        android:title="@string/pref_version_title"/>
+
+    <Preference
+        android:icon="@drawable/ic_source_code"
+        android:key="@string/pref_source_code"
+        android:summary="@string/pref_source_code_summary"
+        android:title="@string/pref_source_code_title"/>
+
+    <Preference
+        android:icon="@drawable/ic_privacy_tip"
+        android:key="@string/pref_privacy_policy"
+        android:title="@string/pref_privacy_policy_title"/>
+
+</PreferenceScreen>
