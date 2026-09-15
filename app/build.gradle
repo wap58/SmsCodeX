@@ -1,8 +1,9 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.greenrobot.greendao' // apply greenDao plugin
 
-def keyFile = file(findProperty("tianma.keystore.path") as String)
-def propertyFile = file(findProperty("tianma.signature.path") as String)
+// 签名文件与密码属性可缺省：默认取仓库根的 ci.keystore（该文件不入库，构建环境自行提供）
+def keyFile = rootProject.file((findProperty("tianma.keystore.path") ?: "ci.keystore") as String)
+def propertyFile = rootProject.file((findProperty("tianma.signature.path") ?: "signature.properties") as String)
 
 def keyProps = new Properties()
 if (propertyFile.exists()) {
