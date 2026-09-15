@@ -332,4 +332,10 @@
     <string name="forward_succeed">已轉發到企業微信</string>
     <string name="forward_failed">轉發失敗，請檢查網絡與企業可信IP設置</string>
     <string name="forward_disabled_hint">未啟用轉發，或企業ID/AgentId/Secret 未配置</string>
+    <string name="forward_keepalive_channel">轉發通道</string>
+    <string name="forward_keepalive_title">智碼通運行中</string>
+    <string name="forward_keepalive_text">轉發通道保持在線</string>
+    <string name="forward_killme_warn_title">建議關閉自殺開關</string>
+    <string name="forward_killme_warn_content">簡訊轉發已開啟。"自殺"開關會在每條簡訊處理完後殺死應用進程，息屏時系統會拒絕重新拉起它，導致轉發和記錄失敗。\n\n建議現在關閉自殺開關（可在 試驗性功能 分類中再次打開）。</string>
+    <string name="forward_killme_warn_disable">一鍵關閉</string>
 </resources>

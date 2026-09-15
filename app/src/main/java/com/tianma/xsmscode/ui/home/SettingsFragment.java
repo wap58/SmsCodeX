@@ -186,6 +186,34 @@ public class SettingsFragment extends BasePreferenceFragment implements
         }
     }
 
+    /**
+     * 自杀开关与短信转发冲突提醒（2026-09-15）：
+     * 自杀会在每条短信处理完后杀死应用进程，息屏时系统拒绝重新拉起，
+     * 导致转发/记录失败。开启转发时提供一键关闭。
+     */
+    private void warnKillMeConflict() {
+        Preference killPref = findPreference(PrefConst.KEY_KILL_ME);
+        boolean killOn = killPref instanceof androidx.preference.SwitchPreferenceCompat
+                || killPref instanceof androidx.preference.SwitchPreference;
+        if (killPref != null && !(killPref instanceof androidx.preference.TwoStatePreference)) {
+            killOn = false;
+        }
+        if (!(killPref instanceof androidx.preference.TwoStatePreference)) {
+            return;
+        }
+        androidx.preference.TwoStatePreference killSwitch = (androidx.preference.TwoStatePreference) killPref;
+        if (!killSwitch.isChecked()) {
+            return;
+        }
+        new MaterialDialog.Builder(mActivity)
+                .title(R.string.forward_killme_warn_title)
+                .content(R.string.forward_killme_warn_content)
+                .positiveText(R.string.forward_killme_warn_disable)
+                .onPositive((dialog, which) -> killSwitch.setChecked(false))
+                .negativeText(R.string.cancel)
+                .show();
+    }
+
     private int resolveThemeAccent() {
         // 直接读取 Cyanea 配置的强调色（主题切换/深色模式下均稳定）；
         // 主题属性解析在部分 Cyanea 主题下会回退失败导致图标隐身（2026-09-15 实测）
@@ -284,6 +312,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
                     com.tianma.xsmscode.feature.forward.ForwardKeepAliveService.start(mActivity);
                 } catch (Throwable ignored) {
                 }
+                warnKillMeConflict();
             }
         } else {
             return false;

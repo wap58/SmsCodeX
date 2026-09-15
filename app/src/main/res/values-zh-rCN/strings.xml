@@ -332,4 +332,10 @@
     <string name="forward_succeed">已转发到企业微信</string>
     <string name="forward_failed">转发失败，请检查网络与企业可信IP设置</string>
     <string name="forward_disabled_hint">未启用转发，或企业ID/AgentId/Secret 未配置</string>
+    <string name="forward_keepalive_channel">转发通道</string>
+    <string name="forward_keepalive_title">智码通运行中</string>
+    <string name="forward_keepalive_text">转发通道保持在线</string>
+    <string name="forward_killme_warn_title">建议关闭自杀开关</string>
+    <string name="forward_killme_warn_content">短信转发已开启。"自杀"开关会在每条短信处理完后杀死应用进程，息屏时系统会拒绝重新拉起它，导致转发和记录失败。\n\n建议现在关闭自杀开关（可在 试验性功能 分类中再次打开）。</string>
+    <string name="forward_killme_warn_disable">一键关闭</string>
 </resources>

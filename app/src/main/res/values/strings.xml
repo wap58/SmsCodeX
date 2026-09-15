@@ -333,4 +333,10 @@
     <string name="forward_succeed">Forwarded to WeChat Work</string>
     <string name="forward_failed">Forward failed, check network &amp; trusted IP config</string>
     <string name="forward_disabled_hint">Forwarding disabled or CorpID/AgentId/Secret not set</string>
+    <string name="forward_keepalive_channel">Forward channel</string>
+    <string name="forward_keepalive_title">SmsCodeX running</string>
+    <string name="forward_keepalive_text">Forward channel online</string>
+    <string name="forward_killme_warn_title">Disable kill switch recommended</string>
+    <string name="forward_killme_warn_content">SMS forwarding is now ON. The "Kill me" switch kills the app process after every SMS; when the screen is off the system refuses to restart it, so forwarding/recording will fail.\n\nRecommended: disable the kill switch (Experimental section).</string>
+    <string name="forward_killme_warn_disable">Disable now</string>
 </resources>
