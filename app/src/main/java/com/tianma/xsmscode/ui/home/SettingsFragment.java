@@ -277,6 +277,14 @@ public class SettingsFragment extends BasePreferenceFragment implements
         String key = preference.getKey();
         if (PrefConst.KEY_HIDE_LAUNCHER_ICON.equals(key)) {
             mPresenter.hideOrShowLauncherIcon((Boolean) newValue);
+        } else if (PrefConst.KEY_ENABLE_FORWARD.equals(key)) {
+            // 打开转发开关时立即拉起保活前台服务（息屏转发可达，2026-09-15）
+            if ((Boolean) newValue) {
+                try {
+                    com.tianma.xsmscode.feature.forward.ForwardKeepAliveService.start(mActivity);
+                } catch (Throwable ignored) {
+                }
+            }
         } else {
             return false;
         }

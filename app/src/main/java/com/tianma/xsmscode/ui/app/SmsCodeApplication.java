@@ -28,6 +28,11 @@ public class SmsCodeApplication extends DaggerApplication {
     public void onCreate() {
         super.onCreate();
         Cyanea.init(this, super.getResources());
+        // 启动转发保活前台服务（息屏时保证转发通道可达；服务内部自适应）
+        try {
+            com.tianma.xsmscode.feature.forward.ForwardKeepAliveService.start(this);
+        } catch (Throwable ignored) {
+        }
         if (!Cyanea.getInstance().isThemeModified()) {
             Cyanea.getInstance().edit()
                     .baseTheme(Cyanea.BaseTheme.LIGHT)
