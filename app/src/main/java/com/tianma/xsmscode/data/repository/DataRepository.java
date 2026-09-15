@@ -1,61 +1,34 @@
 package com.tianma.xsmscode.data.repository;
 
-import com.smscodf.zhuxf.BuildConfig;
 import com.tianma.xsmscode.data.db.entity.ApkVersion;
 import com.tianma.xsmscode.data.http.ApiConst;
-import com.tianma.xsmscode.data.http.service.CoolApkService;
 import com.tianma.xsmscode.data.http.service.GithubService;
 import com.tianma.xsmscode.data.http.service.ServiceGenerator;
 
-import java.util.Locale;
-
 import io.reactivex.Observable;
 
+/**
+ * 检测更新（2026-09-15 改版）：直接查询 GitHub Releases（wap58/SmsCodeX）。
+ * tag_name 即版本号（允许 v 前缀，解析时剥离），release body 即更新说明。
+ */
 public class DataRepository {
 
     private DataRepository() {
     }
 
-    private static boolean isInChina() {
-        Locale locale = Locale.getDefault();
-        String language = locale.getLanguage();
-        return "zh".equalsIgnoreCase(language);
-    }
-
     public static Observable<ApkVersion> getLatestVersion() {
-        boolean isInChina = isInChina();
-
-        CoolApkService coolApkService = ServiceGenerator.getInstance()
-                .createService(ApiConst.COOLAPK_BASE_URL, CoolApkService.class);
-        Observable<ApkVersion> dataFromCoolApk = coolApkService.getLatestRelease(BuildConfig.APPLICATION_ID)
-                .map(ApkVersionHelper::parseFromCoolApk);
-
         GithubService githubService = ServiceGenerator.getInstance()
                 .createService(ApiConst.GITHUB_BASE_URL, GithubService.class);
-        Observable<ApkVersion> dataFromGithub = githubService.getLatestRelease(ApiConst.GITHUB_USERNAME, ApiConst.GITHUB_REPO_NAME)
+        return githubService.getLatestRelease(ApiConst.GITHUB_USERNAME, ApiConst.GITHUB_REPO_NAME)
                 .map(githubRelease -> {
-                    String regex = "<br/>|<br>";
-                    String[] arr = githubRelease.getBody().split(regex);
-                    String versionInfo;
-                    if (arr.length >= 2) {
-                        versionInfo = isInChina ? arr[1].trim() : arr[0].trim();
-                    } else {
-                        versionInfo = githubRelease.getBody().replaceAll(regex, "");
+                    String tagName = githubRelease.getTagName();
+                    if (tagName != null && (tagName.startsWith("v") || tagName.startsWith("V"))) {
+                        tagName = tagName.substring(1);
                     }
-                    return new ApkVersion(githubRelease.getName(), versionInfo);
+                    String versionInfo = githubRelease.getBody() == null
+                            ? "" : githubRelease.getBody().replaceAll("<br/>|<br>", "\n");
+                    return new ApkVersion(tagName, versionInfo);
                 });
-
-        if (isInChina) {
-            // In China region
-            // Firstly, request data from coolapk.
-            // If error throws, then request data from github.
-            return dataFromCoolApk.onErrorResumeNext(throwable -> dataFromGithub);
-        } else {
-            // In other regions
-            // Firstly, request data from GitHub.
-            // If error throws, then request data from coolapk.
-            return dataFromGithub.onErrorResumeNext(throwable -> dataFromCoolApk);
-        }
     }
 
 }

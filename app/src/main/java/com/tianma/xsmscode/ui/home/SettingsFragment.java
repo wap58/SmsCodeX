@@ -334,10 +334,8 @@ public class SettingsFragment extends BasePreferenceFragment implements
         new MaterialDialog.Builder(mActivity)
                 .title(R.string.new_version_found)
                 .content(latestVersion.getVersionInfo())
-                .positiveText(R.string.update_from_coolapk)
-                .onPositive((dialog, which) -> mPresenter.updateFromCoolApk())
-                .negativeText(R.string.update_from_github)
-                .onNegative((dialog, which) -> mPresenter.updateFromGithub())
+                .positiveText(R.string.update_from_github)
+                .onPositive((dialog, which) -> mPresenter.updateFromGithub())
                 .show();
     }
 
