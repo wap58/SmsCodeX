@@ -37,9 +37,12 @@ jobs:
           ls -la ci.keystore
 
       - name: Build release APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --console=plain
+          ./gradlew -PofficialRepos=true assembleRelease --no-daemon --console=plain
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4

@@ -50,9 +50,10 @@ android {
         }
         ci {
             storeFile rootProject.file('ci.keystore')
-            storePassword 'minis123456'
-            keyAlias 'minis'
-            keyPassword 'minis123456'
+            // 密码经环境变量(CI)或 gradle.properties(本地)注入，公开仓库不含明文
+            storePassword (System.getenv("KEYSTORE_PASSWORD") ?: (findProperty("KEYSTORE_PASSWORD") ?: ""))
+            keyAlias (System.getenv("KEYSTORE_ALIAS") ?: (findProperty("KEYSTORE_ALIAS") ?: "smscodex"))
+            keyPassword (System.getenv("KEYSTORE_PASSWORD") ?: (findProperty("KEYSTORE_PASSWORD") ?: ""))
         }
     }
 
