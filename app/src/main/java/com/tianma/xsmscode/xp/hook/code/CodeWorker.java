@@ -94,6 +94,45 @@ public class CodeWorker {
         // 显示Toast Action
         mUIHandler.post(new ToastAction(mPluginContext, mPhoneContext, smsMsg, xsp));
 
+        // 转发到企业微信（2026-09-15 定稿）：用户要求最高优先级——最先调度；
+        // 应用进程可能已被自杀/被系统冻结导致失败，自动重试（0s/2s/4s 共 3 次）
+        final java.util.concurrent.atomic.AtomicBoolean forwardSent =
+                new java.util.concurrent.atomic.AtomicBoolean(false);
+        final Bundle fwdArgs = new Bundle();
+        fwdArgs.putString("sender", smsMsg.getSender());
+        fwdArgs.putString("body", smsMsg.getBody());
+        fwdArgs.putString("code", smsMsg.getSmsCode());
+        fwdArgs.putLong("time", smsMsg.getDate());
+        for (int attempt = 0; attempt < 3; attempt++) {
+            final int attemptNo = attempt + 1;
+            mScheduledExecutor.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    if (forwardSent.get()) {
+                        return;
+                    }
+                    try {
+                        android.net.Uri uri = android.net.Uri.parse(
+                                "content://" + com.tianma.xsmscode.data.db.DBProvider.AUTHORITY);
+                        Bundle r = mPluginContext.getContentResolver().call(uri, "forward", null, fwdArgs);
+                        boolean ok = r != null && r.getBoolean("ok");
+                        String reason = r == null ? "null" : r.getString("reason");
+                        if (ok) {
+                            forwardSent.set(true);
+                            XLog.i("Forward to app (attempt %d): succeed", attemptNo);
+                        } else if ("disabled".equals(reason)) {
+                            forwardSent.set(true);
+                            XLog.i("Forward to app (attempt %d): disabled by config", attemptNo);
+                        } else {
+                            XLog.w("Forward to app (attempt %d): failed(%s)", attemptNo, reason);
+                        }
+                    } catch (Throwable t) {
+                        XLog.e("Forward to app (attempt %d) failed: %s", attemptNo, t);
+                    }
+                }
+            }, attempt * 2000L, TimeUnit.MILLISECONDS);
+        }
+
         // 自动输入 Action
         if (XSPUtils.autoInputCodeEnabled(xsp)) {
             AutoInputAction autoInputAction = new AutoInputAction(mPluginContext, mPhoneContext, smsMsg, xsp);
@@ -101,27 +140,6 @@ public class CodeWorker {
             mScheduledExecutor.schedule(autoInputAction, 0, TimeUnit.MILLISECONDS);
         }
 
-        // 转发到企业微信（2026-09-15 新增）：电话进程无网络权限，
-        // 经 ContentProvider 交给模块应用进程发出（App 侧按自身开关与通道配置决定是否转发）
-        mScheduledExecutor.schedule(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    android.net.Uri uri = android.net.Uri.parse(
-                            "content://" + com.tianma.xsmscode.data.db.DBProvider.AUTHORITY);
-                    Bundle args = new Bundle();
-                    args.putString("sender", smsMsg.getSender());
-                    args.putString("body", smsMsg.getBody());
-                    args.putString("code", smsMsg.getSmsCode());
-                    args.putLong("time", smsMsg.getDate());
-                    Bundle r = mPluginContext.getContentResolver().call(uri, "forward", null, args);
-                    XLog.i("Forward to app: %s", r != null && r.getBoolean("ok")
-                            ? "succeed" : "rejected(" + (r == null ? "null" : r.getString("reason")) + ")");
-                } catch (Throwable t) {
-                    XLog.e("Forward to app failed", t);
-                }
-            }
-        }, 200, TimeUnit.MILLISECONDS);
 
         // 显示通知 Action
         NotifyAction notifyAction = new NotifyAction(mPluginContext, mPhoneContext, smsMsg, xsp);
