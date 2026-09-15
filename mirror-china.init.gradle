@@ -1,0 +1,28 @@
+// 镜像加速 init 脚本：./gradlew -I mirror-china.init.gradle <task>
+// 在中国大陆网络环境下，为 buildscript 与各模块追加阿里云镜像仓库。
+initExcluded = true
+
+allprojects {
+    buildscript {
+        repositories {
+            maven { url 'https://maven.aliyun.com/repository/google' }
+            maven { url 'https://maven.aliyun.com/repository/central' }
+            maven { url 'https://jitpack.io' }
+        }
+    }
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+rootProject {
+    buildscript {
+        repositories {
+            maven { url 'https://maven.aliyun.com/repository/google' }
+            maven { url 'https://maven.aliyun.com/repository/central' }
+            maven { url 'https://jitpack.io' }
+        }
+    }
+}

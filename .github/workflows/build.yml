@@ -42,7 +42,7 @@ jobs:
           KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
         run: |
           chmod +x gradlew
-          ./gradlew -PofficialRepos=true assembleRelease --no-daemon --console=plain
+          ./gradlew assembleRelease --no-daemon --console=plain
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
