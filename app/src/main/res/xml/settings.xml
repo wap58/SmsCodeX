@@ -141,11 +141,13 @@
             android:dependency="@string/pref_enable_forward"
             android:entries="@array/forward_channel_entries"
             android:entryValues="@array/forward_channel_values"
+            android:icon="@drawable/ic_forward"
             android:key="@string/pref_forward_channel_type"
             android:summary="@string/pref_forward_channel_summary"
             android:title="@string/pref_forward_channel_title"/>
 
         <Preference
+            android:icon="@drawable/ic_settings"
             android:key="@string/pref_forward_channel_config"
             android:persistent="false"
             android:selectable="true"

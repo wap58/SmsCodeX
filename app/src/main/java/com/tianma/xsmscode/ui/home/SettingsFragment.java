@@ -251,6 +251,20 @@ public class SettingsFragment extends BasePreferenceFragment implements
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        // 每次显示设置页，按真实持久化的通道值刷新"转发通道"与"通道参数"两行摘要
+        //（2026-09-16：切通道后回来摘要不变的问题；不依赖 onPreferenceChange 对 ListPreference 的触发）
+        androidx.preference.ListPreference lp =
+                (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
+        if (lp.getEntry() != null) {
+            lp.setSummary(lp.getEntry().toString());
+        }
+        updateChannelConfigSummary();
+        updateKillSummary();
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
         String preferencesName = getPreferenceManager().getSharedPreferencesName();
