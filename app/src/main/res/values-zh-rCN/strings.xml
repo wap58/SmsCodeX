@@ -328,10 +328,10 @@
     <string name="pref_forward_wecom_agentid">pref_forward_wecom_agentid</string>
     <string name="pref_forward_wecom_secret">pref_forward_wecom_secret</string>
     <string name="pref_forward_wecom_touser">pref_forward_wecom_touser</string>
-    <string name="forward_to_wecom">转发到企微</string>
-    <string name="forward_succeed">已转发到企业微信</string>
-    <string name="forward_failed">转发失败，请检查网络与企业可信IP设置</string>
-    <string name="forward_disabled_hint">未启用转发，或企业ID/AgentId/Secret 未配置</string>
+    <string name="forward_to_wecom">转发信息</string>
+    <string name="forward_succeed">已转发</string>
+    <string name="forward_failed">转发失败，请检查网络与通道配置</string>
+    <string name="forward_disabled_hint">未启用转发，或当前通道未配置</string>
     <string name="forward_keepalive_channel">转发通道</string>
     <string name="forward_keepalive_title">智码通运行中</string>
     <string name="forward_keepalive_text">转发通道保持在线</string>

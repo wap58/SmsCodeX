@@ -128,8 +128,6 @@ public class SettingsFragment extends BasePreferenceFragment implements
         Preference versionPref = findPreference(PrefConst.KEY_VERSION);
         versionPref.setOnPreferenceClickListener(this);
         showVersionInfo(versionPref);
-        updateKillSummary();
-        updateChannelVisibility();
         findPreference(PrefConst.KEY_SOURCE_CODE).setOnPreferenceClickListener(this);
         findPreference(PrefConst.KEY_PRIVACY_POLICY).setOnPreferenceClickListener(this);
 
@@ -212,7 +210,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
         if (!(killPref instanceof androidx.preference.TwoStatePreference)) {
             return;
         }
-        boolean forwardOn = androidx.preference.PreferenceManager.getDefaultSharedPreferences(mActivity)
+        boolean forwardOn = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
                 .getBoolean(PrefConst.KEY_ENABLE_FORWARD, false);
         String base = getString(R.string.pref_kill_me_summary);
         killPref.setSummary(forwardOn ? base + "。" + getString(R.string.kill_forward_warning) : base);
@@ -222,7 +220,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
      * 转发通道可见性管理（2026-09-16）：按选中的通道显示对应配置项。
      */
     private void updateChannelVisibility() {
-        String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(mActivity)
+        String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
                 .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
         boolean a = "wecom_agent".equals(ch), r = "wecom_robot".equals(ch),
                 d = "dingtalk".equals(ch), f = "feishu".equals(ch), p = "pushplus".equals(ch);
@@ -264,6 +262,8 @@ public class SettingsFragment extends BasePreferenceFragment implements
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mActivity = (HomeActivity) requireActivity();
+        updateKillSummary();
+        updateChannelVisibility();
 
         mPresenter.handleArguments(getArguments());
     }
