@@ -243,8 +243,10 @@ public class SmsHandlerHook extends BaseHook {
             try {
                 afterConstructorHandler(param);
             } catch (Throwable e) {
-                XLog.e("Error occurred in constructor hook", e);
-                throw e;
+                // 模块异常绝不能抛回宿主系统进程！2026-09-17 教训：
+                // 一次 SecurityException 曾炸断 PhoneGlobals.onCreate，
+                // 导致短信分发/拦截/通知/转发在电话进程内全线失效。
+                XLog.e("Error occurred in constructor hook (swallowed, host intact)", e);
             }
         }
     }
@@ -257,9 +259,13 @@ public class SmsHandlerHook extends BaseHook {
                 mPluginContext = mPhoneContext.createPackageContext(SMSCODE_PACKAGE,
                         Context.CONTEXT_IGNORE_SECURITY);
                 initNotificationChannel();
-                registerCopyCodeReceiver();
             } catch (Exception e) {
                 XLog.e("Create plugin context failed: %s", e);
+            }
+            try {
+                registerCopyCodeReceiver();
+            } catch (Throwable e) {
+                XLog.e("Register copy-code receiver failed (non-fatal): %s", e);
             }
             pingModuleActive();
         }

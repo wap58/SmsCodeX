@@ -36,7 +36,12 @@ public class CopyCodeReceiver extends BroadcastReceiver {
         CopyCodeReceiver receiver = CopyCodeReceiver.newInstance();
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_COPY_CODE);
-        context.registerReceiver(receiver, filter);
+        // Android 13+ 必须声明 exported 标志（targetSdk 34 强制，2026-09-17）
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(receiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            context.registerReceiver(receiver, filter);
+        }
     }
 
     private Context mPluginContext;
