@@ -41,6 +41,7 @@ public class ChannelSettingsActivity extends BaseActivity {
         setupToolbar();
 
         String channel = getIntent().getStringExtra(EXTRA_CHANNEL);
+        com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: ChannelSettingsActivity onCreate channel=%s", channel);
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.channel_settings_main_content,

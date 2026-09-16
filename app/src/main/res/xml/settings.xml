@@ -147,6 +147,8 @@
 
         <Preference
             android:key="@string/pref_forward_channel_config"
+            android:persistent="false"
+            android:selectable="true"
             android:summary="@string/forward_channel_config_summary"
             android:title="@string/forward_channel_config_title"/>
 

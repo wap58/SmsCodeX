@@ -146,6 +146,17 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 PrefConst.KEY_ENABLE_FORWARD, PrefConst.KEY_FORWARD_CHANNEL_TYPE,
                 PrefConst.KEY_FORWARD_CHANNEL_CONFIG);
         updateChannelConfigSummary();
+        // "通道参数"入口显式绑定点击监听（2026-09-16：用户反馈点击无反应，不再依赖隐式事件链）
+        Preference cfgEntry = findPreference(PrefConst.KEY_FORWARD_CHANNEL_CONFIG);
+        if (cfgEntry != null) {
+            cfgEntry.setOnPreferenceClickListener(p -> {
+                com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 通道参数 clicked");
+                String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
+                        .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
+                com.tianma.xsmscode.ui.forward.ChannelSettingsActivity.open(requireContext(), ch);
+                return true;
+            });
+        }
         // 验证码历史记录入口已迁移至首页"记录" tab；设置里保留记录开关（2026-09-15）
         makeCollapsible(PrefConst.KEY_CODE_RECORDS_HEADER,
                 PrefConst.KEY_ENABLE_CODE_RECORDS);
@@ -293,6 +304,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
         } else if (PrefConst.KEY_SOURCE_CODE.equals(key)) {
             mPresenter.showSourceProject();
         } else if (PrefConst.KEY_FORWARD_CHANNEL_CONFIG.equals(key)) {
+            com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 通道参数 onPreferenceClick");
             // 显式入口：进入当前所选通道的独立参数配置页（2026-09-16，用户反馈"找不到配置的地方"）
             String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
                     .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
@@ -353,6 +365,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 autoLinkKillOff();
             }
         } else if (PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(key)) {
+            com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 转发通道 changed to %s", newValue);
             androidx.preference.ListPreference lp = (androidx.preference.ListPreference) preference;
             int idx = lp.findIndexOfValue((String) newValue);
             if (idx >= 0) {
