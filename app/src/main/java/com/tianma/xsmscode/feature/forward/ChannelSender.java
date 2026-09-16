@@ -109,6 +109,62 @@ public final class ChannelSender {
     }
 
 
+    /**
+     * 息知（xz.qqoq.net）微信通知通道（2026-09-16，用户新增）：
+     * GET https://xizhi.qqoq.net/{key}.send?title=..&content=..
+     */
+    public static boolean sendXizhi(String key, String content) {
+        if (TextUtils.isEmpty(key)) {
+            return false;
+        }
+        HttpURLConnection conn = null;
+        try {
+            String title = URLEncoder.encode("验证码提醒", "UTF-8");
+            String enc = URLEncoder.encode(content, "UTF-8");
+            String url = "https://xizhi.qqoq.net/" + key.trim() + ".send?title=" + title + "&content=" + enc;
+            conn = (HttpURLConnection) new URL(url).openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(3000);
+            conn.setReadTimeout(5000);
+            int status = conn.getResponseCode();
+            String body = "";
+            InputStream is = status >= 200 && status < 300 ? conn.getInputStream() : conn.getErrorStream();
+            if (is != null) {
+                ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                byte[] chunk = new byte[4096];
+                int n;
+                while ((n = is.read(chunk)) > 0) {
+                    buf.write(chunk, 0, n);
+                }
+                body = new String(buf.toByteArray(), StandardCharsets.UTF_8);
+            }
+            if (status != 200) {
+                XLog.e("Xizhi: http=%d", status);
+                return false;
+            }
+            boolean ok = true;
+            try {
+                JSONObject j = new JSONObject(body);
+                if (j.has("code")) {
+                    ok = j.optInt("code", -1) == 200;
+                }
+            } catch (Exception ignored) {
+            }
+            if (!ok) {
+                String safe = body.length() > 200 ? body.substring(0, 200) : body;
+                XLog.e("Xizhi: rejected: %s", safe);
+            }
+            return ok;
+        } catch (Throwable t) {
+            XLog.e("Xizhi: failed %s", t);
+            return false;
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
+        }
+    }
+
     /** 钉钉加签：HmacSHA256(timestamp + "\n" + secret, secret) → Base64 → URL 编码 */
     private static String dingSign(long timestamp, String secret) {
         try {

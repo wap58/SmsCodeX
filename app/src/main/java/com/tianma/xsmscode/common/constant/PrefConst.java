@@ -46,6 +46,7 @@ public interface PrefConst {
     String KEY_FORWARD_DINGTALK_WEBHOOK = "pref_forward_dingtalk_webhook";
     String KEY_FORWARD_DINGTALK_SECRET = "pref_forward_dingtalk_secret";
     String KEY_FORWARD_FEISHU_WEBHOOK = "pref_forward_feishu_webhook";
+    String KEY_FORWARD_XIZHI_KEY = "pref_forward_xizhi_key";
 
 
     // Code Record

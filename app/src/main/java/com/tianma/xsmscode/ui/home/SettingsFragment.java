@@ -163,6 +163,11 @@ public class SettingsFragment extends BasePreferenceFragment implements
         if (chLp != null) {
             // "转发通道"行摘要实时显示当前选中项（SimpleSummaryProvider，1.2.1 支持）
             chLp.setSummaryProvider(androidx.preference.ListPreference.SimpleSummaryProvider.getInstance());
+            if (chLp instanceof com.tianma.xsmscode.ui.forward.ForwardChannelListPreference) {
+                // 选中瞬间（值已持久化）确定性刷新"通道参数"行（2026-09-16）
+                ((com.tianma.xsmscode.ui.forward.ForwardChannelListPreference) chLp)
+                        .setOnChannelChangedListener(lp -> refreshForwardSummaries());
+            }
         }
         // 验证码历史记录入口已迁移至首页"记录" tab；设置里保留记录开关（2026-09-15）
         makeCollapsible(PrefConst.KEY_CODE_RECORDS_HEADER,
@@ -275,13 +280,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
      * 通道值持久化监听：选完下拉立刻强制"通道参数"行重绑，摘要即时刷新
      *（2026-09-16：onPreferenceChange 不依赖，任何路径改了通道值都能即时反映）。
      */
-    private android.content.SharedPreferences mChannelPrefs;
-    private final android.content.SharedPreferences.OnSharedPreferenceChangeListener mChannelListener =
-            (sp, changedKey) -> {
-                if (PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(changedKey)) {
-                    refreshForwardSummaries();
-                }
-            };
+
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -289,8 +288,6 @@ public class SettingsFragment extends BasePreferenceFragment implements
         mActivity = (HomeActivity) requireActivity();
         updateKillSummary();
 
-        mChannelPrefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext());
-        mChannelPrefs.registerOnSharedPreferenceChangeListener(mChannelListener);
 
         mPresenter.handleArguments(getArguments());
     }
@@ -311,18 +308,6 @@ public class SettingsFragment extends BasePreferenceFragment implements
             }
         }
         return ch;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if (mChannelPrefs != null) {
-            try {
-                mChannelPrefs.unregisterOnSharedPreferenceChangeListener(mChannelListener);
-            } catch (Throwable ignored) {
-            }
-            mChannelPrefs = null;
-        }
     }
 
     @Override

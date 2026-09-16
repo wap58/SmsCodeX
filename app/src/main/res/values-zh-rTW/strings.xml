@@ -358,12 +358,14 @@
         <item>企業微信機器人</item>
         <item>釘釘機器人</item>
         <item>飛書機器人</item>
+<item>息知</item>
     </string-array>
     <string-array name="forward_channel_values">
         <item>wecom_agent</item>
         <item>wecom_robot</item>
         <item>dingtalk</item>
         <item>feishu</item>
+        <item>xizhi</item>
     </string-array>
     <string name="forward_killme_autodisabled">已自動關閉自殺開關</string>
     <string name="pref_forward_channel_title">轉發通道</string>
@@ -376,4 +378,8 @@
     <string name="pref_forward_channel_config">pref_forward_channel_config</string>
     <string name="forward_channel_config_title">通道參數</string>
     <string name="forward_channel_config_summary">點進去填寫所選通道的參數</string>
+    <string name="pref_forward_xizhi_key">pref_forward_xizhi_key</string>
+    <string name="forward_xizhi_title">息知 Key</string>
+    <string name="forward_xizhi_summary">貼上你的息知 Key（官網 xz.qqoq.net 取得）</string>
+    <string name="forward_channel_page_xizhi">息知</string>
 </resources>

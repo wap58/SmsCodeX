@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 息知（微信通知）通道参数页（2026-09-16，官网 xz.qqoq.net） -->
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:key="@string/pref_forward_xizhi_key"
+            android:summary="@string/forward_xizhi_summary"
+            android:title="@string/forward_xizhi_title"/>
+</PreferenceScreen>

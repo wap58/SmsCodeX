@@ -136,7 +136,7 @@
             android:summary="@string/pref_enable_forward_summary"
             android:title="@string/pref_enable_forward_title"/>
 
-        <ListPreference
+        <com.tianma.xsmscode.ui.forward.ForwardChannelListPreference
             android:defaultValue="wecom_agent"
             android:dependency="@string/pref_enable_forward"
             android:entries="@array/forward_channel_entries"
