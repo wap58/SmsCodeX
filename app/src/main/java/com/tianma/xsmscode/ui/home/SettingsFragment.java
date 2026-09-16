@@ -217,11 +217,33 @@ public class SettingsFragment extends BasePreferenceFragment implements
     }
 
     /**
-     * 转发通道可见性管理（2026-09-16）：按选中的通道显示对应配置项。
+     * 转发模块可见性（2026-09-16，用户指定层级）：转发通道及其配置项隶属"转发开启"总开关，
+     * 总开关关闭时整体隐藏，开启后只显示当前选中通道的配置项。
      */
-    private void updateChannelVisibility() {
-        String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
+    private void updateForwardSectionVisibility() {
+        boolean on = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getBoolean(PrefConst.KEY_ENABLE_FORWARD, false);
+        Preference ch = findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
+        if (ch != null) {
+            ch.setVisible(on);
+        }
+        if (on) {
+            updateChannelVisibility(null);
+        } else {
+            hideAllChannelFields();
+        }
+    }
+
+    /**
+     * 转发通道可见性管理（2026-09-16）：按通道显示对应配置项。
+     * channelOverride 非空时用新选中的通道（onPreferenceChange 时旧值尚未持久化，必须用新值）；
+     * 为空时读已持久化的通道。
+     */
+    private void updateChannelVisibility(String channelOverride) {
+        String ch = channelOverride != null ? channelOverride
+                : androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
+                    .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
+        hideAllChannelFields();
         boolean a = "wecom_agent".equals(ch), r = "wecom_robot".equals(ch),
                 d = "dingtalk".equals(ch), f = "feishu".equals(ch), p = "pushplus".equals(ch);
         setChannelFieldsVisible(new String[]{PrefConst.KEY_FORWARD_WECOM_CORPID, PrefConst.KEY_FORWARD_WECOM_AGENTID,
@@ -230,11 +252,14 @@ public class SettingsFragment extends BasePreferenceFragment implements
         setChannelFieldsVisible(new String[]{PrefConst.KEY_FORWARD_DINGTALK_WEBHOOK, PrefConst.KEY_FORWARD_DINGTALK_SECRET}, d);
         setChannelFieldsVisible(new String[]{PrefConst.KEY_FORWARD_FEISHU_WEBHOOK}, f);
         setChannelFieldsVisible(new String[]{PrefConst.KEY_FORWARD_PUSHPLUS_TOKEN}, p);
-        androidx.preference.ListPreference lp =
-                (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
-        if (lp != null && lp.getEntry() != null) {
-            lp.setSummary(lp.getEntry().toString());
-        }
+    }
+
+    private void hideAllChannelFields() {
+        setChannelFieldsVisible(new String[]{PrefConst.KEY_FORWARD_WECOM_CORPID, PrefConst.KEY_FORWARD_WECOM_AGENTID,
+                        PrefConst.KEY_FORWARD_WECOM_SECRET, PrefConst.KEY_FORWARD_WECOM_TOUSER,
+                        PrefConst.KEY_FORWARD_WECOM_ROBOT_WEBHOOK, PrefConst.KEY_FORWARD_DINGTALK_WEBHOOK,
+                        PrefConst.KEY_FORWARD_DINGTALK_SECRET, PrefConst.KEY_FORWARD_FEISHU_WEBHOOK,
+                        PrefConst.KEY_FORWARD_PUSHPLUS_TOKEN}, false);
     }
 
     private void setChannelFieldsVisible(String[] keys, boolean visible) {
@@ -263,7 +288,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
         super.onViewCreated(view, savedInstanceState);
         mActivity = (HomeActivity) requireActivity();
         updateKillSummary();
-        updateChannelVisibility();
+        updateForwardSectionVisibility();
 
         mPresenter.handleArguments(getArguments());
     }
@@ -348,8 +373,9 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 }
                 autoLinkKillOff();
             }
+            updateForwardSectionVisibility();
         } else if (PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(key)) {
-            updateChannelVisibility();
+            updateChannelVisibility((String) newValue);
             androidx.preference.ListPreference lp = (androidx.preference.ListPreference) preference;
             int idx = lp.findIndexOfValue((String) newValue);
             if (idx >= 0) {
