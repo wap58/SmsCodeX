@@ -377,7 +377,7 @@
     <string name="forward_channel_page_feishu">飛書機器人</string>
     <string name="pref_forward_channel_config">pref_forward_channel_config</string>
     <string name="forward_channel_config_title">通道參數</string>
-    <string name="forward_channel_config_summary">點進去填寫所選通道的參數</string>
+    <string name="forward_channel_config_summary">點擊配置轉發通道參數</string>
     <string name="pref_forward_xizhi_key">pref_forward_xizhi_key</string>
     <string name="forward_xizhi_title">息知 Key</string>
     <string name="forward_xizhi_summary">貼上你的息知 Key（官網 xz.qqoq.net 取得）</string>

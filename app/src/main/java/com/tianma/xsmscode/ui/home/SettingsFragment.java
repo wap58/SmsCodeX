@@ -155,8 +155,6 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 com.tianma.xsmscode.ui.forward.ChannelSettingsActivity.open(requireContext(), ch);
                 return true;
             });
-            // "通道参数"行摘要实时按当前通道计算（2026-09-16：切通道后摘要显示不及时的根治）
-            cfgEntry.setSummaryProvider(p -> currentChannelName());
         }
         androidx.preference.ListPreference chLp =
                 (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
@@ -261,12 +259,8 @@ public class SettingsFragment extends BasePreferenceFragment implements
     }
 
     private void refreshForwardSummaries() {
-        // 两行摘要均由 SummaryProvider 实时计算；setSummary 在这里仅作为"强制重绑"触发器
+        // "转发通道"行摘要由 SimpleSummaryProvider 实时计算；"通道参数"行固定显示说明文字（2026-09-16 用户定稿）
         try {
-            Preference cfg = findPreference(PrefConst.KEY_FORWARD_CHANNEL_CONFIG);
-            if (cfg != null) {
-                cfg.setSummary(currentChannelName());
-            }
             androidx.preference.ListPreference ch =
                     (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
             if (ch != null) {
@@ -295,20 +289,6 @@ public class SettingsFragment extends BasePreferenceFragment implements
     /**
      * 当前通道名称（摘要 provider 用，每次绑定时实时计算，2026-09-16）。
      */
-    private CharSequence currentChannelName() {
-        String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
-        androidx.preference.ListPreference lp =
-                (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
-        if (lp != null && lp.getEntryValues() != null) {
-            for (int i = 0; i < lp.getEntryValues().length; i++) {
-                if (lp.getEntryValues()[i].equals(ch)) {
-                    return lp.getEntries()[i];
-                }
-            }
-        }
-        return ch;
-    }
 
     @Override
     public void onPause() {

@@ -14,8 +14,8 @@ def static releaseTime() {
     return new Date().format("yyMMdd", TimeZone.default)
 }
 
-def VERSION_NAME = "3.0.2"
-def VERSION_CODE = 8
+def VERSION_NAME = "3.0.3"
+def VERSION_CODE = 9
 
 android {
     namespace 'com.smscodf.zhuxf'

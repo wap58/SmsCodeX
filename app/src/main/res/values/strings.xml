@@ -378,7 +378,7 @@
     <string name="forward_channel_page_feishu">Feishu Robot</string>
     <string name="pref_forward_channel_config">pref_forward_channel_config</string>
     <string name="forward_channel_config_title">Channel parameters</string>
-    <string name="forward_channel_config_summary">Fill in the parameters of the selected channel</string>
+    <string name="forward_channel_config_summary">Tap to configure the selected channel parameters</string>
     <string name="pref_forward_xizhi_key">pref_forward_xizhi_key</string>
     <string name="forward_xizhi_title">Xizhi Key</string>
     <string name="forward_xizhi_summary">Paste your Xizhi Key (get it from xz.qqoq.net)</string>

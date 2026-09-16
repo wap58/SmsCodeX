@@ -56,7 +56,14 @@ public class ForwardKeepAliveService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        startForeground(NOTIFICATION_ID, buildNotification());
+        // Android 14+（targetSdk 34）必须显式声明 FGS 类型，否则抛
+        // MissingForegroundServiceTypeException 导致保活失败（2026-09-16 用户息屏转发失效根因）
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, buildNotification(),
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+        } else {
+            startForeground(NOTIFICATION_ID, buildNotification());
+        }
         return START_STICKY;
     }
 
