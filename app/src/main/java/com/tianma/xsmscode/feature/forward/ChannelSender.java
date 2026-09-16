@@ -20,7 +20,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 /**
  * 多通道 Webhook 转发器（2026-09-16，用户指定新增通道）：
- * 企业微信群机器人 / 钉钉机器人（支持加签）/ 飞书机器人 / 推送加。
+ * 企业微信群机器人 / 钉钉机器人（支持加签）/ 飞书机器人。
  * 文案统一复用 {@link WeComForwarder#buildContent} 排版。
  */
 public final class ChannelSender {
@@ -108,31 +108,6 @@ public final class ChannelSender {
         }
     }
 
-    public static boolean sendPushplus(String token, String content) {
-        if (TextUtils.isEmpty(token)) {
-            return false;
-        }
-        JSONObject body = new JSONObject();
-        try {
-            body.put("token", token.trim());
-            body.put("title", "短信验证码");
-            body.put("content", content);
-            body.put("template", "txt");
-        } catch (Exception ignored) {
-        }
-        try {
-            JSONObject r = new JSONObject(post("http://www.pushplus.plus/send", body.toString()));
-            int code = r.optInt("code", -1);
-            if (code != 200) {
-                XLog.e("Pushplus: code=%d msg=%s", code, r.optString("msg"));
-                return false;
-            }
-            return true;
-        } catch (Throwable t) {
-            XLog.e("Pushplus: failed %s", t);
-            return false;
-        }
-    }
 
     /** 钉钉加签：HmacSHA256(timestamp + "\n" + secret, secret) → Base64 → URL 编码 */
     private static String dingSign(long timestamp, String secret) {

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 通道独立参数配置页（2026-09-16，用户指定：每个通道单独配置页） -->
+        <EditTextPreference
+            android:key="@string/pref_forward_wecom_corpid"
+            android:summary="@string/pref_forward_wecom_corpid_summary"
+            android:title="@string/pref_forward_wecom_corpid_title"/>
+        <EditTextPreference
+            android:key="@string/pref_forward_wecom_agentid"
+            android:summary="@string/pref_forward_wecom_agentid_summary"
+            android:title="@string/pref_forward_wecom_agentid_title"/>
+        <EditTextPreference
+            android:key="@string/pref_forward_wecom_secret"
+            android:summary="@string/pref_forward_wecom_secret_summary"
+            android:title="@string/pref_forward_wecom_secret_title"/>
+        <EditTextPreference
+            android:defaultValue="@all"
+            android:key="@string/pref_forward_wecom_touser"
+            android:summary="@string/pref_forward_wecom_touser_summary"
+            android:title="@string/pref_forward_wecom_touser_title"/>
+</PreferenceScreen>

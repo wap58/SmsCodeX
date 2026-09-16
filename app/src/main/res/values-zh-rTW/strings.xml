@@ -346,9 +346,7 @@
     <string name="forward_dingtalk_secret_summary">機器人安全設置為“加簽”時填寫，留空則不加簽</string>
     <string name="forward_feishu_title">飛書機器人</string>
     <string name="forward_feishu_summary">貼上機器人 Webhook 地址</string>
-    <string name="forward_pushplus_title">推送加</string>
-    <string name="forward_pushplus_summary">貼上推送加 Token</string>
-    <string name="pref_forward_channel_type">pref_forward_channel_type</string>
+            <string name="pref_forward_channel_type">pref_forward_channel_type</string>
     <string name="pref_forward_wecom_robot_webhook">pref_forward_wecom_robot_webhook</string>
     <string name="pref_forward_dingtalk_webhook">pref_forward_dingtalk_webhook</string>
     <string name="pref_forward_dingtalk_secret">pref_forward_dingtalk_secret</string>
@@ -360,16 +358,19 @@
         <item>企業微信機器人</item>
         <item>釘釘機器人</item>
         <item>飛書機器人</item>
-        <item>推送加</item>
     </string-array>
     <string-array name="forward_channel_values">
         <item>wecom_agent</item>
         <item>wecom_robot</item>
         <item>dingtalk</item>
         <item>feishu</item>
-        <item>pushplus</item>
     </string-array>
     <string name="forward_killme_autodisabled">已自動關閉自殺開關</string>
     <string name="pref_forward_channel_title">轉發通道</string>
     <string name="pref_forward_channel_summary">選擇驗證碼簡訊的轉發通道</string>
+    <string name="forward_channel_settings">轉發通道設定</string>
+    <string name="forward_channel_page_wecom_agent">企業微信應用</string>
+    <string name="forward_channel_page_wecom_robot">企業微信機器人</string>
+    <string name="forward_channel_page_dingtalk">釘釘機器人</string>
+    <string name="forward_channel_page_feishu">飛書機器人</string>
 </resources>

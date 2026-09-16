@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 通道独立参数配置页（2026-09-16，用户指定：每个通道单独配置页） -->
+        <EditTextPreference
+            android:key="@string/pref_forward_dingtalk_webhook"
+            android:summary="@string/forward_dingtalk_summary"
+            android:title="@string/forward_dingtalk_title"/>
+        <EditTextPreference
+            android:key="@string/pref_forward_dingtalk_secret"
+            android:summary="@string/forward_dingtalk_secret_summary"
+            android:title="@string/forward_dingtalk_secret_title"/>
+</PreferenceScreen>

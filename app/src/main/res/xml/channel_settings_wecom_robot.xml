@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 通道独立参数配置页（2026-09-16，用户指定：每个通道单独配置页） -->
+        <EditTextPreference
+            android:key="@string/pref_forward_wecom_robot_webhook"
+            android:summary="@string/forward_wecom_robot_summary"
+            android:title="@string/forward_wecom_robot_title"/>
+</PreferenceScreen>

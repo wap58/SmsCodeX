@@ -117,6 +117,10 @@
             android:label="@string/app_block_settings" />
 
         <activity
+            android:name="com.tianma.xsmscode.ui.forward.ChannelSettingsActivity"
+            android:label="@string/forward_channel_settings" />
+
+        <activity
             android:name="com.jaredrummler.cyanea.prefs.CyaneaThemePickerActivity"
             android:label="@string/label_theme_picker"
             android:theme="@style/AppActionBarTheme"
