@@ -145,7 +145,6 @@ public class SettingsFragment extends BasePreferenceFragment implements
         makeCollapsible(PrefConst.KEY_FORWARD_HEADER,
                 PrefConst.KEY_ENABLE_FORWARD, PrefConst.KEY_FORWARD_CHANNEL_TYPE,
                 PrefConst.KEY_FORWARD_CHANNEL_CONFIG);
-        updateChannelConfigSummary();
         // "通道参数"入口显式绑定点击监听（2026-09-16：用户反馈点击无反应，不再依赖隐式事件链）
         Preference cfgEntry = findPreference(PrefConst.KEY_FORWARD_CHANNEL_CONFIG);
         if (cfgEntry != null) {
@@ -156,6 +155,14 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 com.tianma.xsmscode.ui.forward.ChannelSettingsActivity.open(requireContext(), ch);
                 return true;
             });
+            // "通道参数"行摘要实时按当前通道计算（2026-09-16：切通道后摘要显示不及时的根治）
+            cfgEntry.setSummaryProvider(p -> currentChannelName());
+        }
+        androidx.preference.ListPreference chLp =
+                (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
+        if (chLp != null) {
+            // "转发通道"行摘要实时显示当前选中项（SimpleSummaryProvider，1.2.1 支持）
+            chLp.setSummaryProvider(androidx.preference.ListPreference.SimpleSummaryProvider.getInstance());
         }
         // 验证码历史记录入口已迁移至首页"记录" tab；设置里保留记录开关（2026-09-15）
         makeCollapsible(PrefConst.KEY_CODE_RECORDS_HEADER,
@@ -241,27 +248,81 @@ public class SettingsFragment extends BasePreferenceFragment implements
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        updateKillSummary();
+        // 回到设置页强制重绑两行，摘要 provider 立即按当前通道重算（2026-09-16）
+        refreshForwardSummaries();
+    }
+
+    private void refreshForwardSummaries() {
+        // 两行摘要均由 SummaryProvider 实时计算；setSummary 在这里仅作为"强制重绑"触发器
+        try {
+            Preference cfg = findPreference(PrefConst.KEY_FORWARD_CHANNEL_CONFIG);
+            if (cfg != null) {
+                cfg.setSummary(currentChannelName());
+            }
+            androidx.preference.ListPreference ch =
+                    (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
+            if (ch != null) {
+                ch.setSummary(ch.getEntry() == null ? "" : ch.getEntry().toString());
+            }
+        } catch (Throwable ignored) {
+        }
+    }
+
+    /**
+     * 通道值持久化监听：选完下拉立刻强制"通道参数"行重绑，摘要即时刷新
+     *（2026-09-16：onPreferenceChange 不依赖，任何路径改了通道值都能即时反映）。
+     */
+    private android.content.SharedPreferences mChannelPrefs;
+    private final android.content.SharedPreferences.OnSharedPreferenceChangeListener mChannelListener =
+            (sp, changedKey) -> {
+                if (PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(changedKey)) {
+                    refreshForwardSummaries();
+                }
+            };
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mActivity = (HomeActivity) requireActivity();
         updateKillSummary();
-        updateChannelConfigSummary();
+
+        mChannelPrefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext());
+        mChannelPrefs.registerOnSharedPreferenceChangeListener(mChannelListener);
 
         mPresenter.handleArguments(getArguments());
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        // 每次显示设置页，按真实持久化的通道值刷新"转发通道"与"通道参数"两行摘要
-        //（2026-09-16：切通道后回来摘要不变的问题；不依赖 onPreferenceChange 对 ListPreference 的触发）
+    /**
+     * 当前通道名称（摘要 provider 用，每次绑定时实时计算，2026-09-16）。
+     */
+    private CharSequence currentChannelName() {
+        String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
         androidx.preference.ListPreference lp =
                 (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
-        if (lp.getEntry() != null) {
-            lp.setSummary(lp.getEntry().toString());
+        if (lp != null && lp.getEntryValues() != null) {
+            for (int i = 0; i < lp.getEntryValues().length; i++) {
+                if (lp.getEntryValues()[i].equals(ch)) {
+                    return lp.getEntries()[i];
+                }
+            }
         }
-        updateChannelConfigSummary();
-        updateKillSummary();
+        return ch;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (mChannelPrefs != null) {
+            try {
+                mChannelPrefs.unregisterOnSharedPreferenceChangeListener(mChannelListener);
+            } catch (Throwable ignored) {
+            }
+            mChannelPrefs = null;
+        }
     }
 
     @Override
@@ -280,31 +341,6 @@ public class SettingsFragment extends BasePreferenceFragment implements
     /**
      * "通道参数"入口行摘要显示当前所选通道（2026-09-16）。
      */
-    private void updateChannelConfigSummary() {
-        String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
-        updateChannelConfigSummary(ch);
-    }
-
-    private void updateChannelConfigSummary(String channel) {
-        Preference p = findPreference(PrefConst.KEY_FORWARD_CHANNEL_CONFIG);
-        if (p == null) {
-            return;
-        }
-        androidx.preference.ListPreference lp =
-                (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
-        String name = null;
-        if (lp != null && lp.getEntries() != null) {
-            for (int i = 0; i < lp.getEntryValues().length; i++) {
-                if (lp.getEntryValues()[i].equals(channel)) {
-                    name = lp.getEntries()[i].toString();
-                    break;
-                }
-            }
-        }
-        p.setSummary(name == null ? p.getSummary() : name);
-    }
-
     @Override
     public boolean onPreferenceClick(Preference preference) {
         String key = preference.getKey();
@@ -380,13 +416,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
             }
         } else if (PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(key)) {
             com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 转发通道 changed to %s", newValue);
-            androidx.preference.ListPreference lp = (androidx.preference.ListPreference) preference;
-            int idx = lp.findIndexOfValue((String) newValue);
-            if (idx >= 0) {
-                lp.setSummary(lp.getEntries()[idx].toString());
-                updateChannelConfigSummary((String) newValue);
-            }
-            // 选中即生效（DBProvider 按持久化通道路由），并打开该通道的独立参数配置页（2026-09-16）
+            // 摘要由 SummaryProvider 实时计算，无需手动设置；选中即持久化生效
             com.tianma.xsmscode.ui.forward.ChannelSettingsActivity.open(mActivity, (String) newValue);
         } else {
             return false;

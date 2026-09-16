@@ -15,7 +15,7 @@ def static releaseTime() {
 }
 
 def VERSION_NAME = "3.0.2"
-def VERSION_CODE = 6
+def VERSION_CODE = 7
 
 android {
     namespace 'com.smscodf.zhuxf'
