@@ -313,8 +313,8 @@
     <string name="pref_about_header_summary">Version, source &amp; privacy</string>
     <string name="pref_forward_title">SMS Forwarding</string>
     <string name="pref_forward_header_summary">Forward switch &amp; channel</string>
-    <string name="pref_enable_forward_title">Forward to WeChat Work</string>
-    <string name="pref_enable_forward_summary">Forward code SMS to WeCom group robot</string>
+    <string name="pref_enable_forward_title">Enable forwarding</string>
+    <string name="pref_enable_forward_summary">Forward code SMS to the selected channel in real time</string>
     <string name="pref_forward_header">pref_forward_header</string>
     <string name="pref_enable_forward">pref_enable_forward</string>
     <string name="pref_forward_wecom_corpid_title">Corp ID</string>
@@ -339,4 +339,38 @@
     <string name="forward_killme_warn_title">Disable kill switch recommended</string>
     <string name="forward_killme_warn_content">SMS forwarding is now ON. The "Kill me" switch kills the app process after every SMS; when the screen is off the system refuses to restart it, so forwarding/recording will fail.\n\nRecommended: disable the kill switch (Experimental section).</string>
     <string name="forward_killme_warn_disable">Disable now</string>
+    <string name="forward_wecom_robot_title">WeCom group robot</string>
+    <string name="forward_wecom_robot_summary">Paste the group robot webhook URL</string>
+    <string name="forward_dingtalk_title">DingTalk robot</string>
+    <string name="forward_dingtalk_summary">Paste the robot webhook URL</string>
+    <string name="forward_dingtalk_secret_title">DingTalk sign secret</string>
+    <string name="forward_dingtalk_secret_summary">Only for the "signed" security setting; leave empty otherwise</string>
+    <string name="forward_feishu_title">Feishu robot</string>
+    <string name="forward_feishu_summary">Paste the robot webhook URL</string>
+    <string name="forward_pushplus_title">PushPlus</string>
+    <string name="forward_pushplus_summary">Paste your PushPlus token (pushplus.plus)</string>
+    <string name="pref_forward_channel_type">pref_forward_channel_type</string>
+    <string name="pref_forward_wecom_robot_webhook">pref_forward_wecom_robot_webhook</string>
+    <string name="pref_forward_dingtalk_webhook">pref_forward_dingtalk_webhook</string>
+    <string name="pref_forward_dingtalk_secret">pref_forward_dingtalk_secret</string>
+    <string name="pref_forward_feishu_webhook">pref_forward_feishu_webhook</string>
+    <string name="pref_forward_pushplus_token">pref_forward_pushplus_token</string>
+    <string name="kill_forward_warning">开启短信转发功能请关闭</string>
+    <string-array name="forward_channel_entries">
+        <item>WeCom Agent</item>
+        <item>WeCom Robot</item>
+        <item>DingTalk Robot</item>
+        <item>Feishu Robot</item>
+        <item>PushPlus</item>
+    </string-array>
+    <string-array name="forward_channel_values">
+        <item>wecom_agent</item>
+        <item>wecom_robot</item>
+        <item>dingtalk</item>
+        <item>feishu</item>
+        <item>pushplus</item>
+    </string-array>
+    <string name="forward_killme_autodisabled">Kill switch was turned off automatically</string>
+    <string name="pref_forward_channel_title">Forwarding channel</string>
+    <string name="pref_forward_channel_summary">Select the channel for code SMS forwarding</string>
 </resources>

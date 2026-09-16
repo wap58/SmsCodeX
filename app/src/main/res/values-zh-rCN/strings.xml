@@ -312,8 +312,8 @@
     <string name="pref_about_header_summary">版本、源码与隐私政策</string>
     <string name="pref_forward_title">短信转发</string>
     <string name="pref_forward_header_summary">转发开关与通道设置</string>
-    <string name="pref_enable_forward_title">转发到企业微信</string>
-    <string name="pref_enable_forward_summary">将验证码短信转发到企微群机器人</string>
+    <string name="pref_enable_forward_title">转发开启</string>
+    <string name="pref_enable_forward_summary">解析到验证码后实时转发到所选通道</string>
     <string name="pref_forward_header">pref_forward_header</string>
     <string name="pref_enable_forward">pref_enable_forward</string>
     <string name="pref_forward_wecom_corpid_title">企业ID</string>
@@ -338,4 +338,38 @@
     <string name="forward_killme_warn_title">建议关闭自杀开关</string>
     <string name="forward_killme_warn_content">短信转发已开启。"自杀"开关会在每条短信处理完后杀死应用进程，息屏时系统会拒绝重新拉起它，导致转发和记录失败。\n\n建议现在关闭自杀开关（可在 试验性功能 分类中再次打开）。</string>
     <string name="forward_killme_warn_disable">一键关闭</string>
+    <string name="forward_wecom_robot_title">企业微信机器人</string>
+    <string name="forward_wecom_robot_summary">粘贴群机器人 Webhook 地址（群里添加机器人获取）</string>
+    <string name="forward_dingtalk_title">钉钉机器人</string>
+    <string name="forward_dingtalk_summary">粘贴机器人 Webhook 地址</string>
+    <string name="forward_dingtalk_secret_title">钉钉加签密钥</string>
+    <string name="forward_dingtalk_secret_summary">机器人安全设置为“加签”时填写，留空则不加签</string>
+    <string name="forward_feishu_title">飞书机器人</string>
+    <string name="forward_feishu_summary">粘贴机器人 Webhook 地址</string>
+    <string name="forward_pushplus_title">推送加</string>
+    <string name="forward_pushplus_summary">粘贴推送加 Token（pushplus.plus 官网获取）</string>
+    <string name="pref_forward_channel_type">pref_forward_channel_type</string>
+    <string name="pref_forward_wecom_robot_webhook">pref_forward_wecom_robot_webhook</string>
+    <string name="pref_forward_dingtalk_webhook">pref_forward_dingtalk_webhook</string>
+    <string name="pref_forward_dingtalk_secret">pref_forward_dingtalk_secret</string>
+    <string name="pref_forward_feishu_webhook">pref_forward_feishu_webhook</string>
+    <string name="pref_forward_pushplus_token">pref_forward_pushplus_token</string>
+    <string name="kill_forward_warning">开启短信转发功能请关闭</string>
+    <string-array name="forward_channel_entries">
+        <item>企业微信应用</item>
+        <item>企业微信机器人</item>
+        <item>钉钉机器人</item>
+        <item>飞书机器人</item>
+        <item>推送加</item>
+    </string-array>
+    <string-array name="forward_channel_values">
+        <item>wecom_agent</item>
+        <item>wecom_robot</item>
+        <item>dingtalk</item>
+        <item>feishu</item>
+        <item>pushplus</item>
+    </string-array>
+    <string name="forward_killme_autodisabled">已自动关闭自杀开关</string>
+    <string name="pref_forward_channel_title">转发通道</string>
+    <string name="pref_forward_channel_summary">选择验证码短信的转发通道</string>
 </resources>

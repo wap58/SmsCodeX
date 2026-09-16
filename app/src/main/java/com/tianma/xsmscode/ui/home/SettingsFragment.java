@@ -128,6 +128,8 @@ public class SettingsFragment extends BasePreferenceFragment implements
         Preference versionPref = findPreference(PrefConst.KEY_VERSION);
         versionPref.setOnPreferenceClickListener(this);
         showVersionInfo(versionPref);
+        updateKillSummary();
+        updateChannelVisibility();
         findPreference(PrefConst.KEY_SOURCE_CODE).setOnPreferenceClickListener(this);
         findPreference(PrefConst.KEY_PRIVACY_POLICY).setOnPreferenceClickListener(this);
 
@@ -187,31 +189,63 @@ public class SettingsFragment extends BasePreferenceFragment implements
     }
 
     /**
-     * 自杀开关与短信转发冲突提醒（2026-09-15）：
-     * 自杀会在每条短信处理完后杀死应用进程，息屏时系统拒绝重新拉起，
-     * 导致转发/记录失败。开启转发时提供一键关闭。
+     * 自杀开关与短信转发联动（2026-09-16，用户指定）：
+     * 打开转发总开关时自动关闭自杀开关，并在自杀开关摘要追加"开启短信转发功能请关闭"。
      */
-    private void warnKillMeConflict() {
+    private void autoLinkKillOff() {
         Preference killPref = findPreference(PrefConst.KEY_KILL_ME);
-        boolean killOn = killPref instanceof androidx.preference.SwitchPreferenceCompat
-                || killPref instanceof androidx.preference.SwitchPreference;
-        if (killPref != null && !(killPref instanceof androidx.preference.TwoStatePreference)) {
-            killOn = false;
+        if (killPref instanceof androidx.preference.TwoStatePreference) {
+            androidx.preference.TwoStatePreference sw = (androidx.preference.TwoStatePreference) killPref;
+            if (sw.isChecked()) {
+                sw.setChecked(false);
+                SnackbarHelper.makeShort(getListView(), R.string.forward_killme_autodisabled).show();
+            }
         }
+        updateKillSummary();
+    }
+
+    /**
+     * 自杀开关摘要随转发状态变化：转发开着时追加提醒文字。
+     */
+    private void updateKillSummary() {
+        Preference killPref = findPreference(PrefConst.KEY_KILL_ME);
         if (!(killPref instanceof androidx.preference.TwoStatePreference)) {
             return;
         }
-        androidx.preference.TwoStatePreference killSwitch = (androidx.preference.TwoStatePreference) killPref;
-        if (!killSwitch.isChecked()) {
-            return;
+        boolean forwardOn = androidx.preference.PreferenceManager.getDefaultSharedPreferences(mActivity)
+                .getBoolean(PrefConst.KEY_ENABLE_FORWARD, false);
+        String base = getString(R.string.pref_kill_me_summary);
+        killPref.setSummary(forwardOn ? base + "。" + getString(R.string.kill_forward_warning) : base);
+    }
+
+    /**
+     * 转发通道可见性管理（2026-09-16）：按选中的通道显示对应配置项。
+     */
+    private void updateChannelVisibility() {
+        String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(mActivity)
+                .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
+        boolean a = "wecom_agent".equals(ch), r = "wecom_robot".equals(ch),
+                d = "dingtalk".equals(ch), f = "feishu".equals(ch), p = "pushplus".equals(ch);
+        setChannelFieldsVisible(new String[]{PrefConst.KEY_FORWARD_WECOM_CORPID, PrefConst.KEY_FORWARD_WECOM_AGENTID,
+                        PrefConst.KEY_FORWARD_WECOM_SECRET, PrefConst.KEY_FORWARD_WECOM_TOUSER}, a);
+        setChannelFieldsVisible(new String[]{PrefConst.KEY_FORWARD_WECOM_ROBOT_WEBHOOK}, r);
+        setChannelFieldsVisible(new String[]{PrefConst.KEY_FORWARD_DINGTALK_WEBHOOK, PrefConst.KEY_FORWARD_DINGTALK_SECRET}, d);
+        setChannelFieldsVisible(new String[]{PrefConst.KEY_FORWARD_FEISHU_WEBHOOK}, f);
+        setChannelFieldsVisible(new String[]{PrefConst.KEY_FORWARD_PUSHPLUS_TOKEN}, p);
+        androidx.preference.ListPreference lp =
+                (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
+        if (lp != null && lp.getEntry() != null) {
+            lp.setSummary(lp.getEntry().toString());
         }
-        new MaterialDialog.Builder(mActivity)
-                .title(R.string.forward_killme_warn_title)
-                .content(R.string.forward_killme_warn_content)
-                .positiveText(R.string.forward_killme_warn_disable)
-                .onPositive((dialog, which) -> killSwitch.setChecked(false))
-                .negativeText(R.string.cancel)
-                .show();
+    }
+
+    private void setChannelFieldsVisible(String[] keys, boolean visible) {
+        for (String key : keys) {
+            Preference p = findPreference(key);
+            if (p != null) {
+                p.setVisible(visible);
+            }
+        }
     }
 
     private int resolveThemeAccent() {
@@ -312,7 +346,14 @@ public class SettingsFragment extends BasePreferenceFragment implements
                     com.tianma.xsmscode.feature.forward.ForwardKeepAliveService.start(mActivity);
                 } catch (Throwable ignored) {
                 }
-                warnKillMeConflict();
+                autoLinkKillOff();
+            }
+        } else if (PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(key)) {
+            updateChannelVisibility();
+            androidx.preference.ListPreference lp = (androidx.preference.ListPreference) preference;
+            int idx = lp.findIndexOfValue((String) newValue);
+            if (idx >= 0) {
+                lp.setSummary(lp.getEntries()[idx].toString());
             }
         } else {
             return false;

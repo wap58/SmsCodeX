@@ -157,18 +157,55 @@ public class DBProvider extends ContentProvider {
                     com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_WECOM_SECRET, "");
             String toUser = sp == null ? "" : sp.getString(
                     com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_WECOM_TOUSER, "");
-            if (!enabled || corpId.trim().isEmpty() || agentId.trim().isEmpty() || secret.trim().isEmpty()) {
-                result.putBoolean("ok", false);
-                result.putString("reason", "disabled");
-                return result;
-            }
+            String channel = sp == null ? "wecom_agent" : sp.getString(
+                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
+            String robotWebhook = sp == null ? "" : sp.getString(
+                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_WECOM_ROBOT_WEBHOOK, "");
+            String dingWebhook = sp == null ? "" : sp.getString(
+                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_DINGTALK_WEBHOOK, "");
+            String dingSecret = sp == null ? "" : sp.getString(
+                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_DINGTALK_SECRET, "");
+            String feishuWebhook = sp == null ? "" : sp.getString(
+                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_FEISHU_WEBHOOK, "");
+            String pushplusToken = sp == null ? "" : sp.getString(
+                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_PUSHPLUS_TOKEN, "");
             String sender = extras == null ? "" : extras.getString("sender", "");
             String body = extras == null ? "" : extras.getString("body", "");
             String code = extras == null ? "" : extras.getString("code", "");
             long time = extras == null ? System.currentTimeMillis()
                     : extras.getLong("time", System.currentTimeMillis());
-            boolean ok = com.tianma.xsmscode.feature.forward.WeComForwarder.send(
-                    corpId, agentId, secret, toUser, sender, body, code, time);
+            boolean ok;
+            if (!enabled) {
+                result.putBoolean("ok", false);
+                result.putString("reason", "disabled");
+                return result;
+            }
+            String content = com.tianma.xsmscode.feature.forward.WeComForwarder.buildContent(
+                    sender, body, code, time);
+            switch (channel) {
+                case "wecom_robot":
+                    ok = com.tianma.xsmscode.feature.forward.ChannelSender.sendWecomRobot(robotWebhook, content);
+                    break;
+                case "dingtalk":
+                    ok = com.tianma.xsmscode.feature.forward.ChannelSender.sendDingtalk(dingWebhook, dingSecret, content);
+                    break;
+                case "feishu":
+                    ok = com.tianma.xsmscode.feature.forward.ChannelSender.sendFeishu(feishuWebhook, content);
+                    break;
+                case "pushplus":
+                    ok = com.tianma.xsmscode.feature.forward.ChannelSender.sendPushplus(pushplusToken, content);
+                    break;
+                case "wecom_agent":
+                default:
+                    if (corpId.trim().isEmpty() || agentId.trim().isEmpty() || secret.trim().isEmpty()) {
+                        result.putBoolean("ok", false);
+                        result.putString("reason", "disabled");
+                        return result;
+                    }
+                    ok = com.tianma.xsmscode.feature.forward.WeComForwarder.send(
+                            corpId, agentId, secret, toUser, sender, body, code, time);
+                    break;
+            }
             result.putBoolean("ok", ok);
             result.putString("reason", ok ? "sent" : "send_failed");
             return result;

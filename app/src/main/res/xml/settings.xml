@@ -136,30 +136,75 @@
             android:summary="@string/pref_enable_forward_summary"
             android:title="@string/pref_enable_forward_title"/>
 
+        <ListPreference
+            android:defaultValue="wecom_agent"
+            android:dependency="@string/pref_enable_forward"
+            android:entries="@array/forward_channel_entries"
+            android:entryValues="@array/forward_channel_values"
+            android:icon="@drawable/ic_forward"
+            android:key="@string/pref_forward_channel_type"
+            android:summary="@string/pref_forward_channel_summary"
+            android:title="@string/pref_forward_channel_title"/>
+
         <EditTextPreference
             android:defaultValue=""
-            android:dependency="@string/pref_enable_forward"
+            android:dependency="@string/pref_forward_channel_type"
+            android:key="@string/pref_forward_wecom_robot_webhook"
+            android:summary="@string/forward_wecom_robot_summary"
+            android:title="@string/forward_wecom_robot_title"/>
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:dependency="@string/pref_forward_channel_type"
+            android:key="@string/pref_forward_dingtalk_webhook"
+            android:summary="@string/forward_dingtalk_summary"
+            android:title="@string/forward_dingtalk_title"/>
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:dependency="@string/pref_forward_channel_type"
+            android:key="@string/pref_forward_dingtalk_secret"
+            android:summary="@string/forward_dingtalk_secret_summary"
+            android:title="@string/forward_dingtalk_secret_title"/>
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:dependency="@string/pref_forward_channel_type"
+            android:key="@string/pref_forward_feishu_webhook"
+            android:summary="@string/forward_feishu_summary"
+            android:title="@string/forward_feishu_title"/>
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:dependency="@string/pref_forward_channel_type"
+            android:key="@string/pref_forward_pushplus_token"
+            android:summary="@string/forward_pushplus_summary"
+            android:title="@string/forward_pushplus_title"/>
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:dependency="@string/pref_forward_channel_type"
             android:key="@string/pref_forward_wecom_corpid"
             android:summary="@string/pref_forward_wecom_corpid_summary"
             android:title="@string/pref_forward_wecom_corpid_title"/>
 
         <EditTextPreference
             android:defaultValue=""
-            android:dependency="@string/pref_enable_forward"
+            android:dependency="@string/pref_forward_channel_type"
             android:key="@string/pref_forward_wecom_agentid"
             android:summary="@string/pref_forward_wecom_agentid_summary"
             android:title="@string/pref_forward_wecom_agentid_title"/>
 
         <EditTextPreference
             android:defaultValue=""
-            android:dependency="@string/pref_enable_forward"
+            android:dependency="@string/pref_forward_channel_type"
             android:key="@string/pref_forward_wecom_secret"
             android:summary="@string/pref_forward_wecom_secret_summary"
             android:title="@string/pref_forward_wecom_secret_title"/>
 
         <EditTextPreference
             android:defaultValue="@all"
-            android:dependency="@string/pref_enable_forward"
+            android:dependency="@string/pref_forward_channel_type"
             android:key="@string/pref_forward_wecom_touser"
             android:summary="@string/pref_forward_wecom_touser_summary"
             android:title="@string/pref_forward_wecom_touser_title"/>

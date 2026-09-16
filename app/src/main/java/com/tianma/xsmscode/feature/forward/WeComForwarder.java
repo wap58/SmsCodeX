@@ -120,7 +120,10 @@ public final class WeComForwarder {
         }
     }
 
-    private static String buildContent(String sender, String body, String code, long time) {
+    /**
+     * 排版文案（供各通道转发器复用，2026-09-16）：短信原文 + 空行 + 来源三行。
+     */
+    public static String buildContent(String sender, String body, String code, long time) {
         // 排版与参考样例一致：短信原文 + 空行 + 来源三行（2026-09-15 用户定稿）
         StringBuilder sb = new StringBuilder();
         if (!TextUtils.isEmpty(body)) {
