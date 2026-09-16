@@ -143,7 +143,9 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 PrefConst.KEY_SHOW_CODE_NOTIFICATION, PrefConst.KEY_AUTO_CANCEL_CODE_NOTIFICATION,
                 PrefConst.KEY_NOTIFICATION_RETENTION_TIME);
         makeCollapsible(PrefConst.KEY_FORWARD_HEADER,
-                PrefConst.KEY_ENABLE_FORWARD, PrefConst.KEY_FORWARD_CHANNEL_TYPE);
+                PrefConst.KEY_ENABLE_FORWARD, PrefConst.KEY_FORWARD_CHANNEL_TYPE,
+                PrefConst.KEY_FORWARD_CHANNEL_CONFIG);
+        updateChannelConfigSummary();
         // 验证码历史记录入口已迁移至首页"记录" tab；设置里保留记录开关（2026-09-15）
         makeCollapsible(PrefConst.KEY_CODE_RECORDS_HEADER,
                 PrefConst.KEY_ENABLE_CODE_RECORDS);
@@ -232,6 +234,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
         super.onViewCreated(view, savedInstanceState);
         mActivity = (HomeActivity) requireActivity();
         updateKillSummary();
+        updateChannelConfigSummary();
 
         mPresenter.handleArguments(getArguments());
     }
@@ -249,6 +252,34 @@ public class SettingsFragment extends BasePreferenceFragment implements
         SnackbarHelper.makeLong(getListView(), R.string.app_already_newest).show();
     }
 
+    /**
+     * "通道参数"入口行摘要显示当前所选通道（2026-09-16）。
+     */
+    private void updateChannelConfigSummary() {
+        String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
+        updateChannelConfigSummary(ch);
+    }
+
+    private void updateChannelConfigSummary(String channel) {
+        Preference p = findPreference(PrefConst.KEY_FORWARD_CHANNEL_CONFIG);
+        if (p == null) {
+            return;
+        }
+        androidx.preference.ListPreference lp =
+                (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
+        String name = null;
+        if (lp != null && lp.getEntries() != null) {
+            for (int i = 0; i < lp.getEntryValues().length; i++) {
+                if (lp.getEntryValues()[i].equals(channel)) {
+                    name = lp.getEntries()[i].toString();
+                    break;
+                }
+            }
+        }
+        p.setSummary(name == null ? p.getSummary() : name);
+    }
+
     @Override
     public boolean onPreferenceClick(Preference preference) {
         String key = preference.getKey();
@@ -261,6 +292,11 @@ public class SettingsFragment extends BasePreferenceFragment implements
             showSmsCodeTestDialog();
         } else if (PrefConst.KEY_SOURCE_CODE.equals(key)) {
             mPresenter.showSourceProject();
+        } else if (PrefConst.KEY_FORWARD_CHANNEL_CONFIG.equals(key)) {
+            // 显式入口：进入当前所选通道的独立参数配置页（2026-09-16，用户反馈"找不到配置的地方"）
+            String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
+                    .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
+            com.tianma.xsmscode.ui.forward.ChannelSettingsActivity.open(mActivity, ch);
         } else if (PrefConst.KEY_ENTRY_CODE_RECORDS.equals(key)) {
             CodeRecordActivity.startToMe(mActivity);
         } else if (PrefConst.KEY_APP_BLOCK_ENTRY.equals(key)) {
@@ -321,6 +357,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
             int idx = lp.findIndexOfValue((String) newValue);
             if (idx >= 0) {
                 lp.setSummary(lp.getEntries()[idx].toString());
+                updateChannelConfigSummary((String) newValue);
             }
             // 选中即生效（DBProvider 按持久化通道路由），并打开该通道的独立参数配置页（2026-09-16）
             com.tianma.xsmscode.ui.forward.ChannelSettingsActivity.open(mActivity, (String) newValue);

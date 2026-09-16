@@ -41,6 +41,7 @@ public interface PrefConst {
     String KEY_FORWARD_WECOM_SECRET = "pref_forward_wecom_secret";
     String KEY_FORWARD_WECOM_TOUSER = "pref_forward_wecom_touser";
     String KEY_FORWARD_CHANNEL_TYPE = "pref_forward_channel_type";
+    String KEY_FORWARD_CHANNEL_CONFIG = "pref_forward_channel_config";
     String KEY_FORWARD_WECOM_ROBOT_WEBHOOK = "pref_forward_wecom_robot_webhook";
     String KEY_FORWARD_DINGTALK_WEBHOOK = "pref_forward_dingtalk_webhook";
     String KEY_FORWARD_DINGTALK_SECRET = "pref_forward_dingtalk_secret";

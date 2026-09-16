@@ -373,4 +373,7 @@
     <string name="forward_channel_page_wecom_robot">企業微信機器人</string>
     <string name="forward_channel_page_dingtalk">釘釘機器人</string>
     <string name="forward_channel_page_feishu">飛書機器人</string>
+    <string name="pref_forward_channel_config">pref_forward_channel_config</string>
+    <string name="forward_channel_config_title">通道參數</string>
+    <string name="forward_channel_config_summary">點進去填寫所選通道的參數</string>
 </resources>

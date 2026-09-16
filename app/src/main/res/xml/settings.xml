@@ -145,6 +145,11 @@
             android:summary="@string/pref_forward_channel_summary"
             android:title="@string/pref_forward_channel_title"/>
 
+        <Preference
+            android:key="@string/pref_forward_channel_config"
+            android:summary="@string/forward_channel_config_summary"
+            android:title="@string/forward_channel_config_title"/>
+
 
 
 
