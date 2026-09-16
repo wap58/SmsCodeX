@@ -106,3 +106,8 @@
 -keep class de.robv.android.xposed.** { *; }
 -dontwarn io.github.libxposed.**
 -dontwarn de.robv.android.xposed.**
+
+# Manifest 反射组件（2026-09-16）：R8 改名后 BOOT_COMPLETED 广播与前台服务反射失败
+# （ClassNotFoundException: BootReceiver → 息屏转发保活失效）
+-keep class com.tianma.xsmscode.feature.forward.BootReceiver { *; }
+-keep class com.tianma.xsmscode.feature.forward.ForwardKeepAliveService { *; }
