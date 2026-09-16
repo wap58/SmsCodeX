@@ -111,6 +111,20 @@ public class CodeWorker {
                     if (forwardSent.get()) {
                         return;
                     }
+                    // ① 电话进程直发（2026-09-17：不依赖 app 进程/保活服务/息屏）
+                    int direct = com.tianma.xsmscode.xp.hook.forward.DirectForwarder.forward(
+                            xsp, smsMsg.getSender(), smsMsg.getBody(), smsMsg.getSmsCode(), smsMsg.getDate());
+                    if (direct == com.tianma.xsmscode.xp.hook.forward.DirectForwarder.RESULT_SENT) {
+                        forwardSent.set(true);
+                        XLog.i("Forward direct (attempt %d): succeed", attemptNo);
+                        return;
+                    }
+                    if (direct == com.tianma.xsmscode.xp.hook.forward.DirectForwarder.RESULT_SKIP) {
+                        forwardSent.set(true);
+                        XLog.i("Forward direct (attempt %d): skipped (off or unconfigured)", attemptNo);
+                        return;
+                    }
+                    // ② 直发失败 → 回退 app 进程 Provider（开屏场景兜底）
                     try {
                         android.net.Uri uri = android.net.Uri.parse(
                                 "content://" + com.tianma.xsmscode.data.db.DBProvider.AUTHORITY);
