@@ -155,6 +155,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 com.tianma.xsmscode.ui.forward.ChannelSettingsActivity.open(requireContext(), ch);
                 return true;
             });
+            // "通道参数"行摘要改为固定说明文字（2026-09-18 用户定稿），由 xml 的 android:summary 绑定，不再动态覆盖
         }
         androidx.preference.ListPreference chLp =
                 (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
@@ -259,8 +260,9 @@ public class SettingsFragment extends BasePreferenceFragment implements
     }
 
     private void refreshForwardSummaries() {
-        // "转发通道"行摘要由 SimpleSummaryProvider 实时计算；"通道参数"行固定显示说明文字（2026-09-16 用户定稿）
+        // 两行摘要均由 SummaryProvider 实时计算；setSummary 在这里仅作为"强制重绑"触发器
         try {
+            // "通道参数"行摘要已固定（xml 绑定），此处不再动态 setSummary；"转发通道"行保持重绑触发器
             androidx.preference.ListPreference ch =
                     (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
             if (ch != null) {
@@ -286,13 +288,16 @@ public class SettingsFragment extends BasePreferenceFragment implements
         mPresenter.handleArguments(getArguments());
     }
 
-    /**
-     * 当前通道名称（摘要 provider 用，每次绑定时实时计算，2026-09-16）。
-     */
 
     @Override
     public void onPause() {
         super.onPause();
+        // 2026-09-19：导出配置到世界可读文件（phone 进程需读取。
+        // LSPosed 代理机制对"不注入自身进程"的模块失效，改用主动导出）
+        try {
+            com.tianma.xsmscode.common.utils.PrefsExporter.export(requireContext());
+        } catch (Throwable ignored) {
+        }
         String preferencesName = getPreferenceManager().getSharedPreferencesName();
         mPresenter.setPreferenceWorldWritable(preferencesName);
         mPresenter.setInternalFilesWritable();

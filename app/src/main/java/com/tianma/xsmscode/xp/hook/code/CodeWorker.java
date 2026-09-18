@@ -52,6 +52,11 @@ public class CodeWorker {
     }
 
     public ParseResult parse() {
+        // 2026-09-18：配置读取诊断（排查"模块读到默认值"用）
+        XLog.i("Config diag: enabled=%s block=%s copy=%s autoCancel=%s showNotif=%s autoInput=%s",
+                XSPUtils.isEnabled(xsp), XSPUtils.blockSmsEnabled(xsp),
+                XSPUtils.copyToClipboardEnabled(xsp), XSPUtils.autoCancelCodeNotification(xsp),
+                XSPUtils.showCodeNotification(xsp), XSPUtils.autoInputCodeEnabled(xsp));
         if (!XSPUtils.isEnabled(xsp)) {
             XLog.i("SmsCodeX disabled, exiting");
             return null;
@@ -111,7 +116,10 @@ public class CodeWorker {
                     if (forwardSent.get()) {
                         return;
                     }
-                    // ① 电话进程直发（2026-09-17：不依赖 app 进程/保活服务/息屏）
+                    // ① 电话进程直发（2026-09-19 移植自 3.0.3(9)）：
+                    //    息屏时 app 进程被 ColorOS 冻结(do_freezer_trap)，
+                    //    Provider 不可达 → 转发必挂。电话进程自己有网络权限，
+                    //    直接发 HTTP 彻底绕开 app 进程依赖。
                     int direct = com.tianma.xsmscode.xp.hook.forward.DirectForwarder.forward(
                             xsp, smsMsg.getSender(), smsMsg.getBody(), smsMsg.getSmsCode(), smsMsg.getDate());
                     if (direct == com.tianma.xsmscode.xp.hook.forward.DirectForwarder.RESULT_SENT) {

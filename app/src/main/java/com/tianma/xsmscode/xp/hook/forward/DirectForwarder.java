@@ -48,43 +48,47 @@ public final class DirectForwarder {
     }
 
     public static int forward(XSharedPreferences xsp, String sender, String body, String code, long time) {
+        // 2026-09-19：改用 ModulePrefs（读应用导出的世界可读配置），
+        // 框架 XSharedPreferences 在电话进程读不到配置（LSPosed 机制限制）
+        final String PKG = com.smscodf.zhuxf.BuildConfig.APPLICATION_ID;
+        final String PF = com.tianma.xsmscode.common.constant.PrefConst.PREF_NAME;
         try {
-            if (!xsp.getBoolean(PrefConst.KEY_ENABLE_FORWARD, false)) {
+            if (!com.tianma.xsmscode.common.utils.ModulePrefs.getBoolean(PKG, PF, PrefConst.KEY_ENABLE_FORWARD, false)) {
                 return RESULT_SKIP;
             }
-            String channel = xsp.getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
+            String channel = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
             String content = buildContent(sender, body, code, time);
             switch (channel == null ? "wecom_agent" : channel) {
                 case "wecom_robot": {
-                    String webhook = xsp.getString(PrefConst.KEY_FORWARD_WECOM_ROBOT_WEBHOOK, "");
+                    String webhook = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_WECOM_ROBOT_WEBHOOK, "");
                     if (TextUtils.isEmpty(webhook)) return RESULT_SKIP;
                     return sendWecomRobot(webhook, content) ? RESULT_SENT : RESULT_FAILED;
                 }
                 case "dingtalk": {
-                    String webhook = xsp.getString(PrefConst.KEY_FORWARD_DINGTALK_WEBHOOK, "");
+                    String webhook = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_DINGTALK_WEBHOOK, "");
                     if (TextUtils.isEmpty(webhook)) return RESULT_SKIP;
-                    String secret = xsp.getString(PrefConst.KEY_FORWARD_DINGTALK_SECRET, "");
+                    String secret = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_DINGTALK_SECRET, "");
                     return sendDingtalk(webhook, secret, content) ? RESULT_SENT : RESULT_FAILED;
                 }
                 case "feishu": {
-                    String webhook = xsp.getString(PrefConst.KEY_FORWARD_FEISHU_WEBHOOK, "");
+                    String webhook = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_FEISHU_WEBHOOK, "");
                     if (TextUtils.isEmpty(webhook)) return RESULT_SKIP;
                     return sendFeishu(webhook, content) ? RESULT_SENT : RESULT_FAILED;
                 }
                 case "xizhi": {
-                    String key = xsp.getString(PrefConst.KEY_FORWARD_XIZHI_KEY, "");
+                    String key = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_XIZHI_KEY, "");
                     if (TextUtils.isEmpty(key)) return RESULT_SKIP;
                     return sendXizhi(key, content) ? RESULT_SENT : RESULT_FAILED;
                 }
                 case "wecom_agent":
                 default: {
-                    String corpId = xsp.getString(PrefConst.KEY_FORWARD_WECOM_CORPID, "");
-                    String agentId = xsp.getString(PrefConst.KEY_FORWARD_WECOM_AGENTID, "");
-                    String secret = xsp.getString(PrefConst.KEY_FORWARD_WECOM_SECRET, "");
+                    String corpId = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_WECOM_CORPID, "");
+                    String agentId = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_WECOM_AGENTID, "");
+                    String secret = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_WECOM_SECRET, "");
                     if (TextUtils.isEmpty(corpId) || TextUtils.isEmpty(agentId) || TextUtils.isEmpty(secret)) {
                         return RESULT_SKIP;
                     }
-                    String toUser = xsp.getString(PrefConst.KEY_FORWARD_WECOM_TOUSER, "");
+                    String toUser = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_WECOM_TOUSER, "");
                     return sendWecomAgent(corpId, agentId, secret, toUser, content)
                             ? RESULT_SENT : RESULT_FAILED;
                 }

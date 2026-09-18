@@ -1,5 +1,6 @@
 package com.tianma.xsmscode.common.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -15,8 +16,19 @@ public class PreferencesUtils {
 
     }
 
+    @SuppressLint("WorldReadableFiles")
     private static SharedPreferences getPreferences(Context context) {
-        return context.getSharedPreferences(PrefConst.PREF_NAME, Context.MODE_PRIVATE);
+        // 2026-09-19 根治：必须用 MODE_WORLD_READABLE，LSPosed 才会 hook
+        // ContextImpl.getPreferencesDir() 把配置放到世界可读目录，模块进程
+        // （电话进程 radio uid）才能读到。官方文档：
+        // https://github.com/LSPosed/LSPosed/wiki/New-XSharedPreferences
+        // 用 MODE_PRIVATE 会导致模块永远读到默认值（拦截/复制/通知自动清除失效）。
+        try {
+            return context.getSharedPreferences(PrefConst.PREF_NAME, Context.MODE_WORLD_READABLE);
+        } catch (SecurityException e) {
+            // 模块未被激活时框架不 hook checkMode，退回私有模式（应用自身仍可用）
+            return context.getSharedPreferences(PrefConst.PREF_NAME, Context.MODE_PRIVATE);
+        }
     }
 
     public static boolean contains(Context context, String key) {

@@ -180,6 +180,38 @@ public class DBProvider extends ContentProvider {
                 result.putString("reason", "disabled");
                 return result;
             }
+            // 2026-09-18：所选通道参数未填齐时回退企业微信应用通道（3.0.1 主路径），
+            // 避免息屏转发静默 send_failed（旧逻辑：空参直接发给所选通道）
+            boolean selectedOk;
+            switch (channel) {
+                case "wecom_robot":
+                    selectedOk = !robotWebhook.trim().isEmpty();
+                    break;
+                case "dingtalk":
+                    selectedOk = !dingWebhook.trim().isEmpty();
+                    break;
+                case "feishu":
+                    selectedOk = !feishuWebhook.trim().isEmpty();
+                    break;
+                case "xizhi":
+                    selectedOk = !xizhiKey.trim().isEmpty();
+                    break;
+                default:
+                    selectedOk = !corpId.trim().isEmpty()
+                            && !agentId.trim().isEmpty()
+                            && !secret.trim().isEmpty();
+                    break;
+            }
+            if (!selectedOk
+                    && !corpId.trim().isEmpty()
+                    && !agentId.trim().isEmpty()
+                    && !secret.trim().isEmpty()) {
+                channel = "wecom_agent";
+            } else if (!selectedOk) {
+                result.putBoolean("ok", false);
+                result.putString("reason", "channel_unconfigured");
+                return result;
+            }
             String content = com.tianma.xsmscode.feature.forward.WeComForwarder.buildContent(
                     sender, body, code, time);
             switch (channel) {

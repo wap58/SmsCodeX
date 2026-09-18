@@ -31,7 +31,7 @@
             android:value="@string/xposed_description" />
         <meta-data
             android:name="xposedminversion"
-            android:value="30" />
+            android:value="93" />
         <meta-data
             android:name="xposedscope"
             android:resource="@array/xposed_scope" />
@@ -147,12 +147,12 @@
                 android:resource="@xml/files" />
         </provider>
         <service
-            android:name=".feature.forward.ForwardKeepAliveService"
+            android:name="com.tianma.xsmscode.feature.forward.ForwardKeepAliveService"
             android:exported="false"
             android:foregroundServiceType="dataSync"/>
 
         <receiver
-            android:name=".feature.forward.BootReceiver"
+            android:name="com.tianma.xsmscode.feature.forward.BootReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>

@@ -1,6 +1,7 @@
 package de.robv.android.xposed;
 
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.util.Xml;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -67,9 +68,14 @@ public class XSharedPreferences {
                 if (xi != null) {
                     mRemotePrefs = xi.getRemotePreferences(mPrefFileName);
                     mUseRemote = true;
+                    Log.i("XSmsCode", "XSP: remote prefs OK (" + mPrefFileName + "), "
+                            + (mRemotePrefs == null ? -1 : mRemotePrefs.getAll().size()) + " keys");
+                } else {
+                    Log.w("XSmsCode", "XSP: XposedInterface is NULL, remote prefs unavailable");
                 }
             }
-        } catch (Throwable ignored) {
+        } catch (Throwable t) {
+            Log.e("XSmsCode", "XSP: remote prefs failed", t);
         }
     }
 
