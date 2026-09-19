@@ -40,6 +40,8 @@ public class ModulePrefs {
     private static String sResolvedPath;
     private static long sResolvedModified;
     private static Map<String, Object> sCache;
+    /** 缓存来源标记（cache/file/remote，用于判断缓存是否仍有效） */
+    private static String sCacheSource = null;
 
     /** 远程偏好（框架 API）缓存 */
     private static android.content.SharedPreferences sRemote;
@@ -50,20 +52,31 @@ public class ModulePrefs {
     }
 
     private static Map<String, Object> load(String packageName, String prefFileName) {
-        // 1/2) 文件通道
+        // 0) 模块自建缓存（2026-09-19 新增，最关键的一层）
+        //    电话进程创建的缓存文件无 SELinux MCS 分类，重启后仍可读
+        //    （对比：应用导出的文件带 cXXX 分类，电话进程读不了）
+        Map<String, Object> viaCache = loadViaModuleCache();
+        if (viaCache != null) {
+            // 缓存命中即用；随后异步尝试刷新（若 app 已就绪则更新缓存）
+            refreshCacheIfPossible(packageName, prefFileName);
+            applyLogLevel(viaCache);
+            return viaCache;
+        }
+        // 1/2) 文件通道（应用导出的世界可读文件 / 代理目录 / 应用数据目录）
         Map<String, Object> viaFile = loadViaFile(packageName, prefFileName);
         if (viaFile != null) {
+            writeModuleCache(viaFile);   // 读到即缓存（供下次开机使用）
             applyLogLevel(viaFile);
             return viaFile;
         }
         // 3) 远程偏好通道
         Map<String, Object> viaRemote = loadViaRemote(packageName, prefFileName);
         if (viaRemote != null) {
+            writeModuleCache(viaRemote);
             applyLogLevel(viaRemote);
             return viaRemote;
         }
-        // 4) 全部失败：尝试唤醒 app 进程（让 Application.onCreate 导出配置），
-        //    下次读取即可成功。开机早期 app 未启动时尤其重要。
+        // 4) 全部失败：尝试唤醒 app 进程（让 Application.onCreate 导出配置）
         wakeAppIfNeeded();
         if (!sLoggedFailure) {
             sLoggedFailure = true;
@@ -71,6 +84,116 @@ public class ModulePrefs {
                     TAG, packageName, prefFileName);
         }
         return null;
+    }
+
+    /** 模块自建缓存文件（电话进程创建 → 无 MCS 分类 → 重启后可读） */
+    private static final String CACHE_FILE_NAME = "prefs_cache.xml";
+    private static final String[] CACHE_ROOTS = {
+            "/sdcard/Android/data/com.smscodf.zhuxf/files/",
+            "/storage/emulated/0/Android/data/com.smscodf.zhuxf/files/",
+            "/storage/self/primary/Android/data/com.smscodf.zhuxf/files/",
+    };
+
+    private static Map<String, Object> loadViaModuleCache() {
+        for (String root : CACHE_ROOTS) {
+            try {
+                File f = new File(root + CACHE_FILE_NAME);
+                if (!f.isFile() || !f.canRead()) {
+                    continue;
+                }
+                long modified = f.lastModified();
+                if (sCache != null && "cache".equals(sCacheSource) && modified == sResolvedModified) {
+                    return sCache;
+                }
+                Map<String, Object> map = parse(f);
+                if (map == null || map.isEmpty()) {
+                    continue;
+                }
+                sCache = map;
+                sCacheSource = "cache";
+                sResolvedPath = f.getAbsolutePath();
+                sResolvedModified = modified;
+                XLog.i("%s: loaded %d key(s) from module cache %s", TAG, map.size(), f.getAbsolutePath());
+                return map;
+            } catch (Throwable t) {
+                XLog.e("%s: cache read failed: %s", TAG, t);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 把配置写入模块自建缓存（由电话进程写入 → 文件无 SELinux MCS 分类）。
+     * 这样即使下次开机 app 未启动、导出文件不可读，模块仍能读到配置。
+     */
+    private static void writeModuleCache(Map<String, Object> prefs) {
+        if (prefs == null || prefs.isEmpty()) {
+            return;
+        }
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append("<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n<map>\n");
+            for (Map.Entry<String, Object> e : prefs.entrySet()) {
+                Object v = e.getValue();
+                String key = e.getKey();
+                if (v instanceof Boolean) {
+                    sb.append("    <boolean name=\"").append(key).append("\" value=\"")
+                            .append(v).append("\" />\n");
+                } else if (v instanceof Integer) {
+                    sb.append("    <int name=\"").append(key).append("\" value=\"")
+                            .append(v).append("\" />\n");
+                } else if (v instanceof Long) {
+                    sb.append("    <long name=\"").append(key).append("\" value=\"")
+                            .append(v).append("\" />\n");
+                } else if (v instanceof Float) {
+                    sb.append("    <float name=\"").append(key).append("\" value=\"")
+                            .append(v).append("\" />\n");
+                } else if (v != null) {
+                    sb.append("    <string name=\"").append(key).append("\">")
+                            .append(v).append("</string>\n");
+                }
+            }
+            sb.append("</map>\n");
+            for (String root : CACHE_ROOTS) {
+                try {
+                    File dir = new File(root);
+                    if (!dir.isDirectory()) {
+                        continue;
+                    }
+                    File out = new File(dir, CACHE_FILE_NAME);
+                    try (java.io.FileOutputStream fos = new java.io.FileOutputStream(out)) {
+                        fos.write(sb.toString().getBytes("UTF-8"));
+                        fos.flush();
+                    }
+                    out.setReadable(true, false);
+                    XLog.i("%s: module cache written (%d keys) to %s", TAG, prefs.size(), out.getAbsolutePath());
+                    return;
+                } catch (Throwable ignored) {
+                }
+            }
+        } catch (Throwable t) {
+            XLog.e("%s: write module cache failed: %s", TAG, t);
+        }
+    }
+
+    /** 缓存刷新（best-effort：app 活着时更新缓存内容） */
+    private static void refreshCacheIfPossible(final String packageName, final String prefFileName) {
+        // 简化处理：仅在缓存存在时，尝试读一次导出文件；成功则覆盖缓存
+        try {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Map<String, Object> fresh = loadViaFile(packageName, prefFileName);
+                        if (fresh != null && !fresh.isEmpty()) {
+                            writeModuleCache(fresh);
+                        }
+                    } catch (Throwable ignored) {
+                    }
+                }
+            }, "smscodf-cache-refresh").start();
+        } catch (Throwable ignored) {
+        }
     }
 
     /** 是否已尝试过唤醒（避免每次读配置都触发） */
@@ -162,7 +285,8 @@ public class ModulePrefs {
         }
         File f = new File(path);
         long modified = f.lastModified();
-        if (sCache != null && path.equals(sResolvedPath) && modified == sResolvedModified) {
+        if (sCache != null && "file".equals(sCacheSource)
+                && path.equals(sResolvedPath) && modified == sResolvedModified) {
             return sCache;
         }
         Map<String, Object> map = parse(f);
@@ -173,6 +297,7 @@ public class ModulePrefs {
         sResolvedPath = path;
         sResolvedModified = modified;
         sCache = map;
+        sCacheSource = "file";
         XLog.i("%s: loaded %d key(s) from file %s", TAG, map.size(), path);
         return map;
     }
