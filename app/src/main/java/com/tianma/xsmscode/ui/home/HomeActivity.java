@@ -18,8 +18,10 @@ import androidx.fragment.app.FragmentManager;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.smscodf.zhuxf.R;
+import com.tianma.xsmscode.common.constant.Const;
 import com.tianma.xsmscode.common.constant.PrefConst;
 import com.tianma.xsmscode.common.utils.PackageUtils;
+import com.tianma.xsmscode.common.utils.Utils;
 import com.tianma.xsmscode.ui.app.base.BaseActivity;
 import com.tianma.xsmscode.ui.faq.FaqFragment;
 import com.tianma.xsmscode.ui.record.CodeRecordFragment;
@@ -183,11 +185,19 @@ public class HomeActivity extends BaseActivity {
                 .show();
     }
 
+    /**
+     * 关于软件（2026-09-20）：
+     * 原"EdXposed用户须知"改为本软件介绍，并提供仓库入口。
+     * 菜单项 id 沿用 action_edxposed_users_notice 以保持兼容。
+     */
     void onEdxposedUsersNoticeSelected() {
         new MaterialDialog.Builder(this)
-                .title(R.string.edxposed_users_notice)
-                .content(R.string.edxposed_users_notice_content)
-                .positiveText(R.string.i_know)
+                .title(R.string.about_software_title)
+                .content(R.string.about_software_content)
+                .positiveText(R.string.about_software_repo)
+                .onPositive((dialog, which) ->
+                        Utils.showWebPage(HomeActivity.this, Const.PROJECT_SOURCE_CODE_URL))
+                .negativeText(R.string.i_know)
                 .show();
     }
 

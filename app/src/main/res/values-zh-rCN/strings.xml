@@ -125,6 +125,8 @@
     <string name="alipay_enable_prompt">请先启用支付宝</string>
     <string name="wechat_install_prompt">请先安装微信</string>
     <string name="wechat_enable_prompt">请先启用微信</string>
+    <string name="about_software_title">关于软件</string>
+    <string name="about_software_repo">访问仓库</string>
     <string name="pref_faq_entry">pref_faq_entry</string>
     <string name="pref_faq_entry_title">常见问题</string>
     <string name="pref_privacy_policy_title">隐私政策</string>
@@ -244,8 +246,20 @@
     <!-- taichi users notice end -->
 
     <!-- edxposed users notice -->
-    <string name="edxposed_users_notice">EdXposed用户须知</string>
-    <string name="edxposed_users_notice_content">1. 本模块作用在以下应用中(也就是需要Hook以下应用)：\n\t· 电话服务(com.android.phone)\n\t· Android系统(android)\n\n2. 若模块显示未激活，请在模块管理列表中重新勾选本模块，并重启手机。\n\n3. 若您使用全局模式不生效，则切换为白名单（Xposed Hide 白）模式或者在作用域模式，同时需要将第1点中的应用添加进去。1. 本模块作用在以下应用中(也就是需要Hook以下应用)：\n\t· 电话服务(com.android.phone)\n\t· Android系统(android)\n\n2. 若模块显示未激活，请在模块管理列表中重新勾选本模块，并重启手机。\n\n3. 若您使用全局模式不生效，则切换为白名单（Xposed Hide 白）模式或者在作用域模式，同时需要将第1点中的应用添加进去。</string>
+    <string name="edxposed_users_notice">关于软件</string>
+    <string name="about_software_content">软件开发初衷：
+
+1. 原项目停更年久失修。随着安卓迭代和 LSPosed 框架 API 的升级，已经无法正常使用。
+
+2. 部分环境检测软件已经对原项目进行了特征标记，很容易被检测出环境异常。
+
+3. 个人使用需求，需要短信转发到微信。
+
+基于以上需求，特此在原项目开源代码基础上，结合 AI 编程修复和增强本软件。
+
+本软件已完全重构，支持最新 LSP 框架。在支持原有功能的基础上，支持短信转发。同时采用全新包名，避免被检测。
+
+特此鸣谢原项目作者，感谢开源共享。</string>
     <!-- edxposed users notice end -->
 
     <!-- check update -->

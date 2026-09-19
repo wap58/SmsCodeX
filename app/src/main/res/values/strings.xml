@@ -126,6 +126,8 @@
     <string name="alipay_enable_prompt">Please enable Alipay</string>
     <string name="wechat_install_prompt">Please install Wechat</string>
     <string name="wechat_enable_prompt">Please enable Wechat</string>
+    <string name="about_software_title">About this app</string>
+    <string name="about_software_repo">Visit repository</string>
     <string name="pref_faq_entry">pref_faq_entry</string>
     <string name="pref_faq_entry_title">FAQ</string>
     <string name="pref_privacy_policy_title">Privacy Policy</string>
@@ -245,8 +247,20 @@
     <!-- taichi users notice end -->
 
     <!-- edxposed users notice -->
-    <string name="edxposed_users_notice">EdXposed Users Notice</string>
-    <string name="edxposed_users_notice_content">1. This module should hook these apps：\n\t· Phone Services(com.android.phone)\n\t· Android System(android) \n\n2. If this module is inactive after updating, please re-check this module in module manager list and reboot. \n\n3. If it cannot work in global mode, then try to change to whitelist(Xposed Hide White) mode or scope mode and add the apps above.</string>
+    <string name="edxposed_users_notice">About this app</string>
+    <string name="about_software_content">Why this app was built:
+
+1. The original project had been unmaintained for a long time. With Android updates and LSPosed API changes, it no longer worked properly.
+
+2. Some environment-detection tools have already fingerprinted the original project, so it is easily flagged as an abnormal environment.
+
+3. Personal need: forwarding SMS to WeChat.
+
+Based on the above, this app was rebuilt and enhanced with AI assistance on top of the original open-source code.
+
+This app has been fully refactored and supports the latest LSP framework. Besides the original features, it adds SMS forwarding, and uses a brand-new package name to avoid detection.
+
+Special thanks to the author of the original project for sharing it as open source.</string>
     <!-- edxposed users notice end -->
 
     <!-- check update -->

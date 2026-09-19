@@ -125,6 +125,8 @@
     <string name="alipay_enable_prompt">請先啟用支付寶</string>
     <string name="wechat_install_prompt">請先安裝WeChat</string>
     <string name="wechat_enable_prompt">請先啟用WeChat</string>
+    <string name="about_software_title">關於軟體</string>
+    <string name="about_software_repo">訪問倉庫</string>
     <string name="pref_faq_entry">pref_faq_entry</string>
     <string name="pref_faq_entry_title">常見問題</string>
     <string name="pref_privacy_policy_title">隱私政策</string>
@@ -244,8 +246,20 @@
     <!-- taichi users notice end -->
 
     <!-- edxposed users notice -->
-    <string name="edxposed_users_notice">EdXposed用戶須知</string>
-    <string name="edxposed_users_notice_content">1. 本模塊作用在以下應用中(也就是需要Hook以下應用)：\n\t· 電話服務(com.android.phone)\n\t· Android系統(android) \n\n2. 若模塊顯示未激活，請在模塊管理列表中重新勾選本模塊，並重啟手機。 \n\n3. 若您使用全局模式不生效，則切換為白名單（Xposed Hide 白）模式或者在作用域模式，同時需要將第1點中的應用添加進去。 </string>
+    <string name="edxposed_users_notice">關於軟體</string>
+    <string name="about_software_content">軟體開發初衷：
+
+1. 原專案停更年久失修。隨著安卓迭代和 LSPosed 框架 API 的升級，已經無法正常使用。
+
+2. 部分環境檢測軟體已經對原專案進行了特徵標記，很容易被檢測出環境異常。
+
+3. 個人使用需求，需要簡訊轉發到微信。
+
+基於以上需求，特此在原專案開源程式碼基礎上，結合 AI 程式設計修復和增強本軟體。
+
+本軟體已完全重構，支援最新 LSP 框架。在支援原有功能的基礎上，支援簡訊轉發。同時採用全新套件名，避免被檢測。
+
+特此鳴謝原專案作者，感謝開源共享。</string>
     <!-- edxposed users notice end -->
 
     <!-- check update -->

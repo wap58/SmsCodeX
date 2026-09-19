@@ -19,6 +19,6 @@
 
     <item
         android:id="@+id/action_edxposed_users_notice"
-        android:title="@string/edxposed_users_notice"
+        android:title="@string/about_software_title"
         app:showAsAction="never" />
 </menu>
