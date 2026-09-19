@@ -373,6 +373,22 @@ public class SettingsFragment extends BasePreferenceFragment implements
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         String key = preference.getKey();
+        // 2026-09-19：任何设置变更立即导出配置到世界可读文件，
+        // 使模块侧"下一条短信即生效"（无需退出设置页/重启）。
+        // 注意：新值此刻尚未持久化，故延后一拍再导出。
+        try {
+            final android.content.Context ctx = requireContext();
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        com.tianma.xsmscode.common.utils.PrefsExporter.export(ctx);
+                    } catch (Throwable ignored) {
+                    }
+                }
+            }, 300);
+        } catch (Throwable ignored) {
+        }
         if (PrefConst.KEY_HIDE_LAUNCHER_ICON.equals(key)) {
             mPresenter.hideOrShowLauncherIcon((Boolean) newValue);
         } else if (PrefConst.KEY_ENABLE_FORWARD.equals(key)) {

@@ -50,6 +50,8 @@ public class SmsCodeEntry extends XposedModule {
         try {
             XSharedPreferences xsp = new XSharedPreferences(
                     BuildConfig.APPLICATION_ID, PrefConst.PREF_NAME);
+            // 2026-09-19：级别设置已收敛到 ModulePrefs.applyLogLevel()
+            // （任何一次成功读配置都会校正），此处保留作为早期兜底。
             if (XSPUtils.isVerboseLogMode(xsp)) {
                 XLog.setLogLevel(Log.VERBOSE);
             } else {

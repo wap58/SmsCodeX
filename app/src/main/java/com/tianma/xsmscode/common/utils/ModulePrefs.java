@@ -50,11 +50,13 @@ public class ModulePrefs {
         // 1/2) 文件通道
         Map<String, Object> viaFile = loadViaFile(packageName, prefFileName);
         if (viaFile != null) {
+            applyLogLevel(viaFile);
             return viaFile;
         }
         // 3) 远程偏好通道
         Map<String, Object> viaRemote = loadViaRemote(packageName, prefFileName);
         if (viaRemote != null) {
+            applyLogLevel(viaRemote);
             return viaRemote;
         }
         if (!sLoggedFailure) {
@@ -64,6 +66,31 @@ public class ModulePrefs {
         }
         return null;
     }
+
+    /**
+     * 每次成功加载配置后同步日志级别（2026-09-19 修复）。
+     *
+     * 原实现只在「模块加载」与「短信处理入口」两处设置日志级别：
+     * 开机时 app 进程往往尚未启动、导出文件还没生成 → 读到默认 false →
+     * 级别停留在 INFO，即使随后用户已开启详细日志，DEBUG 也永远不输出。
+     * 现在改为：任何一次成功读到配置都校正一次级别，开关切换后下一条短信即生效。
+     */
+    private static void applyLogLevel(Map<String, Object> prefs) {
+        try {
+            Object v = prefs.get(com.tianma.xsmscode.common.constant.PrefConst.KEY_VERBOSE_LOG_MODE);
+            boolean verbose = v instanceof Boolean ? (Boolean) v : false;
+            if (verbose == sLastVerbose) {
+                return;
+            }
+            sLastVerbose = verbose;
+            XLog.setLogLevel(verbose ? android.util.Log.VERBOSE : com.smscodf.zhuxf.BuildConfig.LOG_LEVEL);
+            XLog.i("%s: log level applied (verbose=%s)", TAG, verbose);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    /** 上次应用的详细日志开关状态（避免重复设置） */
+    private static Boolean sLastVerbose = null;
 
     private static Map<String, Object> loadViaFile(String packageName, String prefFileName) {
         String path = resolvePath(packageName, prefFileName);
