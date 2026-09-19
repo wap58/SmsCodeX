@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 推送加（PushPlus）通道参数页（2026-09-19，官网 pushplus.plus） -->
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:key="@string/pref_forward_pushplus_token"
+            android:summary="@string/forward_pushplus_summary"
+            android:title="@string/forward_pushplus_title"/>
+</PreferenceScreen>

@@ -166,6 +166,39 @@ public final class ChannelSender {
     }
 
     /** 钉钉加签：HmacSHA256(timestamp + "\n" + secret, secret) → Base64 → URL 编码 */
+    /**
+     * 推送加（PushPlus）—— 微信公众号消息推送
+     * 接口文档：http://www.pushplus.plus/doc/guide/api.html
+     * 免费渠道，返回 code==200 视为受理成功（异步发送）。
+     * 标题固定"短信转发"（2026-09-19 用户定稿）。
+     */
+    public static boolean sendPushplus(String token, String content) {
+        if (TextUtils.isEmpty(token)) {
+            return false;
+        }
+        JSONObject body = new JSONObject();
+        try {
+            body.put("token", token.trim());
+            body.put("title", "短信转发");
+            body.put("content", content);
+            body.put("template", "txt");
+        } catch (Exception ignored) {
+        }
+        try {
+            JSONObject r = new JSONObject(post("http://www.pushplus.plus/send", body.toString()));
+            int code = r.optInt("code", -1);
+            if (code != 200) {
+                XLog.e("Pushplus: code=%d msg=%s", code, r.optString("msg"));
+                return false;
+            }
+            XLog.i("Pushplus: accepted, shortCode=%s", r.optString("data"));
+            return true;
+        } catch (Throwable t) {
+            XLog.e("Pushplus: failed %s", t);
+            return false;
+        }
+    }
+
     private static String dingSign(long timestamp, String secret) {
         try {
             String stringToSign = timestamp + "\n" + secret;

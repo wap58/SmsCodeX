@@ -360,6 +360,7 @@
         <item>DingTalk Robot</item>
         <item>Feishu Robot</item>
 <item>Xizhi (WeChat)</item>
+<item>PushPlus (WeChat)</item>
     </string-array>
     <string-array name="forward_channel_values">
         <item>wecom_agent</item>
@@ -367,6 +368,7 @@
         <item>dingtalk</item>
         <item>feishu</item>
         <item>xizhi</item>
+<item>pushplus</item>
     </string-array>
     <string name="forward_killme_autodisabled">Kill switch was turned off automatically</string>
     <string name="pref_forward_channel_title">Forwarding channel</string>
@@ -382,5 +384,8 @@
     <string name="pref_forward_xizhi_key">pref_forward_xizhi_key</string>
     <string name="forward_xizhi_title">Xizhi Key</string>
     <string name="forward_xizhi_summary">Paste your Xizhi Key (get it from xz.qqoq.net)</string>
+    <string name="forward_pushplus_title">PushPlus Token</string>
+    <string name="forward_pushplus_summary">Paste your PushPlus token (get it from pushplus.plus)</string>
     <string name="forward_channel_page_xizhi">Xizhi</string>
+    <string name="forward_channel_page_pushplus">PushPlus</string>
 </resources>

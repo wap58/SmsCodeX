@@ -359,6 +359,7 @@
         <item>钉钉机器人</item>
         <item>飞书机器人</item>
 <item>息知</item>
+<item>推送加</item>
     </string-array>
     <string-array name="forward_channel_values">
         <item>wecom_agent</item>
@@ -366,6 +367,7 @@
         <item>dingtalk</item>
         <item>feishu</item>
         <item>xizhi</item>
+<item>pushplus</item>
     </string-array>
     <string name="forward_killme_autodisabled">已自动关闭自杀开关</string>
     <string name="pref_forward_channel_title">转发通道</string>
@@ -381,5 +383,8 @@
     <string name="pref_forward_xizhi_key">pref_forward_xizhi_key</string>
     <string name="forward_xizhi_title">息知 Key</string>
     <string name="forward_xizhi_summary">粘贴你的息知 Key（官网 xz.qqoq.net 获取）</string>
+    <string name="forward_pushplus_title">推送加 Token</string>
+    <string name="forward_pushplus_summary">粘贴你的推送加 Token（官网 pushplus.plus 获取）</string>
     <string name="forward_channel_page_xizhi">息知</string>
+    <string name="forward_channel_page_pushplus">推送加</string>
 </resources>

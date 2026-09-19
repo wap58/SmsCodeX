@@ -169,6 +169,8 @@ public class DBProvider extends ContentProvider {
                     com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_FEISHU_WEBHOOK, "");
             String xizhiKey = sp == null ? "" : sp.getString(
                     com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_XIZHI_KEY, "");
+            String pushplusToken = sp == null ? "" : sp.getString(
+                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_PUSHPLUS_TOKEN, "");
             String sender = extras == null ? "" : extras.getString("sender", "");
             String body = extras == null ? "" : extras.getString("body", "");
             String code = extras == null ? "" : extras.getString("code", "");
@@ -195,6 +197,9 @@ public class DBProvider extends ContentProvider {
                     break;
                 case "xizhi":
                     selectedOk = !xizhiKey.trim().isEmpty();
+                    break;
+                case "pushplus":
+                    selectedOk = !pushplusToken.trim().isEmpty();
                     break;
                 default:
                     selectedOk = !corpId.trim().isEmpty()
@@ -226,6 +231,9 @@ public class DBProvider extends ContentProvider {
                     break;
                 case "xizhi":
                     ok = com.tianma.xsmscode.feature.forward.ChannelSender.sendXizhi(xizhiKey, content);
+                    break;
+                case "pushplus":
+                    ok = com.tianma.xsmscode.feature.forward.ChannelSender.sendPushplus(pushplusToken, content);
                     break;
                 case "wecom_agent":
                 default:

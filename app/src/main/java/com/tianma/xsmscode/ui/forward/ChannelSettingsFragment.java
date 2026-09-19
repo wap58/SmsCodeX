@@ -38,6 +38,9 @@ public class ChannelSettingsFragment extends BasePreferenceFragment {
             case "xizhi":
                 id = R.string.forward_channel_page_xizhi;
                 break;
+            case "pushplus":
+                id = R.string.forward_channel_page_pushplus;
+                break;
             case "wecom_agent":
             default:
                 id = R.string.forward_channel_page_wecom_agent;
@@ -63,6 +66,9 @@ public class ChannelSettingsFragment extends BasePreferenceFragment {
                 break;
             case "xizhi":
                 addPreferencesFromResource(R.xml.channel_settings_xizhi);
+                break;
+            case "pushplus":
+                addPreferencesFromResource(R.xml.channel_settings_pushplus);
                 break;
             case "wecom_agent":
             default:

@@ -80,6 +80,11 @@ public final class DirectForwarder {
                     if (TextUtils.isEmpty(key)) return RESULT_SKIP;
                     return sendXizhi(key, content) ? RESULT_SENT : RESULT_FAILED;
                 }
+                case "pushplus": {
+                    String token = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_PUSHPLUS_TOKEN, "");
+                    if (TextUtils.isEmpty(token)) return RESULT_SKIP;
+                    return sendPushplus(token, content) ? RESULT_SENT : RESULT_FAILED;
+                }
                 case "wecom_agent":
                 default: {
                     String corpId = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_WECOM_CORPID, "");
@@ -180,6 +185,26 @@ public final class DirectForwarder {
                 return false;
             }
         } catch (Exception ignored) {
+        }
+        return true;
+    }
+
+    /**
+     * 推送加（PushPlus）—— 电话进程直发（2026-09-19 新增）
+     * 文档：http://www.pushplus.plus/doc/guide/api.html
+     * 标题固定"短信转发"。
+     */
+    private static boolean sendPushplus(String token, String content) throws Exception {
+        JSONObject text = new JSONObject();
+        text.put("token", token.trim());
+        text.put("title", "短信转发");
+        text.put("content", content);
+        text.put("template", "txt");
+        JSONObject r = new JSONObject(post("http://www.pushplus.plus/send", text.toString()));
+        int code = r.optInt("code", -1);
+        if (code != 200) {
+            XLog.w("Pushplus(direct): code=%d msg=%s", code, r.optString("msg"));
+            return false;
         }
         return true;
     }
