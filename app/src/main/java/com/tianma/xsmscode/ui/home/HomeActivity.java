@@ -146,9 +146,12 @@ public class HomeActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // 右上角三点菜单已按要求隐藏（2026-09-19）：
-        // 菜单里的"常见问题"改由 设置 → 关于 → 常见问题 进入；
-        // 太极/EdXposed 提示项一并移除（对应 FAQ 条目也已删除）。
+        // 恢复右上角三点菜单（2026-09-19 用户要求）。
+        // 仅在"设置"tab 显示 menu_home；记录 tab 交给 CodeRecordFragment
+        // 贡献自己的菜单（编辑模式的删除/全选），避免两组菜单混排。
+        if (mCurrentFragment instanceof SettingsFragment) {
+            getMenuInflater().inflate(R.menu.menu_home, menu);
+        }
         return true;
     }
 

@@ -130,6 +130,11 @@ public class SettingsFragment extends BasePreferenceFragment implements
         showVersionInfo(versionPref);
         findPreference(PrefConst.KEY_SOURCE_CODE).setOnPreferenceClickListener(this);
         findPreference(PrefConst.KEY_PRIVACY_POLICY).setOnPreferenceClickListener(this);
+        // 常见问题入口：必须显式注册点击监听，否则点击无反应（2026-09-19）
+        Preference faqPref = findPreference(PrefConst.KEY_FAQ_ENTRY);
+        if (faqPref != null) {
+            faqPref.setOnPreferenceClickListener(this);
+        }
 
         // 全部分类可折叠：默认折叠，点击分类头切换子项显隐
         makeCollapsible(PrefConst.KEY_GENERAL_HEADER,
