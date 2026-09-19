@@ -143,7 +143,8 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 PrefConst.KEY_SHOW_CODE_NOTIFICATION, PrefConst.KEY_AUTO_CANCEL_CODE_NOTIFICATION,
                 PrefConst.KEY_NOTIFICATION_RETENTION_TIME);
         makeCollapsible(PrefConst.KEY_FORWARD_HEADER,
-                PrefConst.KEY_ENABLE_FORWARD, PrefConst.KEY_FORWARD_CHANNEL_TYPE,
+                PrefConst.KEY_ENABLE_FORWARD, PrefConst.KEY_FORWARD_SCOPE,
+                PrefConst.KEY_FORWARD_CHANNEL_TYPE,
                 PrefConst.KEY_FORWARD_CHANNEL_CONFIG);
         // "通道参数"入口显式绑定点击监听（2026-09-16：用户反馈点击无反应，不再依赖隐式事件链）
         Preference cfgEntry = findPreference(PrefConst.KEY_FORWARD_CHANNEL_CONFIG);

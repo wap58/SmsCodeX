@@ -312,7 +312,7 @@
     <string name="pref_about_header_summary">版本、源码与隐私政策</string>
     <string name="pref_forward_title">短信转发</string>
     <string name="pref_forward_header_summary">转发开关与通道设置</string>
-    <string name="pref_enable_forward_title">转发开启</string>
+    <string name="pref_enable_forward_title">转发开关</string>
     <string name="pref_enable_forward_summary">实时转发短信到所选通道，范围见下方设置</string>
     <string name="pref_forward_header">pref_forward_header</string>
     <string name="pref_enable_forward">pref_enable_forward</string>

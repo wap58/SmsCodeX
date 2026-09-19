@@ -312,7 +312,7 @@
     <string name="pref_about_header_summary">版本、原始碼與隱私政策</string>
     <string name="pref_forward_title">簡訊轉發</string>
     <string name="pref_forward_header_summary">轉發開關與通道設置</string>
-    <string name="pref_enable_forward_title">轉發開啟</string>
+    <string name="pref_enable_forward_title">轉發開關</string>
     <string name="pref_enable_forward_summary">即時轉發簡訊到所選通道，範圍見下方設定</string>
     <string name="pref_forward_header">pref_forward_header</string>
     <string name="pref_enable_forward">pref_enable_forward</string>

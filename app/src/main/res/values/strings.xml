@@ -313,7 +313,7 @@
     <string name="pref_about_header_summary">Version, source &amp; privacy</string>
     <string name="pref_forward_title">SMS Forwarding</string>
     <string name="pref_forward_header_summary">Forward switch &amp; channel</string>
-    <string name="pref_enable_forward_title">Enable forwarding</string>
+    <string name="pref_enable_forward_title">Forwarding switch</string>
     <string name="pref_enable_forward_summary">Forward incoming SMS to the selected channel. Scope is set below.</string>
     <string name="pref_forward_header">pref_forward_header</string>
     <string name="pref_enable_forward">pref_enable_forward</string>
