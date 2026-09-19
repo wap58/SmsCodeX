@@ -68,50 +68,6 @@ public class SettingsFragment extends BasePreferenceFragment implements
     public SettingsFragment() {
     }
 
-    /**
-     * 拦截"转发通道"的弹窗，改用自绘圆角弹窗（2026-09-19）。
-     * <p>
-     * 其余 preference 一律走 super，行为与原来完全一致——只改这一个。
-     * <p>
-     * 原因：androidx.preference 默认弹窗背景取自 abc_dialog_material_background
-     * （9-patch，圆角极小），无法做成与"通道参数"弹窗一致的 20dp 圆角。
-     */
-    @Override
-    public void onDisplayPreferenceDialog(Preference preference) {
-        if (preference instanceof androidx.preference.ListPreference
-                && PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(preference.getKey())) {
-            androidx.preference.ListPreference lp = (androidx.preference.ListPreference) preference;
-            com.tianma.xsmscode.ui.forward.ForwardChannelDialog dialog =
-                    com.tianma.xsmscode.ui.forward.ForwardChannelDialog.newInstance(
-                            lp.getTitle() == null ? null : lp.getTitle().toString(),
-                            toStringArray(lp.getEntries()),
-                            toStringArray(lp.getEntryValues()),
-                            lp.getValue());
-            // 选中后：持久化 + 通知原 ListPreference（保留既有回调链，摘要与"通道参数"行照常刷新）
-            dialog.setOnChannelPickedListener(value -> {
-                lp.setValue(value);
-                if (lp instanceof com.tianma.xsmscode.ui.forward.ForwardChannelListPreference) {
-                    ((com.tianma.xsmscode.ui.forward.ForwardChannelListPreference) lp)
-                            .notifyChannelChanged();
-                }
-            });
-            dialog.show(getChildFragmentManager(), "ForwardChannelDialog");
-            return;
-        }
-        super.onDisplayPreferenceDialog(preference);
-    }
-
-    private static String[] toStringArray(CharSequence[] src) {
-        if (src == null) {
-            return new String[0];
-        }
-        String[] out = new String[src.length];
-        for (int i = 0; i < src.length; i++) {
-            out[i] = src[i] == null ? null : src[i].toString();
-        }
-        return out;
-    }
-
     public static SettingsFragment newInstance() {
         return newInstance(null);
     }
@@ -478,9 +434,45 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 handled = true;
             }
         }
+        // "转发通道"改用自绘圆角弹窗（2026-09-19）：
+        // androidx.preference 默认弹窗背景取自 abc_dialog_material_background
+        // （9-patch，圆角极小），无法做成与"通道参数"弹窗一致的 20dp 圆角。
+        // 只拦截这一个 key，其余 preference 行为不变。
+        if (!handled && preference instanceof androidx.preference.ListPreference
+                && PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(preference.getKey())) {
+            androidx.preference.ListPreference lp = (androidx.preference.ListPreference) preference;
+            com.tianma.xsmscode.ui.forward.ForwardChannelDialog dialog =
+                    com.tianma.xsmscode.ui.forward.ForwardChannelDialog.newInstance(
+                            lp.getTitle() == null ? null : lp.getTitle().toString(),
+                            toStringArray(lp.getEntries()),
+                            toStringArray(lp.getEntryValues()),
+                            lp.getValue());
+            // 选中后持久化并通知原 ListPreference，
+            // 保留既有回调链（摘要与"通道参数"行照常刷新）
+            dialog.setOnChannelPickedListener(value -> {
+                lp.setValue(value);
+                if (lp instanceof com.tianma.xsmscode.ui.forward.ForwardChannelListPreference) {
+                    ((com.tianma.xsmscode.ui.forward.ForwardChannelListPreference) lp)
+                            .notifyChannelChanged();
+                }
+            });
+            dialog.show(getChildFragmentManager(), "ForwardChannelDialog");
+            handled = true;
+        }
         if (!handled) {
             super.onDisplayPreferenceDialog(preference);
         }
+    }
+
+    private static String[] toStringArray(CharSequence[] src) {
+        if (src == null) {
+            return new String[0];
+        }
+        String[] out = new String[src.length];
+        for (int i = 0; i < src.length; i++) {
+            out[i] = src[i] == null ? null : src[i].toString();
+        }
+        return out;
     }
 
     private void initRecordEntryPreference(Preference preference) {
