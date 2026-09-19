@@ -275,23 +275,59 @@
     <!-- faq -->
     <string-array name="question_list">
         <item>Module inactive after being updated.</item>
-        <item>empty</item>
-        <item>empty</item>
-        <item>empty</item>
-        <item>empty</item>
-        <item>Which Rom is this module suitable for?</item>
+        <item>Auto input is incomplete, what should I do?</item>
+        <item>The module stopped working, what should I do?</item>
         <item>Why can\'t it mark SMS as read or delete SMS?</item>
+        <item>Which Rom is this module suitable for?</item>
         <item>What\'s the original intention of this App?</item>
+        <item>How to set up the WeCom Agent channel?</item>
+        <item>How to set up the WeCom group robot channel?</item>
+        <item>How to set up the DingTalk robot channel?</item>
+        <item>How to set up the Feishu robot channel?</item>
+        <item>How to set up the Xizhi channel?</item>
+        <item>How to set up the PushPlus channel?</item>
     </string-array>
     <string-array name="answer_list">
         <item>Re-check this module in module list, and re-launch this app, and reboot system if it\'s necessary</item>
-        <item>empty</item>
-        <item>empty</item>
-        <item>empty</item>
-        <item>empty</item>
-        <item>It\'s suitable for AOSP Rom, may not be suitable for other third-party heavily customized Rom.</item>
+        <item>This is usually caused by focus being taken over during auto input. Common solutions: check whether any clipboard-monitoring app is running in the background (e.g. fv floating ball), then stop its clipboard monitoring, or turn off the "Copy to clipboard" option of this module.</item>
+        <item>1. Because it uses ContentProvider, please add this app to the whitelist of app-control tools (Blackhole, App Manager, Greenify, etc.).
+
+2. Check whether the module\'s ContentProvider is disabled by component-control tools (Blocker, etc.).
+
+3. Check whether the SMS verification-code protection switch is enabled (Huawei, OPPO and other Chinese Roms).
+
+4. Contact the developer and report the issue.</item>
         <item>If the system default SMS app uses its own SMS database instead of the system\'s, it will not take effect for marking SMS as read or deleting SMS. If this happens, it may not work well on your device.</item>
+        <item>It\'s suitable for AOSP Rom, may not be suitable for other third-party heavily customized Rom.</item>
         <item>Don\'t be evil. Green Android.</item>
+        <item>1. Corp ID: WeCom admin console -> "My Enterprise" -> Enterprise Info; shown at the bottom.
+
+2. AgentId &amp; Secret: admin console -> "App Management" -> Self-built -> create an app; both are on the app detail page.
+
+3. ToUser: enterprise member accounts (UserID), separated by |; @all for everyone.
+
+4. Fill them in "Channel parameters" and select "WeCom Agent" as the forwarding channel.</item>
+        <item>1. In a WeCom group, tap "..." at the top right -> Group Robot -> Add Robot.
+
+2. Copy its Webhook URL (like qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxx).
+
+3. Paste it in "Channel parameters" and select "WeCom Robot" as the forwarding channel.</item>
+        <item>1. In a DingTalk group: Group Settings -> Smart Group Assistant -> Add Robot -> Custom.
+
+2. If you choose "Sign" under security settings, copy the secret into "DingTalk sign secret"; if you choose "Custom keyword", make sure the keyword contains the verification-code word.
+
+3. Copy the Webhook URL into "Channel parameters" and select "DingTalk Robot".</item>
+        <item>1. In a Feishu group: Group Settings -> Group Robot -> Add Robot -> Custom Robot.
+
+2. Copy its Webhook URL (like open.feishu.cn/open-apis/bot/v2/hook/xxx).
+
+3. Paste it in "Channel parameters" and select "Feishu Robot".</item>
+        <item>1. Visit xz.qqoq.net, register and get your Key.
+
+2. Paste the Key in "Channel parameters" and select "Xizhi".</item>
+        <item>1. Visit pushplus.plus, register and get your Token.
+
+2. Paste the Token in "Channel parameters" and select "PushPlus".</item>
     </string-array>
     <!-- faq end -->
 

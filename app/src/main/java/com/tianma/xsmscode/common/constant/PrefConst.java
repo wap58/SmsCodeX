@@ -56,8 +56,7 @@ public interface PrefConst {
 
 
     // Code Record
-    String KEY_ENABLE_CODE_RECORDS = "pref_enable_code_records";
-    int MAX_SMS_RECORDS_COUNT_DEFAULT = 20;
+    String KEY_ENABLE_CODE_RECORDS = "pref_enable_code_records";    int MAX_SMS_RECORDS_COUNT_DEFAULT = 20;
     String KEY_ENTRY_CODE_RECORDS = "pref_entry_code_records";
 
     // Code Rules
@@ -91,6 +90,8 @@ public interface PrefConst {
     String KEY_DONATE_BY_ALIPAY = "pref_donate_by_alipay";
     String KEY_PRIVACY_POLICY = "pref_privacy_policy";
     String KEY_PRIVACY_POLICY_ACCEPTED = "pref_privacy_policy_accepted";
+    /** 常见问题入口（2026-09-19）：三点菜单隐藏后，FAQ 改由 关于 组进入 */
+    String KEY_FAQ_ENTRY = "pref_faq_entry";
 
     /** 模块在电话进程加载时报到时间戳（elapsedRealtime，开机归零），用于 UI 激活态判定 */
     String KEY_MODULE_ACTIVE_ELAPSED = "module_active_elapsed";

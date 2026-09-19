@@ -282,4 +282,12 @@
         android:key="@string/pref_privacy_policy"
         android:title="@string/pref_privacy_policy_title"/>
 
+    <!-- 常见问题入口（2026-09-19）：三点菜单隐藏后，FAQ 改从这里进 -->
+    <Preference
+        android:icon="@drawable/ic_help"
+        android:key="@string/pref_faq_entry"
+        android:persistent="false"
+        android:selectable="true"
+        android:title="@string/pref_faq_entry_title"/>
+
 </PreferenceScreen>

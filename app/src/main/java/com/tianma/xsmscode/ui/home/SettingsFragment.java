@@ -180,7 +180,8 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 PrefConst.KEY_MARK_AS_READ, PrefConst.KEY_DELETE_SMS, PrefConst.KEY_KILL_ME,
                 PrefConst.KEY_VERBOSE_LOG_MODE);
         makeCollapsible(PrefConst.KEY_ABOUT,
-                PrefConst.KEY_VERSION, PrefConst.KEY_SOURCE_CODE, PrefConst.KEY_PRIVACY_POLICY);
+                PrefConst.KEY_VERSION, PrefConst.KEY_SOURCE_CODE, PrefConst.KEY_PRIVACY_POLICY,
+                PrefConst.KEY_FAQ_ENTRY);
         // about group end
 
         // 全页图标按主题强调色着色：原生图标为纯黑填充，深色主题下不可见（2026-09-15）
@@ -350,6 +351,11 @@ public class SettingsFragment extends BasePreferenceFragment implements
             mPresenter.checkUpdate();
         } else if(PrefConst.KEY_PRIVACY_POLICY.equals(key)) {
             showPrivacyPolicy();
+        } else if (PrefConst.KEY_FAQ_ENTRY.equals(key)) {
+            // 常见问题（2026-09-19）：三点菜单隐藏后改由此进入
+            if (mActivity != null) {
+                mActivity.openFaq();
+            }
         } else {
             return false;
         }

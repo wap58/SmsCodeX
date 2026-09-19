@@ -146,23 +146,18 @@ public class HomeActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // 恢复右上角三点菜单（2026-09-19）：
-        // 此前本方法只 return true、从不 inflate 菜单，导致三个点消失。
-        // 仅在"设置"tab 显示 menu_home；记录 tab 交给 CodeRecordFragment
-        // 自己贡献菜单（编辑模式的删除/全选），避免两组菜单混在一起。
-        if (isSettingsTab()) {
-            getMenuInflater().inflate(R.menu.menu_home, menu);
-        }
-        // 返回 true 以允许 tab 内 Fragment（如记录页的清空/导出菜单）贡献菜单项
+        // 右上角三点菜单已按要求隐藏（2026-09-19）：
+        // 菜单里的"常见问题"改由 设置 → 关于 → 常见问题 进入；
+        // 太极/EdXposed 提示项一并移除（对应 FAQ 条目也已删除）。
         return true;
     }
 
-    /** 当前显示的是否为"设置"tab */
-    private boolean isSettingsTab() {
-        return mCurrentFragment instanceof SettingsFragment;
+    private void onFAQSelected() {
+        openFaq();
     }
 
-    private void onFAQSelected() {
+    /** 打开常见问题页（2026-09-19：三点菜单隐藏后，由 设置 → 关于 → 常见问题 调用） */
+    void openFaq() {
         FaqFragment faqFragment = FaqFragment.newInstance();
         mFragmentManager
                 .beginTransaction()
