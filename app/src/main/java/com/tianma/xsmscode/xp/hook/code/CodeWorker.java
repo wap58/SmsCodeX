@@ -53,10 +53,16 @@ public class CodeWorker {
 
     public ParseResult parse() {
         // 2026-09-18：配置读取诊断（排查"模块读到默认值"用）
-        XLog.i("Config diag: enabled=%s block=%s copy=%s autoCancel=%s showNotif=%s autoInput=%s",
+        // 2026-09-19：加入 channel 与 version——用于识别"运行中的代码不认新通道"
+        // （典型场景：装新版未重启，电话进程仍是旧 dex，新通道落到 default 分支）
+        String diagChannel = com.tianma.xsmscode.common.utils.ModulePrefs.getString(
+                BuildConfig.APPLICATION_ID, PrefConst.PREF_NAME,
+                PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
+        XLog.i("Config diag: enabled=%s block=%s copy=%s autoCancel=%s showNotif=%s autoInput=%s channel=%s version=%s(%d)",
                 XSPUtils.isEnabled(xsp), XSPUtils.blockSmsEnabled(xsp),
                 XSPUtils.copyToClipboardEnabled(xsp), XSPUtils.autoCancelCodeNotification(xsp),
-                XSPUtils.showCodeNotification(xsp), XSPUtils.autoInputCodeEnabled(xsp));
+                XSPUtils.showCodeNotification(xsp), XSPUtils.autoInputCodeEnabled(xsp),
+                diagChannel, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
         if (!XSPUtils.isEnabled(xsp)) {
             XLog.i("SmsCodeX disabled, exiting");
             return null;

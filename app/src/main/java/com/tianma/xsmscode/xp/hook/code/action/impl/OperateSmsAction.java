@@ -39,6 +39,13 @@ public class OperateSmsAction extends CallableAction {
     public Bundle action() {
         String sender = mSmsMsg.getSender();
         String body = mSmsMsg.getBody();
+        // 2026-09-19：拦截已开启时，短信在拦截阶段就被从收件箱移除
+        // （SmsHandlerHook.deleteRawTableAndSendMessage），此处再删必然找不到
+        // 目标而打出误导性的 "Delete SMS failed"。直接跳过，日志更干净。
+        if (XSPUtils.blockSmsEnabled(xsp)) {
+            XLog.d("SMS already removed by blocking, skip operate action");
+            return null;
+        }
         if (XSPUtils.deleteSmsEnabled(xsp)) {
             deleteSms(sender, body);
         } else if (XSPUtils.markAsReadEnabled(xsp)) {
