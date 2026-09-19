@@ -15,28 +15,16 @@
 
     <!--
         通道参数弹窗主题（2026-09-19）：
-        1. 必须继承 Theme.Cyanea.*，否则 Cyanea 动态配色失效（弹窗会是 Material 默认青色）；
-        2. 必须带 preferenceTheme，否则 PreferenceFragmentCompat 抛
-           IllegalStateException: Must specify preferenceTheme in theme；
-        3. windowIsFloating 让它成为浮层弹窗（而非整页 Activity）。
+        1. 继承 AppNoActionBarTheme 以跟随应用实际主题（深色/浅色）；
+        2. windowIsFloating 让它成为浮层弹窗（而非整页 Activity）；
+        3. 窗口背景透明，圆角由卡片自身提供。
+        注意：弹窗内的文字/背景色一律由 ChannelSettingsDialog 运行时按 Cyanea
+        配置显式赋值——本项目中通过主题属性取色会回退失败（2026-09-15 已实测）。
     -->
     <style name="Theme.XsmsCode.ChannelDialog" parent="AppNoActionBarTheme">
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
-    </style>
-
-    <!-- 通道参数弹窗内的字段文字（2026-09-19）
-         颜色由 ChannelSettingsDialog 在运行时按 Cyanea 配置显式设置：
-         Cyanea 主题下解析 ?attr/textColorPrimary 会回退失败（项目 2026-09-15 已实测），
-         所以这里只给占位值，实际颜色以代码赋值为准。 -->
-    <style name="ChannelDialog.FieldTitle">
-        <item name="android:textColor">#FF000000</item>
-    </style>
-
-    <style name="ChannelDialog.FieldInput">
-        <item name="android:textColor">#FF000000</item>
-        <item name="android:textColorHint">#66000000</item>
     </style>
 
     <style name="MyPreferenceStyle" parent="@style/PreferenceThemeOverlay.v14.Material">
