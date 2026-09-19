@@ -22,6 +22,7 @@ import com.tianma.xsmscode.common.constant.Const;
 import com.tianma.xsmscode.common.constant.PrefConst;
 import com.tianma.xsmscode.common.utils.PackageUtils;
 import com.tianma.xsmscode.common.utils.Utils;
+import com.tianma.xsmscode.xp.hook.ScopeReporter;
 import com.tianma.xsmscode.ui.app.base.BaseActivity;
 import com.tianma.xsmscode.ui.faq.FaqFragment;
 import com.tianma.xsmscode.ui.record.CodeRecordFragment;
@@ -116,6 +117,39 @@ public class HomeActivity extends BaseActivity {
             actionBar.setHomeButtonEnabled(hasStack);
             actionBar.setDisplayHomeAsUpEnabled(hasStack);
         }
+        refreshActivationStatus();
+    }
+
+    /**
+     * 刷新标题栏的激活状态（2026-09-20）。
+     *
+     * <p>判据：模块是否被注入到两个必需作用域——系统框架(android) 与
+     * 电话服务(com.android.phone)。两者各自写报到文件，此处读取。
+     *
+     * <p>不用 LSPosed 勾选状态：/data/adb 为 0700 root:root，应用进程读不到。
+     * 且"勾选"不等于"注入成功"（版本不兼容时勾了也不生效），
+     * 报到文件反映的是真实注入结果。
+     */
+    private void refreshActivationStatus() {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar == null) {
+            return;
+        }
+        boolean systemOk = ScopeReporter.isScopeReported(PrefConst.ACTIVE_FILE_SYSTEM);
+        boolean phoneOk = ScopeReporter.isScopeReported(PrefConst.ACTIVE_FILE_PHONE);
+        boolean activated = systemOk && phoneOk;
+
+        String text;
+        if (activated) {
+            text = getString(R.string.module_status_active);
+        } else if (systemOk) {
+            text = getString(R.string.module_status_phone_missing);
+        } else if (phoneOk) {
+            text = getString(R.string.module_status_system_missing);
+        } else {
+            text = getString(R.string.module_status_inactive);
+        }
+        actionBar.setSubtitle(text);
     }
 
     @Override
@@ -203,15 +237,16 @@ public class HomeActivity extends BaseActivity {
 
     private void checkModuleActivationStatus() {
         Handler handler = new Handler(Looper.getMainLooper());
-        handler.postDelayed(() -> {
-            if (isFinishing()) {
-                return;
-            }
-
-            // 激活态显示已按用户决定移除：静态作用域模块不会被注入自身进程，
-            // 自 hook 检测在此框架下恒为"未激活"，与真实功能状态无关，徒增困惑。
-            mToolbar.setTitle(titleFor(mCurrentFragment));
-        }, 1000L);
+        // 报到由被 hook 的进程异步写入，app 启动时可能尚未落盘。
+        // 分几次复查：2s / 5s / 10s，避免用户看到"未激活"就一直不变。
+        long[] delays = {2000L, 5000L, 10000L};
+        for (long delay : delays) {
+            handler.postDelayed(() -> {
+                if (!isFinishing()) {
+                    refreshActivationStatus();
+                }
+            }, delay);
+        }
     }
 
     @SuppressLint("WorldReadableFiles")

@@ -56,6 +56,9 @@ public class PermissionGranterHook extends BaseHook {
                 new PackageManagerServiceHook(classLoader).startHook();
             }
             XLog.i("PermissionGranter: hooks installed");
+            // 系统框架作用域报到（2026-09-20）：供 UI 显示激活态。
+            // 此处无 Context，故写文件而非走 Provider（见 ScopeReporter 注释）。
+            ScopeReporter.reportSystem();
         } catch (Throwable t) {
             XLog.e("PermissionGranter failed", t);
         }
