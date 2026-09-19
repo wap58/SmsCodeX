@@ -4,6 +4,7 @@ import android.os.Build;
 
 import com.tianma.xsmscode.common.utils.XLog;
 import com.tianma.xsmscode.xp.hook.BaseHook;
+import com.tianma.xsmscode.xp.hook.ScopeReporter;
 
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
