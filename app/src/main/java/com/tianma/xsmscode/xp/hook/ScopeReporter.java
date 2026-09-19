@@ -42,6 +42,44 @@ public final class ScopeReporter {
     }
 
     /**
+     * 电话进程启动时补报一次（2026-09-20）。
+     *
+     * <p>时序问题：电话进程可能早于 system_server 完成报到，
+     * 此时回传的 system 值为 -1，导致 UI 显示"系统框架未激活"。
+     * 故在电话进程内延迟重试若干次，直到拿到 system 值或超时。
+     */
+    public static void reportPhoneWithRetry(final Context context) {
+        if (context == null) {
+            return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 6; i++) {
+                    try {
+                        io.github.libxposed.api.XposedInterface xi =
+                                de.robv.android.xposed.XposedBridge.getXposedInterface();
+                        long systemWall = readSystemReport(xi);
+                        reportPhone(context, xi);
+                        if (systemWall > 0) {
+                            XLog.i("%s: retry %d got systemWall=%d, done", TAG, i + 1, systemWall);
+                            return;
+                        }
+                    } catch (Throwable t) {
+                        XLog.e("%s: retry %d failed: %s", TAG, i + 1, t);
+                    }
+                    try {
+                        Thread.sleep(3000L);
+                    } catch (InterruptedException ignored) {
+                        return;
+                    }
+                }
+                XLog.w("%s: retries exhausted, system scope value still missing", TAG);
+            }
+        }, "smscodf-scope-retry").start();
+    }
+
+    /**
      * 报到电话服务作用域（有 Context，走 Provider）。
      *
      * @param xi 可传 null；若传入框架接口，会顺带把 system 侧的报到时间一并回传，

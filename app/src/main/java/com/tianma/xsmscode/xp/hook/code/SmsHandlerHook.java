@@ -276,7 +276,10 @@ public class SmsHandlerHook extends BaseHook {
             pingModuleActive();
             // 电话服务作用域报到（2026-09-20）：此处已拿到电话进程 Context，
             // 走 Provider 由 app 进程代写 SharedPreferences（模块进程无写文件权限）
-            com.tianma.xsmscode.xp.hook.ScopeReporter.reportPhone(mPhoneContext, null);
+            // 顺带把 system 侧的报到值回传给 app（电话进程能读 remote prefs，
+            // app 进程读不到——模块自身通常不在作用域内）。
+            // 带重试：电话进程可能早于 system_server 报到，需等其写入后再回传。
+            com.tianma.xsmscode.xp.hook.ScopeReporter.reportPhoneWithRetry(mPhoneContext);
         }
     }
 
