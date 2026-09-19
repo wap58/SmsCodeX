@@ -46,8 +46,8 @@ public class ChannelSettingsDialog extends DialogFragment {
         return dialog;
     }
 
-    /** 统一的弹出入口，内部做重复弹出保护 */
-    public static void show(@Nullable FragmentManager fm, String channel) {
+    /** 统一的弹出入口，内部做重复弹出保护（名字避开父类 DialogFragment.show） */
+    public static void showDialog(@Nullable FragmentManager fm, String channel) {
         if (fm == null) {
             return;
         }
