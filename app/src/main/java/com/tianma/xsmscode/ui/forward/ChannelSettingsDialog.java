@@ -167,7 +167,12 @@ public class ChannelSettingsDialog extends AppCompatDialogFragment {
         LinearLayout fieldsBox = view.findViewById(R.id.channel_settings_dialog_fields);
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(requireContext());
-        LayoutInflater inflater = LayoutInflater.from(requireContext());
+        // 必须用弹窗主题的 context 来 inflate 字段行：
+        // requireContext() 是 Activity 的 context（深色主题），用它解析 ?attr/textColorPrimary
+        // 会得到白色文字，画在白色卡片上就完全看不见了。
+        android.view.ContextThemeWrapper themed =
+                new android.view.ContextThemeWrapper(requireContext(), R.style.Theme_XsmsCode_ChannelDialog);
+        LayoutInflater inflater = LayoutInflater.from(themed);
 
         for (Field field : mFields) {
             View row = inflater.inflate(R.layout.item_channel_field, fieldsBox, false);

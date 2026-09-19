@@ -20,7 +20,7 @@
            IllegalStateException: Must specify preferenceTheme in theme；
         3. windowIsFloating 让它成为浮层弹窗（而非整页 Activity）。
     -->
-    <style name="Theme.XsmsCode.ChannelDialog" parent="Theme.Cyanea.Light.NoActionBar">
+    <style name="Theme.XsmsCode.ChannelDialog" parent="AppNoActionBarTheme">
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
