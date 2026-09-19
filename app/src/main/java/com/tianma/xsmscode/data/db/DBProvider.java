@@ -129,7 +129,7 @@ public class DBProvider extends ContentProvider {
                 }
                 ed.apply();
                 result.putString("scope", scope);
-                XLog.i("DBProvider: module_ping from uid=%d -> scope=%s", uid, scope);
+                android.util.Log.i("XSmsCode", "DBProvider: module_ping from uid=" + uid + " -> scope=" + scope);
             }
             result.putBoolean("ok", true);
             return result;
@@ -169,8 +169,8 @@ public class DBProvider extends ContentProvider {
                         systemWall);
             }
             ed.apply();
-            XLog.i("DBProvider: scope_report uid=%d phone=%d system=%d",
-                    callingUid, phoneWall, systemWall);
+            android.util.Log.i("XSmsCode", "DBProvider: scope_report uid=" + callingUid
+                    + " phone=" + phoneWall + " system=" + systemWall);
             result.putBoolean("ok", true);
             return result;
         }
