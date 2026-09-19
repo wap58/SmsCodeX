@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 通道参数弹窗里的单个字段：标题 + 输入框 + 下划线 -->
+<!-- 通道参数弹窗里的单个字段：标题 + 输入框 + 下划线
+     文字颜色不写死，由 ChannelSettingsDialog 运行时按 Cyanea 配置赋值 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -10,14 +11,15 @@
 
     <TextView
         android:id="@+id/channel_field_title"
+        style="@style/ChannelDialog.FieldTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="?android:attr/textColorPrimary"
         android:textSize="14sp"
         android:textStyle="bold" />
 
     <EditText
         android:id="@+id/channel_field_input"
+        style="@style/ChannelDialog.FieldInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
@@ -27,12 +29,10 @@
         android:maxLines="1"
         android:paddingTop="4dp"
         android:paddingBottom="8dp"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textColorHint="?android:attr/textColorHint"
         android:textSize="14sp" />
 
     <View
+        android:id="@+id/channel_field_divider"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="?android:attr/listDivider" />
+        android:layout_height="1dp" />
 </LinearLayout>

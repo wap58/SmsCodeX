@@ -2,6 +2,7 @@ package com.tianma.xsmscode.ui.forward;
 
 import android.app.Dialog;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -160,32 +161,62 @@ public class ChannelSettingsDialog extends AppCompatDialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // 颜色一律从 Cyanea 配置显式取值：
+        // 本项目 Cyanea 主题下解析 ?attr/textColorPrimary / ?android:attr/colorBackgroundFloating
+        // 会回退失败（SettingsFragment 2026-09-15 已实测），导致白底白字看不见。
+        int bgColor = Color.WHITE;
+        int textColor = Color.BLACK;
+        int hintColor = 0x66000000;
+        int dividerColor = 0x22000000;
+        int accentColor = Color.BLACK;
+        try {
+            com.jaredrummler.cyanea.Cyanea cyanea = com.jaredrummler.cyanea.Cyanea.getInstance();
+            bgColor = cyanea.getBackgroundColor();
+            textColor = cyanea.isDark() ? Color.WHITE : 0xFF212121;
+            hintColor = cyanea.isDark() ? 0x66FFFFFF : 0x66000000;
+            dividerColor = cyanea.isDark() ? 0x22FFFFFF : 0x22000000;
+            accentColor = cyanea.getAccent();
+        } catch (Throwable ignored) {
+        }
+
         TextView title = view.findViewById(R.id.channel_settings_dialog_title);
         title.setText(titleFor(mChannel));
+        title.setTextColor(textColor);
+
+        com.google.android.material.card.MaterialCardView card =
+                view.findViewById(R.id.channel_settings_dialog_card);
+        card.setCardBackgroundColor(bgColor);
+        view.findViewById(R.id.channel_settings_dialog_divider_top).setBackgroundColor(dividerColor);
+        view.findViewById(R.id.channel_settings_dialog_divider_bottom).setBackgroundColor(dividerColor);
+
+        TextView done = view.findViewById(R.id.channel_settings_dialog_done);
+        done.setTextColor(accentColor);
 
         mScroll = view.findViewById(R.id.channel_settings_dialog_scroll);
         LinearLayout fieldsBox = view.findViewById(R.id.channel_settings_dialog_fields);
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(requireContext());
-        // 必须用弹窗主题的 context 来 inflate 字段行：
-        // requireContext() 是 Activity 的 context（深色主题），用它解析 ?attr/textColorPrimary
-        // 会得到白色文字，画在白色卡片上就完全看不见了。
-        android.view.ContextThemeWrapper themed =
-                new android.view.ContextThemeWrapper(requireContext(), R.style.Theme_XsmsCode_ChannelDialog);
-        LayoutInflater inflater = LayoutInflater.from(themed);
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
 
         for (Field field : mFields) {
             View row = inflater.inflate(R.layout.item_channel_field, fieldsBox, false);
             TextView fieldTitle = row.findViewById(R.id.channel_field_title);
             EditText input = row.findViewById(R.id.channel_field_input);
+            View divider = row.findViewById(R.id.channel_field_divider);
 
             fieldTitle.setText(field.titleRes);
+            fieldTitle.setTextColor(textColor);
+
             input.setText(sp.getString(field.key, ""));
             input.setHint(field.titleRes);
+            input.setTextColor(textColor);
+            input.setHintTextColor(hintColor);
             input.setTag(field.key);
 
+            divider.setBackgroundColor(dividerColor);
+
             if (field.secret) {
-                // 密钥类字段：保持可见，方便核对是否填过；不提交则原值不变
+                // 密钥类字段：保持可见，方便核对是否填过
                 input.setInputType(android.text.InputType.TYPE_CLASS_TEXT
                         | android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
             }
@@ -195,11 +226,10 @@ public class ChannelSettingsDialog extends AppCompatDialogFragment {
             fieldsBox.addView(row);
         }
 
-        view.findViewById(R.id.channel_settings_dialog_done)
-                .setOnClickListener(v -> {
-                    saveValues();
-                    dismissAllowingStateLoss();
-                });
+        done.setOnClickListener(v -> {
+            saveValues();
+            dismissAllowingStateLoss();
+        });
     }
 
     /** 把各输入框的当前值写回 SharedPreferences（仅写有变化的项） */

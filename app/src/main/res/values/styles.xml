@@ -26,6 +26,19 @@
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
+    <!-- 通道参数弹窗内的字段文字（2026-09-19）
+         颜色由 ChannelSettingsDialog 在运行时按 Cyanea 配置显式设置：
+         Cyanea 主题下解析 ?attr/textColorPrimary 会回退失败（项目 2026-09-15 已实测），
+         所以这里只给占位值，实际颜色以代码赋值为准。 -->
+    <style name="ChannelDialog.FieldTitle">
+        <item name="android:textColor">#FF000000</item>
+    </style>
+
+    <style name="ChannelDialog.FieldInput">
+        <item name="android:textColor">#FF000000</item>
+        <item name="android:textColorHint">#66000000</item>
+    </style>
+
     <style name="MyPreferenceStyle" parent="@style/PreferenceThemeOverlay.v14.Material">
         <item name="preferenceCategoryStyle">@style/MyPreferenceCategoryStyle</item>
     </style>
