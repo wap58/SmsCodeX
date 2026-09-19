@@ -389,7 +389,8 @@ public class SettingsFragment extends BasePreferenceFragment implements
     }
 
     private void showVersionInfo(Preference preference) {
-        String summary = getString(R.string.pref_version_summary, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
+        // versionName 已含构建号（如 3.0.5(60)），故模板只需一个参数
+        String summary = getString(R.string.pref_version_summary, BuildConfig.VERSION_NAME);
         preference.setSummary(summary);
     }
 

@@ -14,8 +14,19 @@ def static releaseTime() {
     return new Date().format("yyMMdd", TimeZone.default)
 }
 
+// 版本号（2026-09-20）：
+// 括号里的构建号由 CI 的 run_number 自动注入（见 .github/workflows/build.yml），
+// 本地构建时回落到这里的默认值。
+//   CI:  -PciBuildNumber=<run_number>  → 3.0.5(60)
+//   本地: 默认 VERSION_CODE
 def VERSION_NAME = "3.0.5"
 def VERSION_CODE = 23
+def CI_BUILD_NUMBER = project.hasProperty('ciBuildNumber')
+        ? project.property('ciBuildNumber').toString().toInteger()
+        : VERSION_CODE
+// 构建号同时用作 versionCode：Android 要求其单调递增，
+// 而 CI run_number 天然递增，比手工维护更可靠。
+def EFFECTIVE_VERSION_CODE = Math.max(CI_BUILD_NUMBER, VERSION_CODE)
 
 android {
     namespace 'com.smscodf.zhuxf'
@@ -25,11 +36,12 @@ android {
         applicationId "com.smscodf.zhuxf"
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode VERSION_CODE
-        versionName VERSION_NAME
+        versionCode EFFECTIVE_VERSION_CODE
+        // 版本名带构建号：3.0.5(60)。括号内即 CI run_number，每次构建自动递增。
+        versionName VERSION_NAME + "(" + CI_BUILD_NUMBER + ")"
 
         buildConfigField("String", "LOG_TAG", "\"XSmsCode\"")
-        buildConfigField("int", "MODULE_VERSION", "" + VERSION_CODE)
+        buildConfigField("int", "MODULE_VERSION", "" + EFFECTIVE_VERSION_CODE)
         resConfigs 'en', 'zh-rCN', 'zh-rTW'
 
         // vectorDrawables.generatedDensities = ['hdpi']
@@ -90,7 +102,9 @@ android {
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            output.outputFileName = "SmsCodeX_v${variant.versionName.replaceAll('\\s+', '_')}_${releaseTime()}_${variant.buildType.name.charAt(0)}.apk"
+            // 文件名：versionName 现含括号（如 3.0.5(60)），
+            // 括号在 shell 中需转义，故统一替换为下划线 → SmsCodeX_v3.0.5_60_260920_r.apk
+            output.outputFileName = "SmsCodeX_v${variant.versionName.replaceAll('[()]', '_').replaceAll('\\s+', '_')}_${releaseTime()}_${variant.buildType.name.charAt(0)}.apk"
         }
     }
 

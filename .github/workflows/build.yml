@@ -42,7 +42,18 @@ jobs:
           KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --console=plain
+          # 把 CI 构建序号注入版本号：3.0.5(60)
+          # run_number 由 GitHub 自动递增，天然满足 versionCode 单调递增要求
+          echo "CI build number: ${{ github.run_number }}"
+          ./gradlew assembleRelease --no-daemon --console=plain \
+            -PciBuildNumber=${{ github.run_number }}
+
+      - name: Show APK version
+        run: |
+          ls -la app/build/outputs/apk/release/
+          APK=$(ls app/build/outputs/apk/release/*.apk | head -1)
+          echo "APK: $APK"
+          "$ANDROID_HOME/build-tools/34.0.0/aapt" dump badging "$APK" 2>/dev/null | head -2 || true
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
