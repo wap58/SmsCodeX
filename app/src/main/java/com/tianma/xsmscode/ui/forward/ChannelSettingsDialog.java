@@ -20,7 +20,7 @@ import androidx.appcompat.app.AppCompatDialogFragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 
-import com.tianma.xsmscode.R;
+import com.smscodf.zhuxf.R;
 import com.tianma.xsmscode.common.constant.PrefConst;
 
 import java.util.ArrayList;
