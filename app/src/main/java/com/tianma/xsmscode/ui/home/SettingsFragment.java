@@ -168,6 +168,8 @@ public class SettingsFragment extends BasePreferenceFragment implements
                         .setOnChannelChangedListener(lp -> refreshForwardSummaries());
             }
         }
+        // "转发范围"行摘要实时显示当前选项（2026-09-19）
+        bindForwardScopeSummary();
         // 验证码历史记录入口已迁移至首页"记录" tab；设置里保留记录开关（2026-09-15）
         makeCollapsible(PrefConst.KEY_CODE_RECORDS_HEADER,
                 PrefConst.KEY_ENABLE_CODE_RECORDS);
@@ -269,6 +271,16 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 ch.setSummary(ch.getEntry() == null ? "" : ch.getEntry().toString());
             }
         } catch (Throwable ignored) {
+        }
+    }
+
+    /** "转发范围"行摘要实时显示当前选项（2026-09-19） */
+    private void bindForwardScopeSummary() {
+        androidx.preference.ListPreference scope =
+                (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_SCOPE);
+        if (scope != null) {
+            scope.setSummaryProvider(
+                    androidx.preference.ListPreference.SimpleSummaryProvider.getInstance());
         }
     }
 

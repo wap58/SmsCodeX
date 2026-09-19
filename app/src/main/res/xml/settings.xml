@@ -146,6 +146,17 @@
             android:summary="@string/pref_forward_channel_summary"
             android:title="@string/pref_forward_channel_title"/>
 
+        <!-- 转发范围（2026-09-19）：仅验证码短信 / 全部短信 -->
+        <ListPreference
+            android:defaultValue="code"
+            android:dependency="@string/pref_enable_forward"
+            android:entries="@array/forward_scope_entries"
+            android:entryValues="@array/forward_scope_values"
+            android:icon="@drawable/ic_filter"
+            android:key="@string/pref_forward_scope"
+            android:summary="@string/pref_forward_scope_summary"
+            android:title="@string/pref_forward_scope_title"/>
+
         <Preference
             android:icon="@drawable/ic_settings"
             android:key="@string/pref_forward_channel_config"

@@ -314,7 +314,7 @@
     <string name="pref_forward_title">SMS Forwarding</string>
     <string name="pref_forward_header_summary">Forward switch &amp; channel</string>
     <string name="pref_enable_forward_title">Enable forwarding</string>
-    <string name="pref_enable_forward_summary">Forward code SMS to the selected channel in real time</string>
+    <string name="pref_enable_forward_summary">Forward incoming SMS to the selected channel. Scope is set below.</string>
     <string name="pref_forward_header">pref_forward_header</string>
     <string name="pref_enable_forward">pref_enable_forward</string>
     <string name="pref_forward_wecom_corpid_title">Corp ID</string>
@@ -348,6 +348,7 @@
     <string name="forward_feishu_title">Feishu robot</string>
     <string name="forward_feishu_summary">Paste the robot webhook URL</string>
             <string name="pref_forward_channel_type">pref_forward_channel_type</string>
+    <string name="pref_forward_scope">pref_forward_scope</string>
     <string name="pref_forward_wecom_robot_webhook">pref_forward_wecom_robot_webhook</string>
     <string name="pref_forward_dingtalk_webhook">pref_forward_dingtalk_webhook</string>
     <string name="pref_forward_dingtalk_secret">pref_forward_dingtalk_secret</string>
@@ -381,6 +382,16 @@
     <string name="pref_forward_channel_config">pref_forward_channel_config</string>
     <string name="forward_channel_config_title">Channel parameters</string>
     <string name="forward_channel_config_summary">Tap to fill in configuration parameters</string>
+    <string name="pref_forward_scope_title">Forwarding scope</string>
+    <string name="pref_forward_scope_summary">Code only: forward verification codes. All SMS: forward every message.</string>
+    <string-array name="forward_scope_entries">
+        <item>Verification codes only</item>
+        <item>All SMS</item>
+    </string-array>
+    <string-array name="forward_scope_values">
+        <item>code</item>
+        <item>all</item>
+    </string-array>
     <string name="pref_forward_xizhi_key">pref_forward_xizhi_key</string>
     <string name="forward_xizhi_title">Xizhi Key</string>
     <string name="forward_xizhi_summary">Paste your Xizhi Key (get it from xz.qqoq.net)</string>

@@ -58,11 +58,12 @@ public class CodeWorker {
         String diagChannel = com.tianma.xsmscode.common.utils.ModulePrefs.getString(
                 BuildConfig.APPLICATION_ID, PrefConst.PREF_NAME,
                 PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
-        XLog.i("Config diag: enabled=%s block=%s copy=%s autoCancel=%s showNotif=%s autoInput=%s channel=%s version=%s(%d)",
+        XLog.i("Config diag: enabled=%s block=%s copy=%s autoCancel=%s showNotif=%s autoInput=%s channel=%s scope=%s version=%s(%d)",
                 XSPUtils.isEnabled(xsp), XSPUtils.blockSmsEnabled(xsp),
                 XSPUtils.copyToClipboardEnabled(xsp), XSPUtils.autoCancelCodeNotification(xsp),
                 XSPUtils.showCodeNotification(xsp), XSPUtils.autoInputCodeEnabled(xsp),
-                diagChannel, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
+                diagChannel, XSPUtils.forwardAllSmsEnabled(xsp) ? "all" : "code",
+                BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
         if (!XSPUtils.isEnabled(xsp)) {
             XLog.i("SmsCodeX disabled, exiting");
             return null;
@@ -80,6 +81,7 @@ public class CodeWorker {
         ScheduledFuture<Bundle> smsParseFuture = mScheduledExecutor.schedule(smsParseAction, 0, TimeUnit.MILLISECONDS);
 
         final SmsMsg smsMsg;
+        final boolean isCodeMsg;
         try {
             Bundle parseBundle = smsParseFuture.get();
             if (parseBundle == null) {
@@ -93,17 +95,24 @@ public class CodeWorker {
             }
 
             smsMsg = parseBundle.getParcelable(SmsParseAction.SMS_MSG);
+            // 2026-09-19：是否为验证码短信。非验证码短信（转发范围=全部短信）只做转发，
+            // 复制/自动输入/通知/记录/标记已读/删除 一律跳过——尤其不能误删普通短信。
+            isCodeMsg = parseBundle.getBoolean(SmsParseAction.SMS_IS_CODE, true);
         } catch (Exception e) {
             XLog.e("Error occurs when get SmsParseAction call value", e);
             return null;
         }
 
 
-        // 复制到剪切板 Action
-        mUIHandler.post(new CopyToClipboardAction(mPluginContext, mPhoneContext, smsMsg, xsp));
+        // 复制到剪切板 Action（仅验证码短信）
+        if (isCodeMsg) {
+            mUIHandler.post(new CopyToClipboardAction(mPluginContext, mPhoneContext, smsMsg, xsp));
+        }
 
-        // 显示Toast Action
-        mUIHandler.post(new ToastAction(mPluginContext, mPhoneContext, smsMsg, xsp));
+        // 显示Toast Action（仅验证码短信）
+        if (isCodeMsg) {
+            mUIHandler.post(new ToastAction(mPluginContext, mPhoneContext, smsMsg, xsp));
+        }
 
         // 转发到企业微信（2026-09-15 定稿）：用户要求最高优先级——最先调度；
         // 应用进程可能已被自杀/被系统冻结导致失败，自动重试（0s/2s/4s 共 3 次）
@@ -161,51 +170,63 @@ public class CodeWorker {
             }, attempt * 2000L, TimeUnit.MILLISECONDS);
         }
 
-        // 自动输入 Action
-        if (XSPUtils.autoInputCodeEnabled(xsp)) {
+        // 自动输入 Action（仅验证码短信：普通短信没有验证码可填）
+        if (isCodeMsg && XSPUtils.autoInputCodeEnabled(xsp)) {
             AutoInputAction autoInputAction = new AutoInputAction(mPluginContext, mPhoneContext, smsMsg, xsp);
             // 延时填入功能已按用户决定移除（设置读取链路在 hook 进程不可靠），固定立即输入
             mScheduledExecutor.schedule(autoInputAction, 0, TimeUnit.MILLISECONDS);
         }
 
 
-        // 显示通知 Action
-        NotifyAction notifyAction = new NotifyAction(mPluginContext, mPhoneContext, smsMsg, xsp);
-        ScheduledFuture<Bundle> notificationFuture = mScheduledExecutor.schedule(notifyAction, 0, TimeUnit.MILLISECONDS);
+        // 显示通知 Action / 记录验证码短信 Action / 操作验证码短信 Action（仅验证码短信）
+        // 普通短信不显示"验证码通知"、不进验证码记录、更不能被标记已读或删除
+        if (isCodeMsg) {
+            NotifyAction notifyAction = new NotifyAction(mPluginContext, mPhoneContext, smsMsg, xsp);
+            ScheduledFuture<Bundle> notificationFuture = mScheduledExecutor.schedule(notifyAction, 0, TimeUnit.MILLISECONDS);
 
-        // 记录验证码短信 Action
-        RecordSmsAction recordSmsAction = new RecordSmsAction(mPluginContext, mPhoneContext, smsMsg, xsp);
-        mScheduledExecutor.schedule(recordSmsAction, 0, TimeUnit.MILLISECONDS);
+            // 记录验证码短信 Action
+            RecordSmsAction recordSmsAction = new RecordSmsAction(mPluginContext, mPhoneContext, smsMsg, xsp);
+            mScheduledExecutor.schedule(recordSmsAction, 0, TimeUnit.MILLISECONDS);
 
-        // 操作验证码短信（标记为已读 或者 删除） Action
-        OperateSmsAction operateSmsAction = new OperateSmsAction(mPluginContext, mPhoneContext, smsMsg, xsp);
-        mScheduledExecutor.schedule(operateSmsAction, 3000, TimeUnit.MILLISECONDS);
+            // 操作验证码短信（标记为已读 或者 删除） Action
+            OperateSmsAction operateSmsAction = new OperateSmsAction(mPluginContext, mPhoneContext, smsMsg, xsp);
+            mScheduledExecutor.schedule(operateSmsAction, 3000, TimeUnit.MILLISECONDS);
+
+            try {
+                // 清除通知
+                Bundle bundle = notificationFuture.get();
+                if (bundle != null && bundle.containsKey(NotifyAction.NOTIFY_RETENTION_TIME)) {
+                    long delay = bundle.getLong(NotifyAction.NOTIFY_RETENTION_TIME, 0L);
+                    int notificationId = bundle.getInt(NotifyAction.NOTIFY_ID, 0);
+                    CancelNotifyAction cancelNotifyAction = new CancelNotifyAction(mPluginContext, mPhoneContext, smsMsg, xsp);
+                    cancelNotifyAction.setNotificationId(notificationId);
+
+                    mScheduledExecutor.schedule(cancelNotifyAction, delay, TimeUnit.MILLISECONDS);
+                }
+            } catch (Exception e) {
+                XLog.e("Error in notification future get()", e);
+            }
+        }
 
         // 自杀 Action（2026-09-15 延至 8s：等待企微转发 HTTP 完成，避免转发被中途杀死）
         KillMeAction action = new KillMeAction(mPluginContext, mPhoneContext, smsMsg, xsp);
         mScheduledExecutor.schedule(action, 8000, TimeUnit.MILLISECONDS);
 
-        try {
-            // 清除通知
-            Bundle bundle = notificationFuture.get();
-            if (bundle != null && bundle.containsKey(NotifyAction.NOTIFY_RETENTION_TIME)) {
-                long delay = bundle.getLong(NotifyAction.NOTIFY_RETENTION_TIME, 0L);
-                int notificationId = bundle.getInt(NotifyAction.NOTIFY_ID, 0);
-                CancelNotifyAction cancelNotifyAction = new CancelNotifyAction(mPluginContext, mPhoneContext, smsMsg, xsp);
-                cancelNotifyAction.setNotificationId(notificationId);
-
-                mScheduledExecutor.schedule(cancelNotifyAction, delay, TimeUnit.MILLISECONDS);
-            }
-        } catch (Exception e) {
-            XLog.e("Error in notification future get()", e);
-        }
-
-        return buildParseResult();
+        return buildParseResult(isCodeMsg);
     }
 
     private ParseResult buildParseResult() {
+        return buildParseResult(true);
+    }
+
+    /**
+     * @param isCodeMsg 仅验证码短信才允许拦截/删除原始短信。
+     *                  非验证码短信（转发范围=全部短信）必须返回 false，
+     *                  否则 hook 会删掉普通短信。
+     */
+    private ParseResult buildParseResult(boolean isCodeMsg) {
         ParseResult parseResult = new ParseResult();
-        parseResult.setBlockSms(XSPUtils.blockSmsEnabled(xsp));
+        parseResult.setBlockSms(isCodeMsg && XSPUtils.blockSmsEnabled(xsp));
         return parseResult;
     }
 }

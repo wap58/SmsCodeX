@@ -24,6 +24,8 @@ public class SmsParseAction extends CallableAction {
 
     public static final String SMS_MSG = "sms_msg";
     public static final String SMS_DUPLICATED = "sms_duplicated";
+    /** 本条是否为验证码短信（2026-09-19）：非验证码短信仅转发，其余动作全部跳过 */
+    public static final String SMS_IS_CODE = "sms_is_code";
 
     private Intent mSmsIntent;
 
@@ -58,8 +60,26 @@ public class SmsParseAction extends CallableAction {
         }
 
         String smsCode = SmsCodeUtils.parseSmsCodeIfExists(mPluginContext, msgBody, true);
-        if (TextUtils.isEmpty(smsCode)) { // isn't code message
-            return null;
+        boolean isCodeMsg = !TextUtils.isEmpty(smsCode);
+        if (!isCodeMsg) { // isn't code message
+            // 2026-09-19：转发范围为"全部短信"时，非验证码短信也要放行——
+            // 否则 CodeWorker 直接退出，普通短信永远进不了转发流程。
+            // 注意：仅放行转发，验证码相关的动作（复制/自动输入/标记已读/删除/记录）
+            // 全部由 CodeWorker 依据 isCodeMsg 跳过，绝不能作用到普通短信上。
+            if (!XSPUtils.forwardAllSmsEnabled(xsp)) {
+                return null;
+            }
+            mSmsMsg.setSmsCode(null);
+            mSmsMsg.setCompany(SmsCodeUtils.parseCompany(msgBody));
+            long ts = System.currentTimeMillis();
+            mSmsMsg.setDate(ts);
+
+            Bundle b = new Bundle();
+            b.putParcelable(SMS_MSG, mSmsMsg);
+            b.putBoolean(SMS_DUPLICATED, false);
+            b.putBoolean(SMS_IS_CODE, false);
+            XLog.i("Non-code SMS, forwarded due to scope=all");
+            return b;
         }
 
         mSmsMsg.setSmsCode(smsCode);
@@ -69,6 +89,7 @@ public class SmsParseAction extends CallableAction {
 
         Bundle bundle = new Bundle();
         bundle.putParcelable(SMS_MSG, mSmsMsg);
+        bundle.putBoolean(SMS_IS_CODE, true);
 
         // 去除重复短信
         boolean duplicated = false;

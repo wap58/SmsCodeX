@@ -155,4 +155,13 @@ public class XSPUtils {
     public static boolean deduplicateSms(XSharedPreferences preferences) {
         return getBoolean(preferences, PrefConst.KEY_DEDUPLICATE_SMS, false);
     }
+
+    /**
+     * 转发范围是否为"全部短信"（2026-09-19）。
+     * true：任何短信都转发；false：仅转发验证码短信（默认，保持原行为）。
+     */
+    public static boolean forwardAllSmsEnabled(XSharedPreferences preferences) {
+        return PrefConst.FORWARD_SCOPE_ALL.equals(
+                getString(preferences, PrefConst.KEY_FORWARD_SCOPE, PrefConst.FORWARD_SCOPE_CODE));
+    }
 }

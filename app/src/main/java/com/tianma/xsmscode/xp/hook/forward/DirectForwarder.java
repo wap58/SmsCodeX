@@ -164,7 +164,8 @@ public final class DirectForwarder {
     }
 
     private static boolean sendXizhi(String key, String content) throws Exception {
-        String title = URLEncoder.encode("验证码提醒", "UTF-8");
+        // 标题按内容判断：普通短信（转发范围=全部短信）不该标成"验证码提醒"
+        String title = URLEncoder.encode(content.contains("验证码：") ? "验证码提醒" : "短信提醒", "UTF-8");
         String enc = URLEncoder.encode(content, "UTF-8");
         String url = "https://xizhi.qqoq.net/" + key.trim() + ".send?title=" + title + "&content=" + enc;
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();

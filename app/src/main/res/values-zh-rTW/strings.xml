@@ -313,7 +313,7 @@
     <string name="pref_forward_title">簡訊轉發</string>
     <string name="pref_forward_header_summary">轉發開關與通道設置</string>
     <string name="pref_enable_forward_title">轉發開啟</string>
-    <string name="pref_enable_forward_summary">解析到驗證碼後即時轉發到所選通道</string>
+    <string name="pref_enable_forward_summary">即時轉發簡訊到所選通道，範圍見下方設定</string>
     <string name="pref_forward_header">pref_forward_header</string>
     <string name="pref_enable_forward">pref_enable_forward</string>
     <string name="pref_forward_wecom_corpid_title">企業ID</string>
@@ -347,6 +347,7 @@
     <string name="forward_feishu_title">飛書機器人</string>
     <string name="forward_feishu_summary">貼上機器人 Webhook 地址</string>
             <string name="pref_forward_channel_type">pref_forward_channel_type</string>
+    <string name="pref_forward_scope">pref_forward_scope</string>
     <string name="pref_forward_wecom_robot_webhook">pref_forward_wecom_robot_webhook</string>
     <string name="pref_forward_dingtalk_webhook">pref_forward_dingtalk_webhook</string>
     <string name="pref_forward_dingtalk_secret">pref_forward_dingtalk_secret</string>
@@ -380,6 +381,16 @@
     <string name="pref_forward_channel_config">pref_forward_channel_config</string>
     <string name="forward_channel_config_title">通道參數</string>
     <string name="forward_channel_config_summary">點擊填寫配置參數</string>
+    <string name="pref_forward_scope_title">轉發範圍</string>
+    <string name="pref_forward_scope_summary">僅驗證碼：只轉發驗證碼簡訊。全部簡訊：任何簡訊都轉發。</string>
+    <string-array name="forward_scope_entries">
+        <item>僅驗證碼簡訊</item>
+        <item>全部簡訊</item>
+    </string-array>
+    <string-array name="forward_scope_values">
+        <item>code</item>
+        <item>all</item>
+    </string-array>
     <string name="pref_forward_xizhi_key">pref_forward_xizhi_key</string>
     <string name="forward_xizhi_title">息知 Key</string>
     <string name="forward_xizhi_summary">貼上你的息知 Key（官網 xz.qqoq.net 取得）</string>

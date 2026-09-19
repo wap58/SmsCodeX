@@ -49,6 +49,11 @@ public interface PrefConst {
     String KEY_FORWARD_XIZHI_KEY = "pref_forward_xizhi_key";
     String KEY_FORWARD_PUSHPLUS_TOKEN = "pref_forward_pushplus_token";
 
+    // 转发范围（2026-09-19 新增）：仅验证码短信 / 全部短信
+    String KEY_FORWARD_SCOPE = "pref_forward_scope";
+    String FORWARD_SCOPE_CODE = "code";     // 仅验证码短信（默认，保持原行为）
+    String FORWARD_SCOPE_ALL = "all";       // 所有短信，不区分是否验证码
+
 
     // Code Record
     String KEY_ENABLE_CODE_RECORDS = "pref_enable_code_records";
