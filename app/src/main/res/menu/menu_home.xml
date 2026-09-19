@@ -8,10 +8,15 @@
         android:title="@string/action_home_faq_title"
         app:showAsAction="ifRoom"/>
 
+    <!-- 太极用户须知：按要求隐藏（2026-09-20）。
+         对应处理逻辑 onTaichiUsersNoticeSelected() 保留在 HomeActivity，
+         需要恢复时取消注释即可。 -->
+    <!--
     <item
         android:id="@+id/action_taichi_users_notice"
         android:title="@string/taichi_users_notice"
         app:showAsAction="never"/>
+    -->
 
     <item
         android:id="@+id/action_edxposed_users_notice"
