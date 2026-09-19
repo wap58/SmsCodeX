@@ -255,6 +255,12 @@ public class SmsHandlerHook extends BaseHook {
         Context context = (Context) param.args[1];
         if (mPhoneContext == null) {
             mPhoneContext = context;
+            // 2026-09-19：把电话进程真实 Context 交给配置读取器，
+            // 供「读取失败时唤醒 app 进程」使用（不反射、仅电话进程有效）
+            try {
+                com.tianma.xsmscode.common.utils.ModulePrefs.setPhoneContext(context);
+            } catch (Throwable ignored) {
+            }
             try {
                 mPluginContext = mPhoneContext.createPackageContext(SMSCODE_PACKAGE,
                         Context.CONTEXT_IGNORE_SECURITY);

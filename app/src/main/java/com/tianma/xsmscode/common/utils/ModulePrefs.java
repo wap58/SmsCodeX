@@ -59,12 +59,71 @@ public class ModulePrefs {
             applyLogLevel(viaRemote);
             return viaRemote;
         }
+        // 4) 全部失败：尝试唤醒 app 进程（让 Application.onCreate 导出配置），
+        //    下次读取即可成功。开机早期 app 未启动时尤其重要。
+        wakeAppIfNeeded();
         if (!sLoggedFailure) {
             sLoggedFailure = true;
             XLog.e("%s: all channels failed for %s/%s, using defaults",
                     TAG, packageName, prefFileName);
         }
         return null;
+    }
+
+    /** 是否已尝试过唤醒（避免每次读配置都触发） */
+    private static volatile boolean sWakeAttempted = false;
+
+    /** 电话进程 Context（由 SmsHandlerHook 在 hook 内注入，仅电话进程有值） */
+    private static volatile android.content.Context sPhoneContext;
+
+    public static void setPhoneContext(android.content.Context ctx) {
+        sPhoneContext = ctx;
+    }
+
+    /**
+     * 唤醒应用进程（2026-09-19）。
+     *
+     * 开机早期应用进程往往尚未启动，导出文件不存在 → 模块读不到配置。
+     * 这里通过 ContentProvider 调用触发 Android 拉起应用进程；应用启动后
+     * Application.onCreate() 会导出配置，模块后续读取即可成功。
+     *
+     * ⚠️ 安全约束：只用 hook 注入的真实 Context，**绝不反射 ActivityThread**
+     * （反射 systemMain 会在 system_server 内执行并崩溃，曾导致 LSPosed 安全模式）。
+     * 仅电话进程会注入 Context，其他进程自然跳过。全程静默，失败只记日志。
+     */
+    private static void wakeAppIfNeeded() {
+        if (sWakeAttempted) {
+            return;
+        }
+        final android.content.Context ctx = sPhoneContext;
+        if (ctx == null) {
+            return;   // 非电话进程：不做任何跨进程动作
+        }
+        sWakeAttempted = true;
+        try {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < 3; i++) {
+                        try {
+                            ctx.getContentResolver().call(
+                                    android.net.Uri.parse("content://" + PROVIDER_AUTHORITY),
+                                    "module_ping", null, null);
+                            XLog.e("%s: app wake-up attempted (provider ping ok)", TAG);
+                            return;
+                        } catch (Throwable t) {
+                            XLog.e("%s: app wake-up attempt %d failed: %s", TAG, i + 1, t);
+                        }
+                        try {
+                            Thread.sleep(1500);
+                        } catch (InterruptedException ignored) {
+                        }
+                    }
+                }
+            }, "smscodf-wake-app").start();
+        } catch (Throwable t) {
+            XLog.e("%s: wake app thread failed: %s", TAG, t);
+        }
     }
 
     /**
@@ -95,6 +154,7 @@ public class ModulePrefs {
     private static Map<String, Object> loadViaFile(String packageName, String prefFileName) {
         String path = resolvePath(packageName, prefFileName);
         if (path == null) {
+            XLog.e("%s: file channel: no readable path (tried export/apex/legacy)", TAG);
             return null;
         }
         File f = new File(path);
@@ -104,6 +164,7 @@ public class ModulePrefs {
         }
         Map<String, Object> map = parse(f);
         if (map == null || map.isEmpty()) {
+            XLog.e("%s: file channel: parse failed/empty for %s", TAG, path);
             return null;
         }
         sResolvedPath = path;
@@ -162,16 +223,19 @@ public class ModulePrefs {
                 io.github.libxposed.api.XposedInterface xi =
                         de.robv.android.xposed.XposedBridge.getXposedInterface();
                 if (xi == null) {
-                    XLog.w("%s: remote channel unavailable (framework interface is null)", TAG);
+                    // 用 ERROR 级别：确保在 INFO 级别下也能看到（排查配置读取问题必需）
+                    XLog.e("%s: remote channel unavailable (framework interface is null)", TAG);
                     return null;
                 }
                 sRemote = xi.getRemotePreferences(prefFileName);
             }
             if (sRemote == null) {
+                XLog.e("%s: remote prefs returned null", TAG);
                 return null;
             }
             Map<String, ?> all = sRemote.getAll();
             if (all == null || all.isEmpty()) {
+                XLog.e("%s: remote prefs empty", TAG);
                 return null;
             }
             Map<String, Object> map = new HashMap<>();
