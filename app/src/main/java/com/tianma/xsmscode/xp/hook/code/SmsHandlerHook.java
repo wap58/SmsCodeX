@@ -274,8 +274,9 @@ public class SmsHandlerHook extends BaseHook {
                 XLog.e("Register copy-code receiver failed (non-fatal): %s", e);
             }
             pingModuleActive();
-            // 电话服务作用域报到（2026-09-20）：写标记文件，供 UI 显示激活态
-            com.tianma.xsmscode.xp.hook.ScopeReporter.reportPhone();
+            // 电话服务作用域报到（2026-09-20）：此处已拿到电话进程 Context，
+            // 走 Provider 由 app 进程代写 SharedPreferences（模块进程无写文件权限）
+            com.tianma.xsmscode.xp.hook.ScopeReporter.reportPhone(mPhoneContext, null);
         }
     }
 

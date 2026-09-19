@@ -124,23 +124,27 @@ public class HomeActivity extends BaseActivity {
      * 刷新标题栏的激活状态（2026-09-20）。
      *
      * <p>判据：模块是否被注入到两个必需作用域——系统框架(android) 与
-     * 电话服务(com.android.phone)。两者各自写报到文件，此处读取。
+     * 电话服务(com.android.phone)。由被注入的进程通过 DBProvider 回传，
+     * 应用进程代写 SharedPreferences（模块进程无写文件权限，
+     * 且 app 侧拿不到 XposedInterface 读 remote prefs）。
      *
-     * <p>不用 LSPosed 勾选状态：/data/adb 为 0700 root:root，应用进程读不到。
-     * 且"勾选"不等于"注入成功"（版本不兼容时勾了也不生效），
-     * 报到文件反映的是真实注入结果。
+     * <p>不用 LSPosed 勾选状态：/data/adb 为 0700 root:root，应用进程读不到；
+     * 且"勾选"不等于"注入成功"。
      */
     private void refreshActivationStatus() {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar == null) {
             return;
         }
-        boolean systemOk = ScopeReporter.isScopeReported(PrefConst.ACTIVE_FILE_SYSTEM);
-        boolean phoneOk = ScopeReporter.isScopeReported(PrefConst.ACTIVE_FILE_PHONE);
-        boolean activated = systemOk && phoneOk;
+        android.content.SharedPreferences sp = getSharedPreferences(
+                PrefConst.PREF_NAME, android.content.Context.MODE_PRIVATE);
+        boolean systemOk = ScopeReporter.isWithinCurrentBoot(
+                sp.getLong(PrefConst.KEY_ACTIVE_SYSTEM_ELAPSED, -1L));
+        boolean phoneOk = ScopeReporter.isWithinCurrentBoot(
+                sp.getLong(PrefConst.KEY_ACTIVE_PHONE_ELAPSED, -1L));
 
         String text;
-        if (activated) {
+        if (systemOk && phoneOk) {
             text = getString(R.string.module_status_active);
         } else if (systemOk) {
             text = getString(R.string.module_status_phone_missing);

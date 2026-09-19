@@ -95,12 +95,6 @@ public interface PrefConst {
 
     /** 模块在电话进程加载时报到时间戳（elapsedRealtime，开机归零），用于 UI 激活态判定 */
     String KEY_MODULE_ACTIVE_ELAPSED = "module_active_elapsed";
-
-    // 作用域激活标记文件名（2026-09-20）：
-    // 由被 hook 的两个进程各自写入 app 可读目录，UI 读文件判断激活态。
-    // 之所以不用 SharedPreferences：system_server 进程无 Context，无法调 ContentResolver。
-    String ACTIVE_FILE_SYSTEM = "module_active_system";
-    String ACTIVE_FILE_PHONE = "module_active_phone";
     /** 系统框架(android/system_server)侧 hook 成功报到时间戳（2026-09-20） */
     String KEY_ACTIVE_SYSTEM_ELAPSED = "module_active_system_elapsed";
     /** 电话服务(com.android.phone)侧 hook 成功报到时间戳（2026-09-20） */

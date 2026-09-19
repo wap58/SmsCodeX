@@ -60,6 +60,17 @@ public class SmsCodeEntry extends XposedModule {
         } catch (Throwable t) {
             XLog.e("", t);
         }
+
+        // 作用域报到（2026-09-20）：模块被注入到本进程即为激活的直接证据。
+        // 使用官方 ModuleLoadedParam.isSystemServer()/getProcessName() 精确判定，
+        // 不依赖日志或 LSPosed 勾选状态（后者 app 读不到：/data/adb 为 0700）。
+        try {
+            com.tianma.xsmscode.xp.hook.ScopeReporter.reportOnLoad(
+                    this, param.getProcessName(), param.isSystemServer());
+        } catch (Throwable t) {
+            XLog.e("%s: scope report on load failed: %s", TAG, t);
+        }
+
         this.log(Log.INFO, TAG, "onModuleLoaded done, hooks=" + mHookList.size());
     }
 

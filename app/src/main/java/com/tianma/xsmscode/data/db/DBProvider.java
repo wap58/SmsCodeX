@@ -97,16 +97,80 @@ public class DBProvider extends ContentProvider {
     @Override
     public android.os.Bundle call(@NonNull String method, @Nullable String arg, @Nullable android.os.Bundle extras) {
         // 电话/系统进程报到：模块在本次开机已加载（UI 激活态判定依据）
+        //
+        // 2026-09-20：改为按调用方 uid 区分作用域——
+        //   uid 1000 (system)         → 系统框架(android)作用域已注入
+        //   uid 1001 (radio/phone)    → 电话服务(com.android.phone)作用域已注入
+        // 由 app 进程代写 SharedPreferences（模块进程无写文件权限，
+        // 实测 radio 写 /sdcard 与 /data/data 均 Permission denied）。
         if ("module_ping".equals(method)) {
             Context ctx = getContext();
-            if (ctx != null) {
-                ctx.getSharedPreferences(com.tianma.xsmscode.common.constant.PrefConst.PREF_NAME, Context.MODE_PRIVATE)
-                        .edit()
-                        .putLong(com.tianma.xsmscode.common.constant.PrefConst.KEY_MODULE_ACTIVE_ELAPSED,
-                                android.os.SystemClock.elapsedRealtime())
-                        .apply();
-            }
             android.os.Bundle result = new android.os.Bundle();
+            if (ctx != null) {
+                int uid = android.os.Binder.getCallingUid();
+                android.content.SharedPreferences.Editor ed = ctx
+                        .getSharedPreferences(com.tianma.xsmscode.common.constant.PrefConst.PREF_NAME,
+                                Context.MODE_PRIVATE)
+                        .edit();
+                // 保留旧键，兼容既有逻辑
+                ed.putLong(com.tianma.xsmscode.common.constant.PrefConst.KEY_MODULE_ACTIVE_ELAPSED,
+                        android.os.SystemClock.elapsedRealtime());
+                String scope;
+                if (uid == android.os.Process.SYSTEM_UID) {
+                    scope = "system";
+                    ed.putLong(com.tianma.xsmscode.common.constant.PrefConst.KEY_ACTIVE_SYSTEM_ELAPSED,
+                            android.os.SystemClock.elapsedRealtime());
+                } else if (uid == 1001) {
+                    scope = "phone";
+                    ed.putLong(com.tianma.xsmscode.common.constant.PrefConst.KEY_ACTIVE_PHONE_ELAPSED,
+                            android.os.SystemClock.elapsedRealtime());
+                } else {
+                    scope = "other";
+                }
+                ed.apply();
+                result.putString("scope", scope);
+                XLog.i("DBProvider: module_ping from uid=%d -> scope=%s", uid, scope);
+            }
+            result.putBoolean("ok", true);
+            return result;
+        }
+        // 作用域报到（2026-09-20）：由被注入的进程回传，app 进程代写 SharedPreferences。
+        // 模块进程无写文件权限（实测 radio/system 写 /sdcard、/data/local/tmp、
+        // /data/data 全部 Permission denied），故必须借 app 进程落盘。
+        if ("scope_report".equals(method)) {
+            int callingUid = android.os.Binder.getCallingUid();
+            boolean allowed = callingUid == android.os.Process.SYSTEM_UID
+                    || callingUid == 1001
+                    || callingUid == android.os.Process.myUid();
+            android.os.Bundle result = new android.os.Bundle();
+            if (!allowed) {
+                result.putBoolean("ok", false);
+                result.putString("reason", "forbidden");
+                return result;
+            }
+            Context ctx = getContext();
+            if (ctx == null) {
+                result.putBoolean("ok", false);
+                result.putString("reason", "no_context");
+                return result;
+            }
+            long phoneWall = extras == null ? -1L : extras.getLong("phone_wall", -1L);
+            long systemWall = extras == null ? -1L : extras.getLong("system_wall", -1L);
+            android.content.SharedPreferences.Editor ed = ctx
+                    .getSharedPreferences(com.tianma.xsmscode.common.constant.PrefConst.PREF_NAME,
+                            Context.MODE_PRIVATE)
+                    .edit();
+            if (phoneWall > 0) {
+                ed.putLong(com.tianma.xsmscode.common.constant.PrefConst.KEY_ACTIVE_PHONE_ELAPSED,
+                        phoneWall);
+            }
+            if (systemWall > 0) {
+                ed.putLong(com.tianma.xsmscode.common.constant.PrefConst.KEY_ACTIVE_SYSTEM_ELAPSED,
+                        systemWall);
+            }
+            ed.apply();
+            XLog.i("DBProvider: scope_report uid=%d phone=%d system=%d",
+                    callingUid, phoneWall, systemWall);
             result.putBoolean("ok", true);
             return result;
         }

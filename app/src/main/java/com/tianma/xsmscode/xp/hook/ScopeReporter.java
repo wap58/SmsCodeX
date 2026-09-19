@@ -1,134 +1,144 @@
 package com.tianma.xsmscode.xp.hook;
 
-import com.tianma.xsmscode.common.constant.PrefConst;
+import android.content.Context;
+import android.net.Uri;
+
+import com.smscodf.zhuxf.BuildConfig;
 import com.tianma.xsmscode.common.utils.XLog;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.charset.StandardCharsets;
+import io.github.libxposed.api.XposedInterface;
 
 /**
  * 作用域报到（2026-09-20）。
  *
- * <p>目的：UI 左上角显示"已激活 / 未激活"。判据是<b>模块是否真的被注入到
- * 两个必需的作用域</b>——系统框架(android) 与 电话服务(com.android.phone)。
+ * <p>目的：UI 显示模块是否已注入两个必需作用域——系统框架(android) 与
+ * 电话服务(com.android.phone)。
  *
- * <p>为什么不用 LSPosed 的勾选状态：
- * 勾选配置在 {@code /data/adb/lspd/config/modules_config.db}，而 {@code /data/adb}
- * 权限为 0700 root:root，普通应用进程无法读取。
+ * <h3>两条通道并存</h3>
+ * 两个进程的能力不同，各用可行的那条：
+ * <ul>
+ *   <li><b>电话进程</b>：有 Context，可调 ContentResolver →
+ *       走 Provider 报到（DBProvider 内由 app 进程代写 SharedPreferences）。
+ *       实测 radio(1001) 写 /sdcard、/data/local/tmp、/data/data 全部
+ *       Permission denied，写文件不可行。</li>
+ *   <li><b>system_server</b>：<b>无 Context</b>（反射 ActivityThread.systemMain()
+ *       会 NPE 崩溃并触发 LSPosed 安全模式，项目禁止事项 1），
+ *       但有 libxposed 的 {@link XposedInterface} →
+ *       走 {@code getRemotePreferences()}（LSPosed 官方文档推荐，
+ *       数据存 LSPosed 数据库，不受 SELinux 限制）。</li>
+ * </ul>
  *
- * <p>为什么不用 SharedPreferences 或 ContentResolver：
- * system_server 进程（android 作用域）<b>没有可用的 Context</b>，
- * 反射 ActivityThread.systemMain() 取 Context 会在 system_server 里 NPE 崩溃，
- * 导致 LSPosed 进入安全模式（项目已踩过此坑，见禁止事项 1）。
- * 因此改为<b>直接写文件</b>到应用可读目录。
- *
- * <p>文件位置与应用侧 {@code ModulePrefs.CACHE_ROOTS} 保持一致，
- * 该目录由模块自身创建，无 SELinux MCS 分类问题。
+ * <p>UI 侧最终读的是 app 自己的 SharedPreferences：两条通道都通过
+ * DBProvider 落到同一处（system 侧的 remote 值由电话进程在下次报到时一并回传）。
  */
 public final class ScopeReporter {
 
     private static final String TAG = "ScopeReporter";
 
-    /** 与应用侧 ModulePrefs.CACHE_ROOTS 一致 */
-    private static final String[] DIRS = {
-            "/sdcard/Android/data/com.smscodf.zhuxf/files/",
-            "/storage/emulated/0/Android/data/com.smscodf.zhuxf/files/",
-            "/storage/self/primary/Android/data/com.smscodf.zhuxf/files/",
-    };
+    /** libxposed 官方跨进程存储名 */
+    public static final String REMOTE_NAME = "smscodex_scope";
 
     private ScopeReporter() {
     }
 
-    /** 系统框架作用域报到 */
-    public static void reportSystem() {
-        report(PrefConst.ACTIVE_FILE_SYSTEM, "system");
-    }
-
-    /** 电话服务作用域报到 */
-    public static void reportPhone() {
-        report(PrefConst.ACTIVE_FILE_PHONE, "phone");
-    }
-
     /**
-     * 写报到文件。内容为写入时刻的<b>墙钟时间</b>（System.currentTimeMillis），
-     * 应用侧据此判断报到是否发生在本次开机内（见 isScopeReported）。
-     * 不用 elapsedRealtime：它开机归零，跨重启无法直接比较。
+     * 报到电话服务作用域（有 Context，走 Provider）。
+     *
+     * @param xi 可传 null；若传入框架接口，会顺带把 system 侧的报到时间一并回传，
+     *           使 app 侧一次拿到两项状态。
      */
-    private static void report(String fileName, String label) {
-        final long now = System.currentTimeMillis();
-        final String content = String.valueOf(now);
-        // 异步执行：报到绝不能拖慢被 hook 进程的启动
+    public static void reportPhone(Context context, XposedInterface xi) {
+        if (context == null) {
+            XLog.w("%s: phone report skipped (context null)", TAG);
+            return;
+        }
         try {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    for (String root : DIRS) {
-                        try {
-                            File dir = new File(root);
-                            if (!dir.isDirectory() && !dir.mkdirs()) {
-                                continue;
-                            }
-                            File out = new File(dir, fileName);
-                            try (FileOutputStream fos = new FileOutputStream(out)) {
-                                fos.write(content.getBytes(StandardCharsets.UTF_8));
-                                fos.flush();
-                            }
-                            out.setReadable(true, false);
-                            XLog.i("%s: reported %s scope (wall=%d)", TAG, label, now);
-                            return;
-                        } catch (Throwable ignored) {
-                            // 尝试下一个候选目录
-                        }
-                    }
-                    XLog.w("%s: report %s scope failed (no writable dir)", TAG, label);
-                }
-            }, "smscodf-scope-" + label).start();
+            long systemWall = readSystemReport(xi);
+            android.os.Bundle in = new android.os.Bundle();
+            in.putString("scope", "phone");
+            in.putLong("phone_wall", System.currentTimeMillis());
+            in.putLong("system_wall", systemWall);
+            android.os.Bundle r = context.getContentResolver().call(
+                    Uri.parse("content://" + com.tianma.xsmscode.data.db.DBProvider.AUTHORITY),
+                    "scope_report", null, in);
+            boolean ok = r != null && r.getBoolean("ok", false);
+            XLog.i("%s: phone report %s (systemWall=%d)", TAG, ok ? "ok" : "failed", systemWall);
         } catch (Throwable t) {
-            XLog.e("%s: spawn reporter thread failed: %s", TAG, t);
+            XLog.e("%s: phone report failed: %s", TAG, t);
         }
-    }
-
-    /** 读取某作用域的报到时间戳；未报到返回 -1 */
-    public static long readReportedElapsed(String fileName) {
-        for (String root : DIRS) {
-            try {
-                File f = new File(root, fileName);
-                if (!f.isFile()) {
-                    continue;
-                }
-                byte[] buf = new byte[32];
-                try (java.io.FileInputStream fis = new java.io.FileInputStream(f)) {
-                    int n = fis.read(buf);
-                    if (n <= 0) {
-                        continue;
-                    }
-                    String s = new String(buf, 0, n, StandardCharsets.UTF_8).trim();
-                    return Long.parseLong(s);
-                }
-            } catch (Throwable ignored) {
-            }
-        }
-        return -1L;
     }
 
     /**
-     * 应用侧判断：某作用域是否在<b>本次开机内</b>报到过。
+     * 报到系统框架作用域。
      *
-     * <p>报到文件存的是<b>写入时刻的墙钟时间</b>（System.currentTimeMillis）。
-     * 应用侧用「文件时间 vs 本次开机时刻」比较：
-     * 开机时刻 = 当前墙钟 - elapsedRealtime。文件时间早于开机时刻，
-     * 说明是上一次开机留下的，视为未报到——重启后能正确显示"未激活"。
-     *
-     * <p>不用 elapsedRealtime 存储：它开机归零，跨重启无法直接比较。
+     * <p>system_server 无 Context，故写入 libxposed remote prefs；
+     * 下次电话进程报到时会把它一并带回 app 侧（见 reportPhone 的实现）。
      */
-    public static boolean isScopeReported(String fileName) {
-        long reported = readReportedElapsed(fileName);
-        if (reported <= 0) {
+    public static void reportSystem(XposedInterface xi) {
+        if (xi == null) {
+            XLog.w("%s: system report skipped (framework interface null)", TAG);
+            return;
+        }
+        try {
+            android.content.SharedPreferences sp = xi.getRemotePreferences(REMOTE_NAME);
+            if (sp == null) {
+                XLog.w("%s: system report failed (remote prefs null)", TAG);
+                return;
+            }
+            sp.edit()
+                    .putLong("system_wall", System.currentTimeMillis())
+                    .putString("system_ver", BuildConfig.VERSION_NAME)
+                    .commit();
+            XLog.i("%s: system report ok", TAG);
+        } catch (Throwable t) {
+            XLog.e("%s: system report failed: %s", TAG, t);
+        }
+    }
+
+    /** 读取 system 侧报到时间（供电话进程回传时使用） */
+    public static long readSystemReport(XposedInterface xi) {
+        if (xi == null) {
+            return -1L;
+        }
+        try {
+            android.content.SharedPreferences sp = xi.getRemotePreferences(REMOTE_NAME);
+            return sp == null ? -1L : sp.getLong("system_wall", -1L);
+        } catch (Throwable ignored) {
+            return -1L;
+        }
+    }
+
+    /**
+     * 模块加载时报到（2026-09-20）。
+     *
+     * <p>用官方 {@code ModuleLoadedParam} 精确判定当前进程：
+     * <ul>
+     *   <li>system_server → 写 libxposed remote prefs（无 Context 可用）</li>
+     *   <li>com.android.phone → 待其 Context 就绪后由 SmsHandlerHook 走 Provider 报到</li>
+     * </ul>
+     */
+    public static void reportOnLoad(XposedInterface xi, String processName, boolean isSystemServer) {
+        if (isSystemServer || "android".equals(processName)) {
+            reportSystem(xi);
+            return;
+        }
+        if ("com.android.phone".equals(processName)) {
+            // 此处尚无 Context；实际报到由 SmsHandlerHook 在拿到电话进程 Context 后触发
+            XLog.i("%s: phone process loaded, report deferred until context ready", TAG);
+            return;
+        }
+        // 其他进程（模块自身、com.oplus.subsys 等）不参与激活态判定
+    }
+
+    /**
+     * 判断报到时间是否落在<b>本次开机内</b>。
+     * 报到值用墙钟时间；重启后旧值早于开机时刻，自然失效。
+     */
+    public static boolean isWithinCurrentBoot(long reportedWallClock) {
+        if (reportedWallClock <= 0) {
             return false;
         }
         long bootWallClock = System.currentTimeMillis() - android.os.SystemClock.elapsedRealtime();
-        // 允许 3 秒误差（写入与开机时刻的时序差）
-        return reported >= bootWallClock - 3000L;
+        return reportedWallClock >= bootWallClock - 3000L;
     }
 }

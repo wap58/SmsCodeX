@@ -4,7 +4,6 @@ import android.os.Build;
 
 import com.tianma.xsmscode.common.utils.XLog;
 import com.tianma.xsmscode.xp.hook.BaseHook;
-import com.tianma.xsmscode.xp.hook.ScopeReporter;
 
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
@@ -57,9 +56,9 @@ public class PermissionGranterHook extends BaseHook {
                 new PackageManagerServiceHook(classLoader).startHook();
             }
             XLog.i("PermissionGranter: hooks installed");
-            // 系统框架作用域报到（2026-09-20）：供 UI 显示激活态。
-            // 此处无 Context，故写文件而非走 Provider（见 ScopeReporter 注释）。
-            ScopeReporter.reportSystem();
+            // 系统框架作用域报到由 SmsCodeEntry.onModuleLoaded 统一处理
+            // （那里有 XposedInterface，可写 remote prefs；此处无 Context，
+            //   反射取 Context 会 NPE 崩溃并触发 LSPosed 安全模式）。
         } catch (Throwable t) {
             XLog.e("PermissionGranter failed", t);
         }
