@@ -306,7 +306,7 @@
     <string name="pref_sms_code_header_summary">提示、复制与短信处理</string>
     <string name="pref_auto_input_header_summary">自动填充开关与应用屏蔽</string>
     <string name="pref_notification_header_summary">验证码通知与保留时长</string>
-    <string name="pref_code_records_header_summary">历史记录开关与保留数量</string>
+    <string name="pref_code_records_header_summary">记录接收验证码开关</string>
     <string name="pref_match_rules_header_summary">关键字、规则与测试</string>
     <string name="pref_experimental_header_summary">标记已读、删除短信与日志</string>
     <string name="pref_about_header_summary">版本、源码与隐私政策</string>

@@ -307,7 +307,7 @@
     <string name="pref_sms_code_header_summary">Toast, clipboard &amp; SMS handling</string>
     <string name="pref_auto_input_header_summary">Auto-fill switch &amp; blocked apps</string>
     <string name="pref_notification_header_summary">Code notification &amp; retention</string>
-    <string name="pref_code_records_header_summary">History switch &amp; limit</string>
+    <string name="pref_code_records_header_summary">Switch for recording received codes</string>
     <string name="pref_match_rules_header_summary">Keywords, rules &amp; testing</string>
     <string name="pref_experimental_header_summary">Mark read, delete SMS &amp; logging</string>
     <string name="pref_about_header_summary">Version, source &amp; privacy</string>
