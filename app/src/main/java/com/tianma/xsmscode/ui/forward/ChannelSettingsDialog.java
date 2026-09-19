@@ -2,7 +2,6 @@ package com.tianma.xsmscode.ui.forward;
 
 import android.app.Dialog;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -161,28 +160,13 @@ public class ChannelSettingsDialog extends AppCompatDialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 颜色一律从 Cyanea 配置显式取值：
-        // 本项目 Cyanea 主题下解析 ?attr/textColorPrimary / ?android:attr/colorBackgroundFloating
-        // 会回退失败（SettingsFragment 2026-09-15 已实测），导致白底白字看不见。
-        //
-        // 背景色对齐"隐私政策"弹窗（MaterialDialog）：它经 Theme.AppCompat.Dialog.Alert
-        // 取 android:colorBackgroundFloating，深色下为 Material 标准浮动色 #424242。
-        // 不能用 Cyanea.getBackgroundColor()——深色下是 #303030，比弹窗底色更黑。
-        int bgColor = Color.WHITE;
-        int textColor = Color.BLACK;
-        int hintColor = 0x66000000;
-        int dividerColor = 0x22000000;
-        int accentColor = Color.BLACK;
-        try {
-            com.jaredrummler.cyanea.Cyanea cyanea = com.jaredrummler.cyanea.Cyanea.getInstance();
-            boolean dark = cyanea.isDark();
-            bgColor = dark ? 0xFF424242 : Color.WHITE;
-            textColor = dark ? Color.WHITE : 0xFF212121;
-            hintColor = dark ? 0x66FFFFFF : 0x66000000;
-            dividerColor = dark ? 0x22FFFFFF : 0x22000000;
-            accentColor = cyanea.getAccent();
-        } catch (Throwable ignored) {
-        }
+        // 配色统一走 ChannelDialogTheme（内部按背景亮度判断明暗，并显式从 Cyanea 取值，
+        // 因为本项目通过主题属性取色会回退失败）
+        int bgColor = ChannelDialogTheme.dialogBackground();
+        int textColor = ChannelDialogTheme.textColor();
+        int hintColor = ChannelDialogTheme.hintColor();
+        int dividerColor = ChannelDialogTheme.dividerColor();
+        int accentColor = ChannelDialogTheme.accentColor();
 
         TextView title = view.findViewById(R.id.channel_settings_dialog_title);
         title.setText(titleFor(mChannel));

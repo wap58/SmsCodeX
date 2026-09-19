@@ -50,4 +50,14 @@ public class ForwardChannelListPreference extends ListPreference {
             mListener.onChannelChanged(this);
         }
     }
+
+    /**
+     * 供自绘弹窗（ForwardChannelDialog）在选中后手动通知宿主（2026-09-19）。
+     * 自绘弹窗不走 ListPreference 内部对话框，不会触发 setValueIndex，故需显式调用。
+     */
+    public void notifyChannelChanged() {
+        if (mListener != null) {
+            mListener.onChannelChanged(this);
+        }
+    }
 }
