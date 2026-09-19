@@ -164,6 +164,10 @@ public class ChannelSettingsDialog extends AppCompatDialogFragment {
         // 颜色一律从 Cyanea 配置显式取值：
         // 本项目 Cyanea 主题下解析 ?attr/textColorPrimary / ?android:attr/colorBackgroundFloating
         // 会回退失败（SettingsFragment 2026-09-15 已实测），导致白底白字看不见。
+        //
+        // 背景色对齐"隐私政策"弹窗（MaterialDialog）：它经 Theme.AppCompat.Dialog.Alert
+        // 取 android:colorBackgroundFloating，深色下为 Material 标准浮动色 #424242。
+        // 不能用 Cyanea.getBackgroundColor()——深色下是 #303030，比弹窗底色更黑。
         int bgColor = Color.WHITE;
         int textColor = Color.BLACK;
         int hintColor = 0x66000000;
@@ -171,10 +175,11 @@ public class ChannelSettingsDialog extends AppCompatDialogFragment {
         int accentColor = Color.BLACK;
         try {
             com.jaredrummler.cyanea.Cyanea cyanea = com.jaredrummler.cyanea.Cyanea.getInstance();
-            bgColor = cyanea.getBackgroundColor();
-            textColor = cyanea.isDark() ? Color.WHITE : 0xFF212121;
-            hintColor = cyanea.isDark() ? 0x66FFFFFF : 0x66000000;
-            dividerColor = cyanea.isDark() ? 0x22FFFFFF : 0x22000000;
+            boolean dark = cyanea.isDark();
+            bgColor = dark ? 0xFF424242 : Color.WHITE;
+            textColor = dark ? Color.WHITE : 0xFF212121;
+            hintColor = dark ? 0x66FFFFFF : 0x66000000;
+            dividerColor = dark ? 0x22FFFFFF : 0x22000000;
             accentColor = cyanea.getAccent();
         } catch (Throwable ignored) {
         }
