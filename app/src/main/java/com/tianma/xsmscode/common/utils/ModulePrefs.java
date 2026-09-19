@@ -174,10 +174,6 @@ public class ModulePrefs {
             "/storage/emulated/0/Android/data/com.smscodf.zhuxf/files/",
             "/storage/self/primary/Android/data/com.smscodf.zhuxf/files/",
     };
-            "/sdcard/Android/data/com.smscodf.zhuxf/files/",
-            "/storage/emulated/0/Android/data/com.smscodf.zhuxf/files/",
-            "/storage/self/primary/Android/data/com.smscodf.zhuxf/files/",
-    };
 
     private static Map<String, Object> loadViaModuleCache() {
         for (String root : CACHE_ROOTS) {
