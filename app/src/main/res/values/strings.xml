@@ -248,19 +248,7 @@
 
     <!-- edxposed users notice -->
     <string name="edxposed_users_notice">About this app</string>
-    <string name="about_software_content">Why this app was built:
-
-1. The original project had been unmaintained for a long time. With Android updates and LSPosed API changes, it no longer worked properly.
-
-2. Some environment-detection tools have already fingerprinted the original project, so it is easily flagged as an abnormal environment.
-
-3. Personal need: forwarding SMS to WeChat.
-
-Based on the above, this app was rebuilt and enhanced with AI assistance on top of the original open-source code.
-
-This app has been fully refactored and supports the latest LSP framework. Besides the original features, it adds SMS forwarding, and uses a brand-new package name to avoid detection.
-
-Special thanks to the author of the original project for sharing it as open source.</string>
+    <string name="about_software_content">Why this app was built:\n\n1. The original project had been unmaintained for a long time. With Android updates and LSPosed API changes, it no longer worked properly.\n\n2. Some environment-detection tools have already fingerprinted the original project, so it is easily flagged as an abnormal environment.\n\n3. Personal need: forwarding SMS to WeChat.\n\nBased on the above, this app was rebuilt and enhanced with AI assistance on top of the original open-source code.\n\nThis app has been fully refactored and supports the latest LSP framework. Besides the original features, it adds SMS forwarding, and uses a brand-new package name to avoid detection.\n\nSpecial thanks to the author of the original project for sharing it as open source.</string>
     <!-- edxposed users notice end -->
 
     <!-- check update -->

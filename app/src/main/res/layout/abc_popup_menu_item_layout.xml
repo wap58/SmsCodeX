@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    覆盖 appcompat 的 abc_popup_menu_item_layout（2026-09-20）。
+
+    背景：该布局硬编码 android:minWidth="196dip"，本机 density=3.0 下约 588px
+    （屏宽 54%）。菜单只有"关于软件"四个字时，右侧空出一大片。
+
+    为什么不用主题属性：
+      ListPopupWindow 的构造函数只读取 android:dropDownHorizontalOffset /
+      android:dropDownVerticalOffset，**不读 android:dropDownWidth**
+      （已反编译核实），故主题里设 dropDownWidth 无效。
+
+    做法：与框架原布局结构一致，仅把 minWidth 从 196dip 调小到 112dp。
+    原先担心的私有样式（RtlOverlay.*）实际都在 R 清单里可解析，
+    仅 RTL 场景生效；此处保留引用以维持原有 RTL 行为。
+-->
+<androidx.appcompat.view.menu.ListMenuItemView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minWidth="112dp"
+        android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/group_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dip"
+        android:layout_marginTop="4dip"
+        android:layout_marginBottom="4dip"
+        android:background="@drawable/abc_list_divider_material" />
+
+    <LinearLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/dropdownListPreferredItemHeight"
+        android:duplicateParentState="true"
+        style="@style/RtlOverlay.Widget.AppCompat.PopupMenuItem">
+
+        <RelativeLayout
+                android:layout_width="0dip"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:duplicateParentState="true"
+                style="@style/RtlOverlay.Widget.AppCompat.PopupMenuItem.InternalGroup">
+
+            <TextView
+                    android:id="@+id/title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:textAppearance="?attr/textAppearanceLargePopupMenu"
+                    android:singleLine="true"
+                    android:duplicateParentState="true"
+                    android:ellipsize="marquee"
+                    android:fadingEdge="horizontal"
+                    style="@style/RtlOverlay.Widget.AppCompat.PopupMenuItem.Text" />
+
+            <TextView
+                    android:id="@+id/shortcut"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/title"
+                    android:textAppearance="?attr/textAppearanceSmallPopupMenu"
+                    android:singleLine="true"
+                    android:duplicateParentState="true"
+                    style="@style/RtlOverlay.Widget.AppCompat.PopupMenuItem.Text" />
+
+        </RelativeLayout>
+
+        <ImageView
+                android:id="@+id/submenuarrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:scaleType="center"
+                android:visibility="gone"
+                style="@style/RtlOverlay.Widget.AppCompat.PopupMenuItem.SubmenuArrow" />
+
+    </LinearLayout>
+
+</androidx.appcompat.view.menu.ListMenuItemView>
