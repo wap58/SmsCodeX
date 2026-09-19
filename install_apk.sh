@@ -29,14 +29,22 @@ esac
 
 echo "== 目标: $APK =="
 
-# 1. 确认文件存在并取大小
-INFO=$(android-shizuku-cli exec "stat -c %s '$APK' 2>/dev/null || echo MISSING" 2>/dev/null \
-       | grep -oE '[0-9]+|MISSING' | head -1)
-if [ "$INFO" = "MISSING" ] || [ -z "$INFO" ]; then
-    echo "错误：设备上找不到该文件"
+# 1. 确认文件存在并取大小（走 JSON 解析，避免从转义文本里误抓数字）
+SIZE=$(android-shizuku-cli exec "stat -c %s '$APK' 2>/dev/null || echo 0" 2>/dev/null \
+       | python3 -c "
+import sys,json,re
+t=sys.stdin.read()
+m=re.search(r'\{.*\}', t, re.S)
+try:
+    out=json.loads(m.group(0))['data']['stdout'].strip()
+    print(out if out.isdigit() else 0)
+except Exception:
+    print(0)
+" 2>/dev/null)
+if [ -z "$SIZE" ] || [ "$SIZE" = "0" ]; then
+    echo "错误：设备上找不到该文件（或大小为 0）"
     exit 1
 fi
-SIZE="$INFO"
 echo "   大小: $SIZE 字节"
 
 # 2. 记录安装前的版本，便于对比
@@ -52,8 +60,17 @@ echo "   安装前: $BEFORE"
 
 # 3. 走 stdin 管道安装（关键步骤）
 echo "== 安装中 =="
-android-shizuku-cli exec "cat '$APK' | pm install -r -S $SIZE" 2>&1 \
-    | grep -oE '"stdout": "[^"]*"|Success|Failure[^"]*' | head -3
+android-shizuku-cli exec "cat '$APK' | pm install -r -S $SIZE" 2>/dev/null \
+    | python3 -c "
+import sys,json,re
+t=sys.stdin.read()
+m=re.search(r'\{.*\}', t, re.S)
+try:
+    d=json.loads(m.group(0))['data']
+    print('   ' + (d.get('stdout','').strip() or d.get('stderr','').strip()[:200]))
+except Exception:
+    print('   安装命令未返回可解析结果')
+"
 
 # 4. 验证
 AFTER=$(android-shizuku-cli package info com.smscodf.zhuxf 2>/dev/null \
@@ -68,7 +85,15 @@ echo "   安装后: $AFTER"
 
 # 5. 确认没有在设备上留临时文件
 LEFTOVER=$(android-shizuku-cli exec "ls /data/local/tmp/*.apk 2>/dev/null | wc -l" 2>/dev/null \
-           | grep -oE '[0-9]+' | head -1)
-echo "   /data/local/tmp 残留 apk: ${LEFTOVER:-0} 个"
+           | python3 -c "
+import sys,json,re
+t=sys.stdin.read()
+m=re.search(r'\{.*\}', t, re.S)
+try:
+    print(json.loads(m.group(0))['data']['stdout'].strip())
+except Exception:
+    print('?')
+" 2>/dev/null)
+echo "   /data/local/tmp 残留 apk: ${LEFTOVER:-?} 个（本脚本不产生，若有为历史遗留）"
 
 echo "== 完成 =="
