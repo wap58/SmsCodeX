@@ -125,6 +125,8 @@
     <string name="alipay_enable_prompt">请先启用支付宝</string>
     <string name="wechat_install_prompt">请先安装微信</string>
     <string name="wechat_enable_prompt">请先启用微信</string>
+    <string name="pref_faq_entry">pref_faq_entry</string>
+    <string name="pref_faq_entry_title">常见问题</string>
     <string name="pref_privacy_policy_title">隐私政策</string>
     <!-- preference about end -->
 
