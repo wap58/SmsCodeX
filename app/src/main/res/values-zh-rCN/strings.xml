@@ -291,6 +291,8 @@
         <item>飞书机器人通道如何配置？</item>
         <item>息知通道如何配置？</item>
         <item>推送加通道如何配置？</item>
+    
+        <item>本软件需要 root 权限吗？</item>
     </string-array>
     <string-array name="answer_list">
         <item>在模块列表中重新勾选本模块，杀死本模块App之后重新打开即可，必要时需要重启手机。</item>
@@ -333,6 +335,8 @@
         <item>1. 访问推送加官网 pushplus.plus 注册并获取你的 Token。
 
 2. 在「通道参数」中粘贴 Token，并在「转发通道」中选择“推送加”。</item>
+    
+        <item>不需要。短信转发、验证码拦截、通知、验证码记录等功能全部基于 LSPosed 框架实现，不依赖 root 权限。\n\n仅「自动输入」的第三级兜底会尝试执行 su 命令。自动输入按以下顺序尝试：\n1. 直接注入按键（需要 INJECT_EVENTS 权限，由模块自动补授）\n2. 模拟 Ctrl+V 粘贴\n3. 执行 su 命令输入（仅在上述两步都失败时）\n\n正常情况下前两步即可成功，root 路径不会被触发。因此未授予 root 权限不影响使用。\n\n若你的设备上自动输入始终失败，可在 root 管理器中授权本应用作为兜底。</item>
     </string-array>
     <!-- faq end -->
 

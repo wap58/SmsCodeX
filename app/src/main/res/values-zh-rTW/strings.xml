@@ -291,6 +291,8 @@
         <item>飛書機器人通道如何設定？</item>
         <item>息知通道如何設定？</item>
         <item>推送加通道如何設定？</item>
+    
+        <item>本軟體需要 root 權限嗎？</item>
     </string-array>
     <string-array name="answer_list">
         <item>在模組列表中重新勾選本模組，殺死本模組App之後重新打開即可，必要時需要重啟手機。</item>
@@ -333,6 +335,8 @@
         <item>1. 訪問推送加官網 pushplus.plus 註冊並取得你的 Token。
 
 2. 在「通道參數」中貼上 Token，並在「轉發通道」中選擇“推送加”。</item>
+    
+        <item>不需要。簡訊轉發、驗證碼攔截、通知、驗證碼記錄等功能全部基於 LSPosed 框架實現，不依賴 root 權限。\n\n僅「自動輸入」的第三級兜底會嘗試執行 su 命令。自動輸入按以下順序嘗試：\n1. 直接注入按鍵（需要 INJECT_EVENTS 權限，由模組自動補授）\n2. 模擬 Ctrl+V 貼上\n3. 執行 su 命令輸入（僅在上述兩步都失敗時）\n\n正常情況下前兩步即可成功，root 路徑不會被觸發。因此未授予 root 權限不影響使用。\n\n若你的裝置上自動輸入始終失敗，可在 root 管理器中授權本軟體作為兜底。</item>
     </string-array>
     <!-- faq end -->
 
