@@ -35,8 +35,8 @@ public class ApkVersion implements Comparable<ApkVersion> {
             return 1;
         }
 
-        String[] thisParts = splitVersion(this.getVersionName());
-        String[] thatParts = splitVersion(that.getVersionName());
+        int[] thisParts = splitVersion(this.getVersionName());
+        int[] thatParts = splitVersion(that.getVersionName());
 
         int maxLength = Math.max(thisParts.length, thatParts.length);
         for (int i = 0; i < maxLength; i++) {
