@@ -24,6 +24,9 @@ public class ModulePrefs {
 
     private static final String TAG = "XSmsCode-Prefs";
 
+    /** 应用进程 Provider 授权（用于唤醒 app 进程 / 读取配置） */
+    private static final String PROVIDER_AUTHORITY = "com.smscodf.zhuxf.db.provider";
+
     private static final String PROXY_ROOT = "/data/misc/apexdata";
     private static final String LEGACY_TEMPLATE = "/data/data/%s/shared_prefs/%s.xml";
 
