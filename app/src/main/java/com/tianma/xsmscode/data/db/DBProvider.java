@@ -110,6 +110,47 @@ public class DBProvider extends ContentProvider {
             result.putBoolean("ok", true);
             return result;
         }
+        // 电话进程读取配置（2026-09-19 方案A）：
+        // 应用进程读自己的 SharedPreferences 必然成功（不受 SELinux MCS 影响），
+        // 打包回传给模块。模块侧异步调用 + 超时，避免 app 冻结时卡住短信处理。
+        // 仅接受 system(1000)/radio(1001)/本应用 uid 的调用。
+        if ("get_prefs".equals(method)) {
+            int callingUid = android.os.Binder.getCallingUid();
+            boolean allowed = callingUid == android.os.Process.SYSTEM_UID
+                    || callingUid == 1001
+                    || callingUid == android.os.Process.myUid();
+            android.os.Bundle result = new android.os.Bundle();
+            if (!allowed) {
+                result.putBoolean("ok", false);
+                return result;
+            }
+            Context ctx = getContext();
+            if (ctx == null) {
+                result.putBoolean("ok", false);
+                return result;
+            }
+            android.content.SharedPreferences sp = ctx.getSharedPreferences(
+                    com.tianma.xsmscode.common.constant.PrefConst.PREF_NAME, Context.MODE_PRIVATE);
+            android.os.Bundle prefs = new android.os.Bundle();
+            for (java.util.Map.Entry<String, ?> e : sp.getAll().entrySet()) {
+                Object v = e.getValue();
+                String k = e.getKey();
+                if (v instanceof Boolean) {
+                    prefs.putBoolean(k, (Boolean) v);
+                } else if (v instanceof Integer) {
+                    prefs.putInt(k, (Integer) v);
+                } else if (v instanceof Long) {
+                    prefs.putLong(k, (Long) v);
+                } else if (v instanceof Float) {
+                    prefs.putFloat(k, (Float) v);
+                } else if (v instanceof String) {
+                    prefs.putString(k, (String) v);
+                }
+            }
+            result.putBoolean("ok", true);
+            result.putBundle("prefs", prefs);
+            return result;
+        }
         // 电话进程的自杀指令：App 进程自我了断（无需任何权限）；
         // 仅接受 system(1000)/radio(1001)/本应用 uid 的调用，防滥用
         if ("kill_me".equals(method)) {

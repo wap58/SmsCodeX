@@ -76,7 +76,14 @@ public class ModulePrefs {
             applyLogLevel(viaRemote);
             return viaRemote;
         }
-        // 4) 全部失败：尝试唤醒 app 进程（让 Application.onCreate 导出配置）
+        // 4) Provider 通道（异步 + 超时，绝不阻塞调用线程）
+        Map<String, Object> viaProvider = loadViaProviderAsync(packageName, prefFileName);
+        if (viaProvider != null) {
+            writeModuleCache(viaProvider);
+            applyLogLevel(viaProvider);
+            return viaProvider;
+        }
+        // 5) 全部失败：尝试唤醒 app 进程（让 Application.onCreate 导出配置）
         wakeAppIfNeeded();
         if (!sLoggedFailure) {
             sLoggedFailure = true;
@@ -86,9 +93,87 @@ public class ModulePrefs {
         return null;
     }
 
+    /** Provider 调用超时（毫秒）：app 被冻结时不能拖住短信处理 */
+    private static final long PROVIDER_TIMEOUT_MS = 2500;
+
+    /** Provider 结果缓存（成功读取后短期内复用，避免每条短信都跨进程） */
+    private static Map<String, Object> sProviderCache;
+    private static long sProviderCacheTime;
+
+    /**
+     * Provider 通道（2026-09-19 方案A）。
+     *
+     * 应用进程读自己的 SharedPreferences 必然成功（不受 SELinux MCS 限制），
+     * 通过 ContentProvider 回传给模块。关键约束：
+     *  - 仅电话进程执行（避免在 system_server 内做跨进程调用）
+     *  - 在独立线程执行 + 超时等待，绝不阻塞调用线程
+     *    （历史教训：同步 Provider 调用在 app 冻结时会卡死短信处理）
+     *  - 成功后写模块缓存，供下次开机使用
+     */
+    private static Map<String, Object> loadViaProviderAsync(String packageName, String prefFileName) {
+        // 成功结果短期复用（60 秒），避免同一批短信重复跨进程
+        if (sProviderCache != null && System.currentTimeMillis() - sProviderCacheTime < 60_000L) {
+            return sProviderCache;
+        }
+        final android.content.Context ctx = sPhoneContext;
+        if (ctx == null) {
+            return null;   // 非电话进程：不做跨进程调用
+        }
+        final java.util.concurrent.atomic.AtomicReference<Map<String, Object>> ref =
+                new java.util.concurrent.atomic.AtomicReference<>(null);
+        final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    android.os.Bundle r = ctx.getContentResolver().call(
+                            android.net.Uri.parse("content://" + PROVIDER_AUTHORITY),
+                            "get_prefs", null, null);
+                    if (r != null && r.getBoolean("ok", false)) {
+                        android.os.Bundle prefs = r.getBundle("prefs");
+                        if (prefs != null && !prefs.isEmpty()) {
+                            Map<String, Object> map = new HashMap<>();
+                            for (String k : prefs.keySet()) {
+                                map.put(k, prefs.get(k));
+                            }
+                            ref.set(map);
+                        }
+                    }
+                } catch (Throwable e) {
+                    XLog.e("%s: provider call failed: %s", TAG, e);
+                } finally {
+                    latch.countDown();
+                }
+            }
+        }, "smscodf-prefs-provider");
+        t.setDaemon(true);
+        t.start();
+        try {
+            if (!latch.await(PROVIDER_TIMEOUT_MS, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+                XLog.e("%s: provider call timed out (%dms)", TAG, PROVIDER_TIMEOUT_MS);
+                return null;
+            }
+        } catch (InterruptedException ignored) {
+            return null;
+        }
+        Map<String, Object> map = ref.get();
+        if (map != null) {
+            sProviderCache = map;
+            sProviderCacheTime = System.currentTimeMillis();
+            sCache = map;
+            sCacheSource = "provider";
+            XLog.i("%s: loaded %d key(s) via app provider", TAG, map.size());
+        }
+        return map;
+    }
+
     /** 模块自建缓存文件（电话进程创建 → 无 MCS 分类 → 重启后可读） */
     private static final String CACHE_FILE_NAME = "prefs_cache.xml";
     private static final String[] CACHE_ROOTS = {
+            "/sdcard/Android/data/com.smscodf.zhuxf/files/",
+            "/storage/emulated/0/Android/data/com.smscodf.zhuxf/files/",
+            "/storage/self/primary/Android/data/com.smscodf.zhuxf/files/",
+    };
             "/sdcard/Android/data/com.smscodf.zhuxf/files/",
             "/storage/emulated/0/Android/data/com.smscodf.zhuxf/files/",
             "/storage/self/primary/Android/data/com.smscodf.zhuxf/files/",
