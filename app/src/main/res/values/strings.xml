@@ -388,4 +388,5 @@
     <string name="forward_pushplus_summary">Paste your PushPlus token (get it from pushplus.plus)</string>
     <string name="forward_channel_page_xizhi">Xizhi</string>
     <string name="forward_channel_page_pushplus">PushPlus</string>
+    <string name="channel_settings_dialog_done">Done</string>
 </resources>

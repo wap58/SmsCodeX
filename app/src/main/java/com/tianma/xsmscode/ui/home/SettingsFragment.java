@@ -152,7 +152,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 通道参数 clicked");
                 String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
                         .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
-                com.tianma.xsmscode.ui.forward.ChannelSettingsActivity.open(requireContext(), ch);
+                com.tianma.xsmscode.ui.forward.ChannelSettingsDialog.show(getChildFragmentManager(), ch);
                 return true;
             });
             // "通道参数"行摘要改为固定说明文字（2026-09-18 用户定稿），由 xml 的 android:summary 绑定，不再动态覆盖
@@ -328,7 +328,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
             // 显式入口：进入当前所选通道的独立参数配置页（2026-09-16，用户反馈"找不到配置的地方"）
             String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
                     .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
-            com.tianma.xsmscode.ui.forward.ChannelSettingsActivity.open(mActivity, ch);
+            com.tianma.xsmscode.ui.forward.ChannelSettingsDialog.show(getChildFragmentManager(), ch);
         } else if (PrefConst.KEY_ENTRY_CODE_RECORDS.equals(key)) {
             CodeRecordActivity.startToMe(mActivity);
         } else if (PrefConst.KEY_APP_BLOCK_ENTRY.equals(key)) {
@@ -403,7 +403,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
         } else if (PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(key)) {
             com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 转发通道 changed to %s", newValue);
             // 摘要由 SummaryProvider 实时计算，无需手动设置；选中即持久化生效
-            com.tianma.xsmscode.ui.forward.ChannelSettingsActivity.open(mActivity, (String) newValue);
+            com.tianma.xsmscode.ui.forward.ChannelSettingsDialog.show(getChildFragmentManager(), (String) newValue);
         } else {
             return false;
         }

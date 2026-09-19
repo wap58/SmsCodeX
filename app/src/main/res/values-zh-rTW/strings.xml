@@ -387,4 +387,5 @@
     <string name="forward_pushplus_summary">貼上你的推送加 Token（官網 pushplus.plus 取得）</string>
     <string name="forward_channel_page_xizhi">息知</string>
     <string name="forward_channel_page_pushplus">推送加</string>
+    <string name="channel_settings_dialog_done">完成</string>
 </resources>

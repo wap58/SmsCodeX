@@ -13,6 +13,22 @@
         <item name="preferenceTheme">@style/MyPreferenceStyle</item>
     </style>
 
+    <!--
+        通道参数弹窗主题（2026-09-19）：
+        1. 必须继承 Theme.Cyanea.*，否则 Cyanea 动态配色失效（弹窗会是 Material 默认青色）；
+        2. 必须带 preferenceTheme，否则 PreferenceFragmentCompat 抛
+           IllegalStateException: Must specify preferenceTheme in theme；
+        3. windowIsFloating 让它成为浮层弹窗（而非整页 Activity）。
+    -->
+    <style name="Theme.XsmsCode.ChannelDialog" parent="Theme.Cyanea.Light.NoActionBar">
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+        <item name="preferenceTheme">@style/MyPreferenceStyle</item>
+        <item name="preferenceIconColor">?android:attr/textColorPrimary</item>
+    </style>
+
     <style name="MyPreferenceStyle" parent="@style/PreferenceThemeOverlay.v14.Material">
         <item name="preferenceCategoryStyle">@style/MyPreferenceCategoryStyle</item>
     </style>
