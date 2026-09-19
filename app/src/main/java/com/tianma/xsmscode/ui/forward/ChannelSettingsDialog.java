@@ -1,71 +1,151 @@
 package com.tianma.xsmscode.ui.forward;
 
 import android.app.Dialog;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.app.AppCompatDialog;
+import androidx.appcompat.app.AppCompatDialogFragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.preference.PreferenceManager;
 
-import com.smscodf.zhuxf.R;
-import com.tianma.xsmscode.common.utils.XLog;
+import com.tianma.xsmscode.R;
+import com.tianma.xsmscode.common.constant.PrefConst;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * 通道参数配置弹窗（2026-09-19，用户指定：由整页 Activity 改为弹窗）。
+ * 通道参数配置弹窗。
  *
- * 实现要点：
- * 1. 复用现有 {@link ChannelSettingsFragment}（PreferenceFragmentCompat），
- *    6 个通道的 preference xml 一行未改；
- * 2. 主题必须带 preferenceTheme，见 styles.xml 的 Theme.XsmsCode.ChannelDialog；
- * 3. 宽度 / 键盘行为在 onStart() 里手动接管（默认 dialog 宽约 280dp 太窄）。
+ * <p>单层弹窗：所有字段内联在同一个弹窗里直接编辑，底部「完成」统一保存。
+ * 不使用 {@code PreferenceFragmentCompat}，因此不会出现"点一项又弹一层"的嵌套输入框。
+ *
+ * <p>字段直接读写默认 SharedPreferences（{@link PrefConst#PREF_NAME}），
+ * 与原有 preference 页面共用同一份存储，键名保持一致。
  */
-public class ChannelSettingsDialog extends DialogFragment {
+public class ChannelSettingsDialog extends AppCompatDialogFragment {
 
-    private static final String TAG = "ChannelSettingsDialog";
     private static final String ARG_CHANNEL = "channel";
+    private static final String TAG = "ChannelSettingsDialog";
 
-    /** 弹窗宽度占屏幕比例 */
-    private static final float WIDTH_RATIO = 0.92f;
-    /** 弹窗宽度上限（平板 / 折叠屏） */
-    private static final int MAX_WIDTH_DP = 560;
+    /** 一个待编辑字段：标题、键名、是否密码型 */
+    private static final class Field {
+        final int titleRes;
+        final String key;
+        final boolean secret;
 
-    public static ChannelSettingsDialog newInstance(String channel) {
-        ChannelSettingsDialog dialog = new ChannelSettingsDialog();
-        Bundle args = new Bundle();
-        args.putString(ARG_CHANNEL, channel == null ? "wecom_agent" : channel);
-        dialog.setArguments(args);
-        return dialog;
+        Field(int titleRes, String key, boolean secret) {
+            this.titleRes = titleRes;
+            this.key = key;
+            this.secret = secret;
+        }
     }
 
-    /** 统一的弹出入口，内部做重复弹出保护（名字避开父类 DialogFragment.show） */
     public static void showDialog(@Nullable FragmentManager fm, String channel) {
         if (fm == null) {
             return;
         }
-        if (fm.findFragmentByTag(TAG) != null) {
+        ChannelSettingsDialog old = (ChannelSettingsDialog) fm.findFragmentByTag(TAG);
+        if (old != null) {
             return;
         }
-        newInstance(channel).show(fm, TAG);
+        ChannelSettingsDialog dialog = new ChannelSettingsDialog();
+        Bundle args = new Bundle();
+        args.putString(ARG_CHANNEL, channel);
+        dialog.setArguments(args);
+        dialog.show(fm, TAG);
     }
 
-    private String channel() {
-        Bundle args = getArguments();
-        return args == null ? "wecom_agent" : args.getString(ARG_CHANNEL, "wecom_agent");
+    /** 通道显示名，与 {@link ChannelSettingsFragment#titleFor} 保持一致 */
+    private static int titleFor(String channel) {
+        switch (channel == null ? "wecom_agent" : channel) {
+            case "wecom_robot":
+                return R.string.forward_channel_page_wecom_robot;
+            case "dingtalk":
+                return R.string.forward_channel_page_dingtalk;
+            case "feishu":
+                return R.string.forward_channel_page_feishu;
+            case "xizhi":
+                return R.string.forward_channel_page_xizhi;
+            case "pushplus":
+                return R.string.forward_channel_page_pushplus;
+            case "wecom_agent":
+            default:
+                return R.string.forward_channel_page_wecom_agent;
+        }
     }
+
+    private static List<Field> fieldsFor(String channel) {
+        List<Field> list = new ArrayList<>();
+        switch (channel == null ? "wecom_agent" : channel) {
+            case "wecom_robot":
+                list.add(new Field(R.string.forward_wecom_robot_title,
+                        PrefConst.KEY_FORWARD_WECOM_ROBOT_WEBHOOK, false));
+                break;
+            case "dingtalk":
+                list.add(new Field(R.string.forward_dingtalk_title,
+                        PrefConst.KEY_FORWARD_DINGTALK_WEBHOOK, false));
+                list.add(new Field(R.string.forward_dingtalk_secret_title,
+                        PrefConst.KEY_FORWARD_DINGTALK_SECRET, true));
+                break;
+            case "feishu":
+                list.add(new Field(R.string.forward_feishu_title,
+                        PrefConst.KEY_FORWARD_FEISHU_WEBHOOK, false));
+                break;
+            case "xizhi":
+                list.add(new Field(R.string.forward_xizhi_title,
+                        PrefConst.KEY_FORWARD_XIZHI_KEY, false));
+                break;
+            case "pushplus":
+                list.add(new Field(R.string.forward_pushplus_title,
+                        PrefConst.KEY_FORWARD_PUSHPLUS_TOKEN, false));
+                break;
+            case "wecom_agent":
+            default:
+                list.add(new Field(R.string.pref_forward_wecom_corpid_title,
+                        PrefConst.KEY_FORWARD_WECOM_CORPID, false));
+                list.add(new Field(R.string.pref_forward_wecom_agentid_title,
+                        PrefConst.KEY_FORWARD_WECOM_AGENTID, false));
+                list.add(new Field(R.string.pref_forward_wecom_secret_title,
+                        PrefConst.KEY_FORWARD_WECOM_SECRET, true));
+                list.add(new Field(R.string.pref_forward_wecom_touser_title,
+                        PrefConst.KEY_FORWARD_WECOM_TOUSER, false));
+                break;
+        }
+        return list;
+    }
+
+    private String mChannel;
+    private List<Field> mFields = new ArrayList<>();
+    private final List<EditText> mInputs = new ArrayList<>();
+    private MaxHeightScrollView mScroll;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setStyle(DialogFragment.STYLE_NO_TITLE, R.style.Theme_XsmsCode_ChannelDialog);
+        mChannel = getArguments() == null ? null : getArguments().getString(ARG_CHANNEL);
+        if (mChannel == null) {
+            mChannel = "wecom_agent";
+        }
+        mFields = fieldsFor(mChannel);
+    }
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        return new AppCompatDialog(requireContext(), R.style.Theme_XsmsCode_ChannelDialog);
     }
 
     @Nullable
@@ -80,22 +160,62 @@ public class ChannelSettingsDialog extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        String channel = channel();
-        XLog.i("SmsCodeX: ChannelSettingsDialog onViewCreated channel=%s", channel);
-
         TextView title = view.findViewById(R.id.channel_settings_dialog_title);
-        title.setText(ChannelSettingsFragment.titleFor(requireContext(), channel));
+        title.setText(titleFor(mChannel));
+
+        mScroll = view.findViewById(R.id.channel_settings_dialog_scroll);
+        LinearLayout fieldsBox = view.findViewById(R.id.channel_settings_dialog_fields);
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(requireContext());
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
+
+        for (Field field : mFields) {
+            View row = inflater.inflate(R.layout.item_channel_field, fieldsBox, false);
+            TextView fieldTitle = row.findViewById(R.id.channel_field_title);
+            EditText input = row.findViewById(R.id.channel_field_input);
+
+            fieldTitle.setText(field.titleRes);
+            input.setText(sp.getString(field.key, ""));
+            input.setHint(field.titleRes);
+            input.setTag(field.key);
+
+            if (field.secret) {
+                // 密钥类字段：保持可见，方便核对是否填过；不提交则原值不变
+                input.setInputType(android.text.InputType.TYPE_CLASS_TEXT
+                        | android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+            }
+            input.setSingleLine(true);
+
+            mInputs.add(input);
+            fieldsBox.addView(row);
+        }
 
         view.findViewById(R.id.channel_settings_dialog_done)
-                .setOnClickListener(v -> dismiss());
+                .setOnClickListener(v -> {
+                    saveValues();
+                    dismissAllowingStateLoss();
+                });
+    }
 
-        // 重建（如旋转屏幕）时 FragmentManager 会自动恢复子 Fragment，避免重复添加
-        if (savedInstanceState == null) {
-            getChildFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.channel_settings_dialog_container,
-                            ChannelSettingsFragment.newInstance(channel))
-                    .commit();
+    /** 把各输入框的当前值写回 SharedPreferences（仅写有变化的项） */
+    private void saveValues() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(requireContext());
+        SharedPreferences.Editor editor = sp.edit();
+        boolean changed = false;
+        for (EditText input : mInputs) {
+            String key = (String) input.getTag();
+            if (TextUtils.isEmpty(key)) {
+                continue;
+            }
+            String newValue = input.getText() == null ? "" : input.getText().toString().trim();
+            String oldValue = sp.getString(key, "");
+            if (!TextUtils.equals(newValue, oldValue)) {
+                editor.putString(key, newValue);
+                changed = true;
+            }
+        }
+        if (changed) {
+            editor.apply();
         }
     }
 
@@ -110,18 +230,19 @@ public class ChannelSettingsDialog extends DialogFragment {
         if (window == null) {
             return;
         }
-
-        // 默认 dialog 宽度约 280dp，对参数表单太窄，这里撑到屏宽 92%
+        // 宽度取屏宽的 92%，上限 560dp，避免大屏上被拉得过分宽
         int screenWidth = getResources().getDisplayMetrics().widthPixels;
-        float density = getResources().getDisplayMetrics().density;
-        int width = Math.min((int) (screenWidth * WIDTH_RATIO), (int) (MAX_WIDTH_DP * density));
+        int maxWidth = (int) (560 * getResources().getDisplayMetrics().density);
+        int width = Math.min((int) (screenWidth * 0.92f), maxWidth);
         window.setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT);
 
-        // 键盘弹出时收缩窗口，避免输入框被遮挡
+        // 键盘弹出时压缩弹窗可用高度（而非把弹窗顶出屏幕），配合内容区限高使用
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        // 卡片圆角由布局提供，窗口背景必须透明，否则会出现方形白底
-        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-        dialog.setCanceledOnTouchOutside(true);
+        // 内容区限高，保证键盘弹出时输入框不会被顶出屏幕
+        if (mScroll != null) {
+            int screenHeight = getResources().getDisplayMetrics().heightPixels;
+            mScroll.setMaxHeight((int) (screenHeight * 0.5f));
+        }
     }
 }

@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    通道参数弹窗布局（2026-09-19）
-    结构与"隐私政策"弹窗一致：标题 + 内容区 + 底部操作区。
-    内容区由 ChannelSettingsDialog 塞入 ChannelSettingsFragment。
--->
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- 通道参数配置弹窗：单层，字段内联编辑 -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardBackgroundColor="?attr/colorSurface"
@@ -24,48 +18,59 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-medium"
-            android:paddingStart="24dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
             android:paddingTop="20dp"
-            android:paddingEnd="24dp"
             android:paddingBottom="14dp"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="18sp"
-            tools:ignore="RtlSymmetry" />
+            android:textSize="18sp" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="?android:attr/listDivider" />
 
-        <com.tianma.xsmscode.ui.forward.MaxHeightFrameLayout
-            android:id="@+id/channel_settings_dialog_container"
+        <com.tianma.xsmscode.ui.forward.MaxHeightScrollView
+            android:id="@+id/channel_settings_dialog_scroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="72dp" />
+            android:fillViewport="true"
+            android:scrollbarStyle="outsideOverlay">
+
+            <LinearLayout
+                android:id="@+id/channel_settings_dialog_fields"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="4dp" />
+        </com.tianma.xsmscode.ui.forward.MaxHeightScrollView>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="?android:attr/listDivider" />
 
-        <TextView
-            android:id="@+id/channel_settings_dialog_done"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingStart="24dp"
-            android:paddingTop="14dp"
-            android:paddingEnd="24dp"
-            android:paddingBottom="14dp"
-            android:text="@string/channel_settings_dialog_done"
-            android:textColor="?attr/colorAccent"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            tools:ignore="RtlSymmetry" />
+            android:gravity="end"
+            android:orientation="horizontal">
 
+            <TextView
+                android:id="@+id/channel_settings_dialog_done"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingStart="20dp"
+                android:paddingTop="14dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="14dp"
+                android:text="@string/channel_settings_dialog_done"
+                android:textColor="?attr/colorAccent"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
-
 </com.google.android.material.card.MaterialCardView>
