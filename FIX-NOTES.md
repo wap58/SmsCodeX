@@ -178,6 +178,37 @@ ActivationService: service bound, framework=LSPosed 2.2.0-it, api=102, scope=[..
    - `Config diag: enabled=true block=true copy=true autoCancel=true`  ← **判据**
    - 激活态：`ActivationService: service bound, framework=LSPosed ...`
 
+## ★ 转发范围（仅验证码 / 全部短信）实测结论（2026-09-20）
+
+切「全部短信」后，普通短信正常转发且**不被删除**（用户实测确认）。
+
+**日志判据**：
+
+普通短信（scope=all 时）：
+```
+Config diag: ... scope=all ...
+Sender: "13138345715"                       ← 手机号（非服务号）
+Non-code SMS, forwarded due to scope=all    ← 走非验证码分支
+Forward direct (attempt 1): succeed
+```
+★ **不出现** `Copy to clipboard succeed`、**不出现** `Blocking code SMS...`
+
+验证码短信：
+```
+Sender: "10010"
+Copy to clipboard succeed
+Forward direct (attempt 1): succeed
+Blocking code SMS...                        ← 这条出现 = 短信被拦截删除
+```
+
+**关键判据：`Blocking code SMS` 是否出现** —— 出现=已删，不出现=保留。
+
+代码保障：`CodeWorker.buildParseResult(isCodeMsg)` 中
+```java
+parseResult.setBlockSms(isCodeMsg && XSPUtils.blockSmsEnabled(xsp));
+```
+非验证码短信恒为 false，杜绝误删。
+
 ## ⚠️ 禁止事项（血泪教训）
 
 - ❌ 反射 `ActivityThread.systemMain()` 取 Context → 在 system_server 执行会崩、触发 LSPosed 安全模式
