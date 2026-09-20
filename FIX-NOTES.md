@@ -222,6 +222,16 @@ parseResult.setBlockSms(isCodeMsg && XSPUtils.blockSmsEnabled(xsp));
   （界面显示"系统框架"，实际包名为 system；LSPosed 源码 `shouldHideApp()` 中
   `if (info.packageName.equals("system")) return false;` 亦印证）。
   `android` 是更早期框架时代的写法，已弃用。
+- ❌ **别让用户做无用操作** → 曾让用户在 LSPosed 里"勾选模块自身"/点"勾选推荐"，
+  但框架源码硬性排除模块自身（`ScopeAdapter.refresh()` 中
+  `packageName.equals(module.packageName)` 直接 return），界面上根本不显示该选项。
+  **用户白折腾两轮、重启三次。** 让用户操作前先确认该操作在实机上真的可行。
+- ❌ **别用真实换行符写 strings.xml 长文本** → aapt2 会把真实换行压成空格，
+  导致文字挤成一坨。必须用**字面 `\n`**（见 `privacy_dialog_content`）。
+- ❌ **别在 XML 里用 `\"` 转义引号** → 会原样显示反斜杠。文本内双引号无需转义；
+  裸 `&` 须写成 `&amp;`。
+- ❌ **注释掉 menu 的 item 会让 R.id 消失** → 用 `android:visible="false"` 隐藏，
+  否则 Java 里引用的 `R.id.xxx` 编译失败。
 - ❌ **别假设"看源码就能得出结论"** → 用户的实机使用经验（多年、多设备、多模块）
   往往比源码推断更接近现实。本次连续误判两次（模块自身注入、system vs android），
   均因只看代码未核对实机状态。**先查设备实际数据，再下结论。**
