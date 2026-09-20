@@ -52,22 +52,30 @@ public class ModulePrefs {
     }
 
     private static Map<String, Object> load(String packageName, String prefFileName) {
-        // 0) 模块自建缓存（2026-09-19 新增，最关键的一层）
-        //    电话进程创建的缓存文件无 SELinux MCS 分类，重启后仍可读
-        //    （对比：应用导出的文件带 cXXX 分类，电话进程读不了）
+        // 1) 【首选】应用导出的世界可读文件（2026-09-20 调整优先级）
+        //    /sdcard/Android/data/<pkg>/files/prefs_export.xml
+        //    这是 app 实时写入的配置，内容最新。
+        //    实测（2026-09-20）：该文件虽带 MCS 分类（c165,...），
+        //    但 phone 进程**可以读**（日志有 36 次 "loaded 36 key(s) from file" 成功记录）。
+        //
+        //    ★ 为什么必须放在缓存之前：
+        //    缓存由模块在上次运行时写入，重启后内容是"上次的配置"。
+        //    若用户重启前改过设置（如切换转发通道），第一条短信会用到旧配置。
+        //    实测踩坑：用户改为息知后重启，首条短信仍发往企业微信（读的旧缓存）。
+        Map<String, Object> viaFile = loadViaFile(packageName, prefFileName);
+        if (viaFile != null) {
+            writeModuleCache(viaFile);   // 读到即刷新缓存（供 app 未启动时兜底）
+            applyLogLevel(viaFile);
+            return viaFile;
+        }
+        // 2) 模块自建缓存（兜底：app 未启动 / 导出文件不可读时使用）
+        //    电话进程创建的缓存文件无 SELinux MCS 分类，重启后仍可读。
         Map<String, Object> viaCache = loadViaModuleCache();
         if (viaCache != null) {
             // 缓存命中即用；随后异步尝试刷新（若 app 已就绪则更新缓存）
             refreshCacheIfPossible(packageName, prefFileName);
             applyLogLevel(viaCache);
             return viaCache;
-        }
-        // 1/2) 文件通道（应用导出的世界可读文件 / 代理目录 / 应用数据目录）
-        Map<String, Object> viaFile = loadViaFile(packageName, prefFileName);
-        if (viaFile != null) {
-            writeModuleCache(viaFile);   // 读到即缓存（供下次开机使用）
-            applyLogLevel(viaFile);
-            return viaFile;
         }
         // 3) 远程偏好通道
         Map<String, Object> viaRemote = loadViaRemote(packageName, prefFileName);
