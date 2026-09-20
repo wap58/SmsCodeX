@@ -61,6 +61,9 @@ public class SmsCodeApplication extends DaggerApplication {
             com.tianma.xsmscode.common.utils.PrefsExporter.export(this);
         } catch (Throwable ignored) {
         }
+        // 激活检测（2026-09-20）：注册 libxposed 官方 service 监听，
+        // 框架绑定成功后 service 非空即表示模块已激活（详见 ActivationService 注释）
+        com.tianma.xsmscode.xp.hook.ActivationService.init(this);
     }
 
     @Override

@@ -2,6 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--
+        libxposed:service 要求 minSdk 26，本模块 minSdk 为 23。
+        该库仅用于「激活状态检测」这一可选 UI 功能，且通过反射/异常兜底调用，
+        在低版本设备上不会执行；故声明覆盖，避免清单合并失败。
+        （框架本身要求 Android 8.1+，实际使用环境必然 >= 26）
+    -->
+    <uses-sdk tools:overrideLibrary="io.github.libxposed.service" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />

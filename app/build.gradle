@@ -149,6 +149,13 @@ ext {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "androidx.appcompat:appcompat:1.6.1"
+    // libxposed 官方 service 库（2026-09-20）：用于 app 侧绑定框架服务，
+    // 据此判断模块是否已激活。官方文档：
+    // "register an Xposed service listener in your module, and once your module
+    //  app is launched, the Xposed framework will send you a service"
+    // 这是现代 API 下唯一可行的激活检测方式——LSPosed 源码明确排除模块自身
+    // 被注入（ScopeAdapter 中 packageName.equals(module.packageName) 直接 return）。
+    implementation "io.github.libxposed:service:102.0.0"
     implementation "com.google.android.material:material:1.10.0" // material design support
     implementation "androidx.recyclerview:recyclerview:1.3.2" // recycler view
     implementation "androidx.browser:browser:1.7.0" // custom tabs

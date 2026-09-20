@@ -70,15 +70,6 @@ public class SmsCodeEntry extends XposedModule {
         super.onPackageReady(param);
         this.log(Log.INFO, TAG, "onPackageReady: " + param.getPackageName());
 
-        // 激活自检（2026-09-20）：模块被注入到自身进程时，装一个自检 hook，
-        // 由其在 Application 创建后写标记文件到自己的 filesDir，供 UI 判定激活态。
-        // 这是社区标准做法（Xposed 作者 rovo89 在 issue #64 中确认为 best practice），
-        // 也是现代 API 下唯一可行的方案——官方文档明确"module apps are no longer
-        // hooked by themselves"，故必须在 scope.list 声明自身包名。
-        if (BuildConfig.APPLICATION_ID.equals(param.getPackageName())) {
-            com.tianma.xsmscode.xp.hook.ActivationMarker.install(this);
-            return;
-        }
 
         dispatch(param.getPackageName(), param.getPackageName(), param.getClassLoader());
     }
