@@ -37,8 +37,11 @@ android {
         minSdkVersion 23
         targetSdkVersion 34
         versionCode EFFECTIVE_VERSION_CODE
-        // 版本名带构建号：3.0.5(60)。括号内即 CI run_number，每次构建自动递增。
-        versionName VERSION_NAME + "(" + CI_BUILD_NUMBER + ")"
+        // 版本名保持纯语义版本：3.0.5
+        // 构建号只放在 versionCode 里——LSPosed/系统设置均以
+        // "versionName (versionCode)" 格式展示，若 versionName 也带括号
+        // 会显示成 "3.0.5(68) (68)" 这种重复形态。
+        versionName VERSION_NAME
 
         buildConfigField("String", "LOG_TAG", "\"XSmsCode\"")
         buildConfigField("int", "MODULE_VERSION", "" + EFFECTIVE_VERSION_CODE)
@@ -102,10 +105,9 @@ android {
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            // 文件名：versionName 现含括号（如 3.0.5(62)），
-            // 括号在 shell 中需转义，故统一替换为下划线 → SmsCodeX_v3.0.5_62_260920_r.apk
-            // 连续下划线折叠为一个，避免出现 3.0.5_62__ 这种双下划线
-            output.outputFileName = "SmsCodeX_v${variant.versionName.replaceAll('[()]', '_').replaceAll('_+', '_').replaceAll('\\s+', '_')}_${releaseTime()}_${variant.buildType.name.charAt(0)}.apk"
+            // 文件名：versionName_versionCode，如 SmsCodeX_v3.0.5_68_260920_r.apk
+            // （versionCode 即 CI run_number，可区分不同构建）
+            output.outputFileName = "SmsCodeX_v${variant.versionName.replaceAll('\\s+', '_')}_${variant.versionCode}_${releaseTime()}_${variant.buildType.name.charAt(0)}.apk"
         }
     }
 

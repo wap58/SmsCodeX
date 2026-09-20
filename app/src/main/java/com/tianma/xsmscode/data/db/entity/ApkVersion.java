@@ -54,16 +54,17 @@ public class ApkVersion implements Comparable<ApkVersion> {
     /**
      * 解析版本号为数字段数组。
      *
-     * <p>2026-09-20：版本名现含构建号（如 {@code 3.0.5(60)}），
-     * 直接 {@code Integer.parseInt} 会抛 NumberFormatException 导致崩溃。
-     * 这里先剥离括号部分（构建号仅用于显示与 versionCode，不参与版本高低比较），
-     * 再逐段解析；非数字段按 0 处理，避免脏数据导致崩溃。
+     * <p>2026-09-20：曾出现 versionName 含构建号（如 {@code 3.0.5(68)}）的情况，
+     * 此时直接 {@code Integer.parseInt} 会抛 NumberFormatException 导致
+     * 检查更新时崩溃。现版本名已改回纯语义版本，但保留括号剥离作为防御：
+     * 兼容历史版本与外部来源（如 GitHub Release 标题）可能带括号的情形。
+     * 非数字段按 0 处理，避免脏数据导致崩溃。
      */
     private static int[] splitVersion(String versionName) {
         if (versionName == null) {
             return new int[0];
         }
-        // 去掉 (60) 之类的构建号后缀
+        // 去掉 (68) 之类的构建号后缀
         String core = versionName.replaceAll("\\(.*?\\)", "").trim();
         String[] parts = core.split("\\.");
         int[] nums = new int[parts.length];
