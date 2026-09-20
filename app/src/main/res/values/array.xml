@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--
+        模块推荐作用域（2026-09-20）。
+        注意：系统框架的标识是 system，不是 android。
+        （现代 LSPosed 中系统框架在界面上显示为"系统框架"，其包标识为 system；
+          android 是更早期框架时代的写法，现已不再使用。）
+    -->
     <string-array name="xposed_scope">
-        <item>android</item>
+        <item>system</item>
         <item>com.android.phone</item>
         <item>com.smscodf.zhuxf</item>
     </string-array>
