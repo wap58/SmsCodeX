@@ -19,7 +19,7 @@ def static releaseTime() {
 // 本地构建时回落到这里的默认值。
 //   CI:  -PciBuildNumber=<run_number>  → 3.0.5(60)
 //   本地: 默认 VERSION_CODE
-def VERSION_NAME = "3.0.5"
+def VERSION_NAME = "3.0.6"
 def VERSION_CODE = 23
 def CI_BUILD_NUMBER = project.hasProperty('ciBuildNumber')
         ? project.property('ciBuildNumber').toString().toInteger()
