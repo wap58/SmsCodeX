@@ -11,29 +11,32 @@ import io.github.libxposed.service.XposedService;
 import io.github.libxposed.service.XposedServiceHelper;
 
 /**
- * 激活状态检测（2026-09-20，改用 libxposed 官方 service 机制）。
+ * 激活状态检测（2026-09-20，libxposed 官方 service 机制）。
  *
- * <h3>为什么必须用这个</h3>
- * 现代 API 下 <b>模块自身不会被注入</b>，这是框架的硬性设计，证据有两处：
+ * <h3>为什么必须用 service 机制</h3>
+ * 现代 API 下 <b>模块自身不会被注入</b>，证据有两处：
  * <ol>
  *   <li>LSPosed 官方文档：<i>"As a result, module apps are no longer hooked
  *       by themselves."</i></li>
- *   <li>LSPosed 源码 {@code ScopeAdapter.refresh()} 中显式排除：
- *       <pre>if (packageName.equals(module.packageName) || ...) return;</pre>
- *       即模块自身既不出现在作用域列表、也无法被勾选、更不会被注入。</li>
+ *   <li>LSPosed 源码 {@code ScopeAdapter.refresh()} 显式排除：
+ *       <pre>if (packageName.equals(module.packageName) ||
+ *       packageName.equals(BuildConfig.APPLICATION_ID)) return;</pre>
+ *       模块自身既不出现在作用域列表、无法勾选、也不会被注入。</li>
  * </ol>
- * 因此 self-hook、写标记文件、跨进程上报等方案<b>全部不可行</b>
- * （此前均已实测失败）。
+ * 故 self-hook / 写标记文件 / 跨进程上报等方案均不可行（此前已逐一实测失败）。
  *
  * <h3>官方方案</h3>
- * libxposed 提供 {@code io.github.libxposed:service} 库。官方文档：
- * <blockquote>register an Xposed service listener in your module, and once
- * your module app is launched, the <b>Xposed framework will send you a
- * service</b> to communicate with the framework.</blockquote>
+ * 官方文档：
+ * <blockquote>register an Xposed service listener in your module, and once your
+ * module app is launched, the <b>Xposed framework will send you a service</b>
+ * to communicate with the framework.</blockquote>
+ * 框架主动下发 service，app 侧 service 非空即表示模块已激活。
+ * 该通道不依赖模块自身注入，也不受 SELinux/权限限制。
  *
- * <p>app 启动时调用 {@link #init(Application)} 注册监听；框架绑定成功后
- * 回调 {@code onServiceBind}，此时 service 非空即表示模块已激活。
- * 该通道由框架主动建立，不依赖模块自身注入，也不受 SELinux/权限限制。
+ * <h3>依赖说明</h3>
+ * 使用本地 jar（app/libs/libxposed-service-102.0.0.jar）而非 Maven 依赖，
+ * 因 Maven 版要求 compileSdk 37（本项目 34）。其 XposedProvider 已在
+ * AndroidManifest 手动声明（authority 为 {@code <applicationId>.XposedService}）。
  */
 public final class ActivationService {
 
@@ -59,7 +62,8 @@ public final class ActivationService {
                         List<HookedTarget> targets = service.getRunningTargets();
                         if (targets != null) {
                             for (HookedTarget t : targets) {
-                                XLog.i("%s: running target: %s", TAG, t);
+                                XLog.i("%s: running target: %s (pid=%d, state=%s)",
+                                        TAG, t.getProcessName(), t.getPid(), t.getState());
                             }
                         }
                     } catch (Throwable t) {
@@ -75,7 +79,7 @@ public final class ActivationService {
             });
             XLog.i("%s: listener registered", TAG);
         } catch (Throwable t) {
-            // 未激活时注册可能失败，属正常情况
+            // 模块未激活时注册可能失败，属正常情况
             XLog.w("%s: register listener failed (module not active?): %s", TAG, t);
         }
     }
@@ -122,10 +126,5 @@ public final class ActivationService {
         } catch (Throwable ignored) {
             return null;
         }
-    }
-
-    /** 供调试：当前 service 对象 */
-    public static XposedService getService() {
-        return sService;
     }
 }

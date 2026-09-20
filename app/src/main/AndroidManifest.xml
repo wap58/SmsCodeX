@@ -3,12 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!--
-        libxposed:service 要求 minSdk 26，本模块 minSdk 为 23。
-        该库仅用于「激活状态检测」这一可选 UI 功能，且通过反射/异常兜底调用，
-        在低版本设备上不会执行；故声明覆盖，避免清单合并失败。
-        （框架本身要求 Android 8.1+，实际使用环境必然 >= 26）
+        libxposed:service（2026-09-20）：
+        该库 Maven 版要求 compileSdk 37（本项目 34），故改为本地 jar
+        （app/libs/libxposed-service-102.0.0.jar）并在此声明其 Provider。
+        库内仅使用 ContentProvider/Context/IBinder/Log 等基础 API，
+        与 minSdk 23 兼容。
     -->
-    <uses-sdk tools:overrideLibrary="io.github.libxposed.service" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -144,6 +144,20 @@
             android:name="com.tianma.xsmscode.data.db.DBProvider"
             android:authorities="${applicationId}.db.provider"
             android:exported="true" />
+
+        <!--
+            libxposed service 的 Provider（2026-09-20）：
+            框架通过该 Provider 向模块 app 下发 XposedService，
+            用于激活状态检测。原由 io.github.libxposed:service AAR 自动合并，
+            因该库要求 compileSdk 37（本项目 34），改为手动打包其 jar
+            （app/libs/libxposed-service-102.0.0.jar）并在此显式声明。
+            authority 必须为 <applicationId>.XposedService（库内约定）。
+        -->
+        <provider
+            android:name="io.github.libxposed.service.XposedProvider"
+            android:authorities="${applicationId}.XposedService"
+            android:exported="true"
+            tools:ignore="ExportedContentProvider" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
