@@ -119,10 +119,39 @@ NoClassDefFoundError: io.github.libxposed.service.IXposedService$Stub
 - `getRunningTargets()` — 正在被 hook 的进程（含 pid、state）
 - `getRemotePreferences(name)` — **可读写**（与 `XposedInterface` 的只读实现不同）
 
-### 调试方法
+## ★ 配置读取的实时性（2026-09-20 实测澄清）
+
+**改通道 / 参数 / 开关不需要重启，即时生效。**
+
+`ModulePrefs.loadViaFile()` 用 `lastModified` 校验文件是否变化，
+而 `DirectForwarder.forward()` 每次都重新调 `ModulePrefs.getString()`，
+故文件一改，下次转发即读到新值。
+
+### ⚠️ Config diag 日志有误导性（排查时注意）
+
+```
+Config diag: ... channel=xizhi ...   ← 第一次 load 的值（可能是缓存）
+（毫秒之后）
+实际转发时再 load → pushplus        ← 真正使用的值
+```
+
+实测：用户切到推送加后发短信，日志显示 `xizhi` 但**实际收到推送加**。
+**排查时不要只看 Config diag 的 channel 字段**，要结合"实际收到哪个通道"。
+
+### 手动转发 vs 自动转发的配置来源（不同路径！）
+
+| | 执行进程 | 配置来源 | 用途 |
+|---|---|---|---|
+| 手动转发（记录页）| **app 进程** | app 的 SharedPreferences | 可验证通道参数是否正确 |
+| 自动转发 | **电话进程** | `ModulePrefs` 文件通道 | 实际转发路径 |
+
+手动转发走 `DBProvider.call("forward")`，在 app 进程内读自己的 SP——
+**不能用来验证模块侧（电话进程）的配置读取**。
+
+### 调试方法（不用重启手机）
 
 ```sh
-# 强制重启 app 并抓日志（不用重启手机）
+# 强制重启 app 并抓激活日志
 android-shizuku-cli exec "am force-stop com.smscodf.zhuxf; sleep 2; \
   am start -n com.smscodf.zhuxf/com.tianma.xsmscode.ui.home.HomeActivity; sleep 8; \
   logcat -d | grep -iE 'ActivationService|XposedServiceHelper|XposedProvider' | tail -15"
