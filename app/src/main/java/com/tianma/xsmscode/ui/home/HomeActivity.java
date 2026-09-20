@@ -22,7 +22,7 @@ import com.tianma.xsmscode.common.constant.Const;
 import com.tianma.xsmscode.common.constant.PrefConst;
 import com.tianma.xsmscode.common.utils.PackageUtils;
 import com.tianma.xsmscode.common.utils.Utils;
-import com.tianma.xsmscode.xp.hook.ScopeReporter;
+import com.tianma.xsmscode.xp.hook.ActivationMarker;
 import com.tianma.xsmscode.ui.app.base.BaseActivity;
 import com.tianma.xsmscode.ui.faq.FaqFragment;
 import com.tianma.xsmscode.ui.record.CodeRecordFragment;
@@ -123,37 +123,28 @@ public class HomeActivity extends BaseActivity {
     /**
      * 刷新标题栏的激活状态（2026-09-20）。
      *
-     * <p>判据：模块是否被注入到两个必需作用域——系统框架(android) 与
-     * 电话服务(com.android.phone)。由被注入的进程通过 DBProvider 回传，
-     * 应用进程代写 SharedPreferences（模块进程无写文件权限，
-     * 且 app 侧拿不到 XposedInterface 读 remote prefs）。
+     * <p>判据：模块是否被注入到自身进程（即 LSPosed 中已启用且已重启生效）。
+     * 机制见 {@link com.tianma.xsmscode.xp.hook.ActivationMarker}：
+     * 模块在自身进程内 hook {@code Instrumentation.callApplicationOnCreate}，
+     * Application 创建后往自己的 filesDir 写标记文件；此处读该文件。
      *
-     * <p>不用 LSPosed 勾选状态：/data/adb 为 0700 root:root，应用进程读不到；
-     * 且"勾选"不等于"注入成功"。
+     * <p>这是 Xposed 作者 rovo89 在官方 issue #64 中确认的 best practice：
+     * "The hook your own app approach is indeed a best practice, as it not only
+     * checks whether your module is activated, but also checks whether it's
+     * actually loaded (i.e. if the reboot was done, Xposed is not disabled etc.)"
+     *
+     * <p>相比读 LSPosed 勾选状态的优势：/data/adb 为 0700 应用读不到；
+     * 且"勾选"不等于"注入成功"（未重启、版本不兼容时勾了也不生效）。
      */
     private void refreshActivationStatus() {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar == null) {
             return;
         }
-        android.content.SharedPreferences sp = getSharedPreferences(
-                PrefConst.PREF_NAME, android.content.Context.MODE_PRIVATE);
-        boolean systemOk = ScopeReporter.isWithinCurrentBoot(
-                sp.getLong(PrefConst.KEY_ACTIVE_SYSTEM_ELAPSED, -1L));
-        boolean phoneOk = ScopeReporter.isWithinCurrentBoot(
-                sp.getLong(PrefConst.KEY_ACTIVE_PHONE_ELAPSED, -1L));
-
-        String text;
-        if (systemOk && phoneOk) {
-            text = getString(R.string.module_status_active);
-        } else if (systemOk) {
-            text = getString(R.string.module_status_phone_missing);
-        } else if (phoneOk) {
-            text = getString(R.string.module_status_system_missing);
-        } else {
-            text = getString(R.string.module_status_inactive);
-        }
-        actionBar.setSubtitle(text);
+        boolean activated = ActivationMarker.isActivatedThisBoot(this);
+        actionBar.setSubtitle(getString(activated
+                ? R.string.module_status_active
+                : R.string.module_status_inactive));
     }
 
     @Override
