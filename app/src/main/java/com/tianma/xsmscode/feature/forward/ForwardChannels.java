@@ -82,7 +82,47 @@ public final class ForwardChannels {
         return list;
     }
 
-    /** 通道 id → 显示名 */
+    /**
+     * 该通道的参数是否已配置齐全（2026-10-17）。
+     *
+     * <p>用途：多选弹窗里禁止勾选未配置的通道——否则转发时会被
+     * {@link ForwardDispatcher} 当作"未配置"跳过，用户以为已推送却收不到。
+     *
+     * <p>判据与 {@link ForwardDispatcher} 内各分支的前置检查保持一致。
+     */
+    public static boolean isConfigured(Context ctx, String id) {
+        if (id == null) {
+            return false;
+        }
+        android.content.SharedPreferences sp = ctx.getSharedPreferences(
+                com.tianma.xsmscode.common.constant.PrefConst.PREF_NAME, Context.MODE_PRIVATE);
+        switch (id) {
+            case "wecom_agent":
+                return !sp.getString(PrefKeys.WECOM_CORPID, "").trim().isEmpty()
+                        && !sp.getString(PrefKeys.WECOM_AGENTID, "").trim().isEmpty()
+                        && !sp.getString(PrefKeys.WECOM_SECRET, "").trim().isEmpty();
+            case "wecom_robot":
+                return !sp.getString(PrefKeys.WECOM_ROBOT_WEBHOOK, "").trim().isEmpty();
+            case "dingtalk":
+                return !sp.getString(PrefKeys.DINGTALK_WEBHOOK, "").trim().isEmpty();
+            case "feishu":
+                return !sp.getString(PrefKeys.FEISHU_WEBHOOK, "").trim().isEmpty();
+            case "xizhi":
+                return !sp.getString(PrefKeys.XIZHI_KEY, "").trim().isEmpty();
+            case "pushplus":
+                return !sp.getString(PrefKeys.PUSHPLUS_TOKEN, "").trim().isEmpty();
+            case "qqbot":
+                return !sp.getString(PrefKeys.QQBOT_APPID, "").trim().isEmpty()
+                        && !sp.getString(PrefKeys.QQBOT_SECRET, "").trim().isEmpty()
+                        && !sp.getString(PrefKeys.QQBOT_OPENID, "").trim().isEmpty();
+            case "cmcc":
+                return !sp.getString(PrefKeys.CMCC_API_KEY, "").trim().isEmpty();
+            default:
+                return false;
+        }
+    }
+
+    /** 通道 id → 显示名 */    /** 通道 id → 显示名 */
     public static String name(Context ctx, String id) {
         if (id == null) {
             return "-";

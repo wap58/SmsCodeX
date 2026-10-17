@@ -93,9 +93,14 @@ public class ForwardChannelDialog extends AppCompatDialogFragment {
         String title = args == null ? null : args.getString(ARG_TITLE);
         String current = args == null ? null : args.getString(ARG_CURRENT);
 
+        // 只保留仍然配置齐全的通道（配置可能被清空过）
         List<String> pre = ForwardChannels.parse(current);
         mSelected.clear();
-        mSelected.addAll(pre);
+        for (String id : pre) {
+            if (ForwardChannels.isConfigured(requireContext(), id)) {
+                mSelected.add(id);
+            }
+        }
 
         com.google.android.material.card.MaterialCardView card =
                 view.findViewById(R.id.channel_multi_card);
@@ -125,6 +130,15 @@ public class ForwardChannelDialog extends AppCompatDialogFragment {
         });
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // 从「通道配置页」返回后，配置可能已补齐 → 重建列表刷新灰态
+        if (mOptions != null) {
+            rebuildOptions();
+        }
+    }
+
     /** 重建选项列表（勾选状态实时反映在图标上） */
     private void rebuildOptions() {
         mOptions.removeAllViews();
@@ -137,10 +151,24 @@ public class ForwardChannelDialog extends AppCompatDialogFragment {
             label.setText(ForwardChannels.name(requireContext(), id));
             label.setTextColor(mTextColor);
 
+            boolean configured = ForwardChannels.isConfigured(requireContext(), id);
             boolean on = mSelected.contains(id);
             syncCheck(check, on);
 
+            // ★ 未配置的通道禁止勾选（2026-10-17）：灰色 + 点击提示去配置，
+            //   否则转发时会被 Dispatcher 当"未配置"跳过，用户以为推了其实没推。
+            if (!configured) {
+                row.setAlpha(0.4f);
+                label.setText(label.getText() + "（未配置）");
+            }
+
             row.setOnClickListener(v -> {
+                if (!configured) {
+                    android.widget.Toast.makeText(requireContext(),
+                            getString(R.string.channel_not_configured_hint),
+                            android.widget.Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 if (mSelected.contains(id)) {
                     mSelected.remove(id);
                 } else {

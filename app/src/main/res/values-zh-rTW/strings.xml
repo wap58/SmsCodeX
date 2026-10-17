@@ -478,4 +478,5 @@
     <string name="channel_name_pushplus">推送加</string>
     <string name="channel_name_qqbot">QQ 機器人</string>
     <string name="channel_name_cmcc">移動新訊息</string>
+    <string name="channel_not_configured_hint">該通道參數未設定，請先點右側齒輪完成設定</string>
 </resources>

@@ -477,4 +477,5 @@
     <string name="channel_name_pushplus">PushPlus</string>
     <string name="channel_name_qqbot">QQ Bot</string>
     <string name="channel_name_cmcc">CMCC Message</string>
+    <string name="channel_not_configured_hint">This channel is not configured. Tap the gear on the right to set it up.</string>
 </resources>
