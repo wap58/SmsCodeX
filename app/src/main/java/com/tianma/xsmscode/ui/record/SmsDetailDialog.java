@@ -56,11 +56,8 @@ public class SmsDetailDialog extends AppCompatDialogFragment {
     private static final String ARG_TIME = "time";
 
     public interface Actions {
-        void onCopySms();
-
+        /** 转发当前短信（复制操作由正文长按选择完成，2026-10-17） */
         void onForward();
-
-        void onCopyCode();
     }
 
     private Actions mActions;
@@ -165,30 +162,13 @@ public class SmsDetailDialog extends AppCompatDialogFragment {
         bodyView.setTextColor(textPrimary);
         bodyView.setText(body == null ? "" : body);
 
-        // 底部操作
+        // 底部操作（2026-10-17：只保留「转发信息」，复制操作由正文长按选择完成）
         view.findViewById(R.id.sms_detail_action_divider).setBackgroundColor(divider);
-        TextView copySms = view.findViewById(R.id.sms_detail_action_copy_sms);
         TextView forward = view.findViewById(R.id.sms_detail_action_forward);
-        TextView copyCode = view.findViewById(R.id.sms_detail_action_copy_code);
-        copySms.setTextColor(accent);
         forward.setTextColor(accent);
-        copyCode.setTextColor(accent);
-
-        copySms.setOnClickListener(v -> {
-            if (mActions != null) {
-                mActions.onCopySms();
-            }
-            dismissAllowingStateLoss();
-        });
         forward.setOnClickListener(v -> {
             if (mActions != null) {
                 mActions.onForward();
-            }
-            dismissAllowingStateLoss();
-        });
-        copyCode.setOnClickListener(v -> {
-            if (mActions != null) {
-                mActions.onCopyCode();
             }
             dismissAllowingStateLoss();
         });

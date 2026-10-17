@@ -181,48 +181,29 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"/>
 
+        <!-- 2026-10-17：只保留「转发信息」，右对齐贴底（复制短信/复制验证码已移除） -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="end"
             android:orientation="horizontal"
             android:paddingStart="8dp"
             android:paddingTop="4dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="4dp">
-
-            <TextView
-                android:id="@+id/sms_detail_action_copy_sms"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:minHeight="46dp"
-                android:padding="10dp"
-                android:text="@string/copy_sms"
-                android:textSize="14sp"
-                android:textStyle="bold"/>
+            android:paddingEnd="12dp"
+            android:paddingBottom="6dp">
 
             <TextView
                 android:id="@+id/sms_detail_action_forward"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:minHeight="46dp"
-                android:padding="10dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:minHeight="44dp"
+                android:gravity="center_vertical"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
                 android:text="@string/forward_to_wecom"
-                android:textSize="14sp"
-                android:textStyle="bold"/>
-
-            <TextView
-                android:id="@+id/sms_detail_action_copy_code"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:minHeight="46dp"
-                android:padding="10dp"
-                android:text="@string/copy_smscode"
                 android:textSize="14sp"
                 android:textStyle="bold"/>
         </LinearLayout>

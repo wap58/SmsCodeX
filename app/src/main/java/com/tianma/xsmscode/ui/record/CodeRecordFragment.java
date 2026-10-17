@@ -171,18 +171,8 @@ public class CodeRecordFragment extends DaggerBackPressFragment implements CodeR
                 smsMsg.getSender(), smsMsg.getBody(), smsMsg.getSmsCode(), smsMsg.getDate(),
                 new SmsDetailDialog.Actions() {
                     @Override
-                    public void onCopySms() {
-                        copySms(recordItem);
-                    }
-
-                    @Override
                     public void onForward() {
                         forwardRecord(recordItem);
-                    }
-
-                    @Override
-                    public void onCopyCode() {
-                        copySmsCode(recordItem);
                     }
                 });
     }
