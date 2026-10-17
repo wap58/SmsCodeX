@@ -163,17 +163,9 @@ public class SettingsFragment extends BasePreferenceFragment implements
             });
             // "通道参数"行摘要改为固定说明文字（2026-09-18 用户定稿），由 xml 的 android:summary 绑定，不再动态覆盖
         }
-        androidx.preference.ListPreference chLp =
-                (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
-        if (chLp != null) {
-            // "转发通道"行摘要实时显示当前选中项（SimpleSummaryProvider，1.2.1 支持）
-            chLp.setSummaryProvider(androidx.preference.ListPreference.SimpleSummaryProvider.getInstance());
-            if (chLp instanceof com.tianma.xsmscode.ui.forward.ForwardChannelListPreference) {
-                // 选中瞬间（值已持久化）确定性刷新"通道参数"行（2026-09-16）
-                ((com.tianma.xsmscode.ui.forward.ForwardChannelListPreference) chLp)
-                        .setOnChannelChangedListener(lp -> refreshForwardSummaries());
-            }
-        }
+        // "转发通道"改为多选（2026-10-17）：不能用 SimpleSummaryProvider（只显示单选值），
+        // 摘要由 refreshForwardSummaries() 按 pref_forward_channels 拼「A、B、C」。
+        refreshForwardSummaries();
         // "转发范围"行摘要实时显示当前选项（2026-09-19）
         bindForwardScopeSummary();
         // 验证码历史记录入口已迁移至首页"记录" tab；设置里保留记录开关（2026-09-15）
@@ -268,15 +260,28 @@ public class SettingsFragment extends BasePreferenceFragment implements
         refreshForwardSummaries();
     }
 
+    /**
+     * 刷新"转发通道"行摘要（2026-10-17 改为多选）。
+     *
+     * <p>多选后 {@code getEntry()} 只反映单选值，会显示不全，因此直接按
+     * {@code pref_forward_channels} 拼「A、B、C」。未配置时给出提示。
+     */
     private void refreshForwardSummaries() {
-        // 两行摘要均由 SummaryProvider 实时计算；setSummary 在这里仅作为"强制重绑"触发器
         try {
-            // "通道参数"行摘要已固定（xml 绑定），此处不再动态 setSummary；"转发通道"行保持重绑触发器
-            androidx.preference.ListPreference ch =
-                    (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
-            if (ch != null) {
-                ch.setSummary(ch.getEntry() == null ? "" : ch.getEntry().toString());
+            androidx.preference.Preference ch = findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
+            if (ch == null) {
+                return;
             }
+            android.content.SharedPreferences sp =
+                    androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext());
+            java.util.List<String> ids =
+                    com.tianma.xsmscode.feature.forward.ForwardChannels.effective(
+                            sp.getString("pref_forward_channels", ""),
+                            sp.getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent"));
+            String summary = com.tianma.xsmscode.feature.forward.ForwardChannels
+                    .summary(requireContext(), ids);
+            ch.setSummary(summary.isEmpty()
+                    ? getString(R.string.pref_forward_channel_summary) : summary);
         } catch (Throwable ignored) {
         }
     }
@@ -440,14 +445,9 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 autoLinkKillOff();
             }
         } else if (PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(key)) {
+            // 多选弹窗已自行落盘并触发导出（见 onChannelsPicked），这里只刷新摘要
             com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 转发通道 changed to %s", newValue);
-            // 摘要由 SummaryProvider 实时计算，无需手动设置；选中即持久化生效
-            com.tianma.xsmscode.ui.forward.ChannelSettingsDialog.showDialog(getChildFragmentManager(), (String) newValue);
-            // QQ 机器人：选到该通道时直达绑定页（需连接网关抓 openid，弹窗里做不了）
-            if ("qqbot".equals(newValue)) {
-                mActivity.startActivity(new android.content.Intent(mActivity,
-                        com.tianma.xsmscode.ui.forward.QQBotBindActivity.class));
-            }
+            refreshForwardSummaries();
         } else {
             return false;
         }
@@ -478,34 +478,50 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 handled = true;
             }
         }
-        // "转发通道"改用自绘圆角弹窗（2026-09-19）：
-        // androidx.preference 默认弹窗背景取自 abc_dialog_material_background
-        // （9-patch，圆角极小），无法做成与"通道参数"弹窗一致的 20dp 圆角。
-        // 只拦截这一个 key，其余 preference 行为不变。
-        if (!handled && preference instanceof androidx.preference.ListPreference
-                && PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(preference.getKey())) {
-            androidx.preference.ListPreference lp = (androidx.preference.ListPreference) preference;
+        // "转发通道"改用自绘圆角多选弹窗（2026-10-17）：
+        // 原生 ListPreference 是单选语义，且弹窗圆角极小，无法与"通道参数"弹窗统一。
+        if (!handled && PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(preference.getKey())) {
+            android.content.SharedPreferences sp =
+                    androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext());
+            String csv = sp.getString("pref_forward_channels",
+                    sp.getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent"));
             com.tianma.xsmscode.ui.forward.ForwardChannelDialog dialog =
                     com.tianma.xsmscode.ui.forward.ForwardChannelDialog.newInstance(
-                            lp.getTitle() == null ? null : lp.getTitle().toString(),
-                            toStringArray(lp.getEntries()),
-                            toStringArray(lp.getEntryValues()),
-                            lp.getValue());
-            // 选中后持久化并通知原 ListPreference，
-            // 保留既有回调链（摘要与"通道参数"行照常刷新）
-            dialog.setOnChannelPickedListener(value -> {
-                lp.setValue(value);
-                if (lp instanceof com.tianma.xsmscode.ui.forward.ForwardChannelListPreference) {
-                    ((com.tianma.xsmscode.ui.forward.ForwardChannelListPreference) lp)
-                            .notifyChannelChanged();
-                }
-            });
+                            preference.getTitle() == null ? null : preference.getTitle().toString(),
+                            csv);
+            dialog.setOnChannelsPickedListener(this::onChannelsPicked);
             dialog.show(getChildFragmentManager(), "ForwardChannelDialog");
             handled = true;
         }
         if (!handled) {
             super.onDisplayPreferenceDialog(preference);
         }
+    }
+
+    /**
+     * 多选通道确定后的回调（2026-10-17）。
+     *
+     * <p>写入 {@code pref_forward_channels}（逗号分隔），
+     * 同时把第一项同步到旧的单选键，保证老逻辑与备份兼容。
+     */
+    private void onChannelsPicked(String csv) {
+        java.util.List<String> ids = com.tianma.xsmscode.feature.forward.ForwardChannels.parse(csv);
+        android.content.SharedPreferences sp =
+                androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext());
+        android.content.SharedPreferences.Editor ed = sp.edit();
+        ed.putString("pref_forward_channels", csv == null ? "" : csv);
+        if (!ids.isEmpty()) {
+            ed.putString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, ids.get(0));
+        }
+        ed.apply();
+
+        // 导出给电话进程读（息屏直发依赖）
+        try {
+            com.tianma.xsmscode.common.utils.PrefsExporter.export(requireContext());
+        } catch (Throwable ignored) {
+        }
+        refreshForwardSummaries();
+        com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 多通道选定 %s", csv);
     }
 
     private static String[] toStringArray(CharSequence[] src) {

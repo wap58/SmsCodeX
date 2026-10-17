@@ -254,147 +254,57 @@ public class DBProvider extends ContentProvider {
                             Context.MODE_PRIVATE);
             boolean enabled = sp != null && sp.getBoolean(
                     com.tianma.xsmscode.common.constant.PrefConst.KEY_ENABLE_FORWARD, false);
-            String corpId = sp == null ? "" : sp.getString(
-                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_WECOM_CORPID, "");
-            String agentId = sp == null ? "" : sp.getString(
-                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_WECOM_AGENTID, "");
-            String secret = sp == null ? "" : sp.getString(
-                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_WECOM_SECRET, "");
-            String toUser = sp == null ? "" : sp.getString(
-                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_WECOM_TOUSER, "");
-            String channel = sp == null ? "wecom_agent" : sp.getString(
-                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
-            String robotWebhook = sp == null ? "" : sp.getString(
-                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_WECOM_ROBOT_WEBHOOK, "");
-            String dingWebhook = sp == null ? "" : sp.getString(
-                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_DINGTALK_WEBHOOK, "");
-            String dingSecret = sp == null ? "" : sp.getString(
-                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_DINGTALK_SECRET, "");
-            String feishuWebhook = sp == null ? "" : sp.getString(
-                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_FEISHU_WEBHOOK, "");
-            String xizhiKey = sp == null ? "" : sp.getString(
-                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_XIZHI_KEY, "");
-            String pushplusToken = sp == null ? "" : sp.getString(
-                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_PUSHPLUS_TOKEN, "");
-            String cmccKey = sp == null ? "" : sp.getString(
-                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_CMCC_API_KEY, "");
             String sender = extras == null ? "" : extras.getString("sender", "");
             String body = extras == null ? "" : extras.getString("body", "");
             String code = extras == null ? "" : extras.getString("code", "");
             long time = extras == null ? System.currentTimeMillis()
                     : extras.getLong("time", System.currentTimeMillis());
-            boolean ok;
             if (!enabled) {
                 result.putBoolean("ok", false);
                 result.putString("reason", "disabled");
                 return result;
             }
-            // 2026-09-18：所选通道参数未填齐时回退企业微信应用通道（3.0.1 主路径），
-            // 避免息屏转发静默 send_failed（旧逻辑：空参直接发给所选通道）
-            boolean selectedOk;
-            switch (channel) {
-                case "wecom_robot":
-                    selectedOk = !robotWebhook.trim().isEmpty();
-                    break;
-                case "dingtalk":
-                    selectedOk = !dingWebhook.trim().isEmpty();
-                    break;
-                case "feishu":
-                    selectedOk = !feishuWebhook.trim().isEmpty();
-                    break;
-                case "xizhi":
-                    selectedOk = !xizhiKey.trim().isEmpty();
-                    break;
-                case "pushplus":
-                    selectedOk = !pushplusToken.trim().isEmpty();
-                    break;
-                case "qqbot":
-                    selectedOk = com.tianma.xsmscode.feature.forward.qqbot.QQBotStore
-                            .isConfigured(ctx);
-                    break;
-                case "cmcc":
-                    selectedOk = !cmccKey.trim().isEmpty();
-                    break;
-                default:
-                    selectedOk = !corpId.trim().isEmpty()
-                            && !agentId.trim().isEmpty()
-                            && !secret.trim().isEmpty();
-                    break;
-            }
-            if (!selectedOk
-                    && !corpId.trim().isEmpty()
-                    && !agentId.trim().isEmpty()
-                    && !secret.trim().isEmpty()) {
-                channel = "wecom_agent";
-            } else if (!selectedOk) {
+            // 2026-10-17：改为多通道分发（逐通道串行、单通道失败不影响其他）
+            final android.content.SharedPreferences spRef = sp;
+            java.util.List<com.tianma.xsmscode.feature.forward.ForwardResultStore.ChannelResult> results =
+                    com.tianma.xsmscode.feature.forward.ForwardDispatcher.send(
+                            new com.tianma.xsmscode.feature.forward.ForwardDispatcher.Cfg() {
+                                @Override
+                                public String getStr(String key, String def) {
+                                    return spRef.getString(key, def);
+                                }
+
+                                @Override
+                                public boolean getBool(String key, boolean def) {
+                                    return spRef.getBoolean(key, def);
+                                }
+
+                                @Override
+                                public long getLong(String key, long def) {
+                                    return spRef.getLong(key, def);
+                                }
+                            },
+                            com.tianma.xsmscode.feature.forward.WeComForwarder.buildContent(
+                                    sender, body, code, time),
+                            sender, body, code, time);
+
+            // 写结果文件供「短信详情」展示（电话进程也会写，这里覆盖为最新一条）
+            com.tianma.xsmscode.feature.forward.ForwardResultStore.write(time, results);
+
+            if (results.isEmpty()) {
                 result.putBoolean("ok", false);
                 result.putString("reason", "channel_unconfigured");
                 return result;
             }
-            String content = com.tianma.xsmscode.feature.forward.WeComForwarder.buildContent(
-                    sender, body, code, time);
-            switch (channel) {
-                case "wecom_robot":
-                    ok = com.tianma.xsmscode.feature.forward.ChannelSender.sendWecomRobot(robotWebhook, content);
-                    break;
-                case "dingtalk":
-                    ok = com.tianma.xsmscode.feature.forward.ChannelSender.sendDingtalk(dingWebhook, dingSecret, content);
-                    break;
-                case "feishu":
-                    ok = com.tianma.xsmscode.feature.forward.ChannelSender.sendFeishu(feishuWebhook, content);
-                    break;
-                case "xizhi":
-                    ok = com.tianma.xsmscode.feature.forward.ChannelSender.sendXizhi(xizhiKey, content);
-                    break;
-                case "pushplus":
-                    ok = com.tianma.xsmscode.feature.forward.ChannelSender.sendPushplus(pushplusToken, content);
-                    break;
-                case "qqbot": {
-                    String qAppId = sp.getString(
-                            com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_QQBOT_APPID, "");
-                    String qSecret = sp.getString(
-                            com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_QQBOT_SECRET, "");
-                    String qOpenId = sp.getString(
-                            com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_QQBOT_OPENID, "");
-                    boolean qGroup = sp.getBoolean(
-                            com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_QQBOT_IS_GROUP, false);
-                    String qToken = sp.getString(
-                            com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_QQBOT_TOKEN, "");
-                    long qExpire = sp.getLong(
-                            com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_QQBOT_TOKEN_EXPIRE, 0L);
-                    if (System.currentTimeMillis() >= qExpire) {
-                        qToken = "";
-                    }
-                    com.tianma.xsmscode.feature.forward.qqbot.QQBotApi.SendResult qr =
-                            com.tianma.xsmscode.feature.forward.qqbot.QQBotApi.sendWithRetry(
-                                    qAppId, qSecret, qToken, qOpenId, qGroup, content);
-                    ok = qr.ok;
-                    if (!ok) {
-                        com.tianma.xsmscode.common.utils.XLog.w("QQBot: %s", qr.reason());
-                    }
+            boolean anyOk = false;
+            for (com.tianma.xsmscode.feature.forward.ForwardResultStore.ChannelResult r : results) {
+                if (r.ok) {
+                    anyOk = true;
                     break;
                 }
-                case "cmcc": {
-                    String err = com.tianma.xsmscode.feature.forward.CmccSender.send(cmccKey, content);
-                    ok = err == null;
-                    if (!ok) {
-                        com.tianma.xsmscode.common.utils.XLog.w("Cmcc: %s", err);
-                    }
-                    break;
-                }
-                case "wecom_agent":
-                default:
-                    if (corpId.trim().isEmpty() || agentId.trim().isEmpty() || secret.trim().isEmpty()) {
-                        result.putBoolean("ok", false);
-                        result.putString("reason", "disabled");
-                        return result;
-                    }
-                    ok = com.tianma.xsmscode.feature.forward.WeComForwarder.send(
-                            corpId, agentId, secret, toUser, sender, body, code, time);
-                    break;
             }
-            result.putBoolean("ok", ok);
-            result.putString("reason", ok ? "sent" : "send_failed");
+            result.putBoolean("ok", anyOk);
+            result.putString("reason", anyOk ? "sent" : "send_failed");
             return result;
         }
         return super.call(method, arg, extras);

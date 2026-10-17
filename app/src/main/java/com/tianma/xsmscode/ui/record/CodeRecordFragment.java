@@ -158,18 +158,33 @@ public class CodeRecordFragment extends DaggerBackPressFragment implements CodeR
         return true;
     }
 
+    /**
+     * 短信详情（2026-10-17 重做）：改用自绘卡片弹窗 {@link SmsDetailDialog}，
+     * 结构与传信一致——元信息 + 转发状态（逐通道）+ 短信正文 + 底部三项操作。
+     */
     private void showSmsDetails(final RecordItem recordItem) {
         SmsMsg smsMsg = recordItem.getSmsMsg();
-        new MaterialDialog.Builder(mActivity)
-                .title(R.string.message_details)
-                .content(smsMsg.getBody())
-                .positiveText(R.string.copy_smscode)
-                .onPositive((dialog, which) -> copySmsCode(recordItem))
-                .negativeText(R.string.forward_to_wecom)
-                .onNegative((dialog, which) -> forwardRecord(recordItem))
-                .neutralText(R.string.copy_sms)
-                .onNeutral((dialog, which) -> copySms(recordItem))
-                .show();
+        if (smsMsg == null) {
+            return;
+        }
+        SmsDetailDialog.show(getChildFragmentManager(),
+                smsMsg.getSender(), smsMsg.getBody(), smsMsg.getSmsCode(), smsMsg.getDate(),
+                new SmsDetailDialog.Actions() {
+                    @Override
+                    public void onCopySms() {
+                        copySms(recordItem);
+                    }
+
+                    @Override
+                    public void onForward() {
+                        forwardRecord(recordItem);
+                    }
+
+                    @Override
+                    public void onCopyCode() {
+                        copySmsCode(recordItem);
+                    }
+                });
     }
 
     /**

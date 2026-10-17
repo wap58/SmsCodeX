@@ -460,4 +460,21 @@
     <string name="pref_forward_qqbot_appid">pref_forward_qqbot_appid</string>
     <string name="pref_forward_qqbot_secret">pref_forward_qqbot_secret</string>
     <string name="pref_forward_cmcc_api_key">pref_forward_cmcc_api_key</string>
+    <string name="close">Close</string>
+    <string name="sms_detail_sender">Sender</string>
+    <string name="sms_detail_time">Time</string>
+    <string name="sms_detail_forward_status">Forward status</string>
+    <string name="sms_detail_forward_not_sent">Not forwarded (disabled or unconfigured)</string>
+    <string name="sms_detail_forward_unknown">No forwarding record</string>
+    <string name="sms_detail_forward_success">Success</string>
+    <string name="sms_detail_forward_fail">Failed</string>
+    <string name="sms_detail_forward_now">Sent</string>
+    <string name="channel_name_wecom_agent">WeCom App</string>
+    <string name="channel_name_wecom_robot">WeCom Robot</string>
+    <string name="channel_name_dingtalk">DingTalk</string>
+    <string name="channel_name_feishu">Feishu</string>
+    <string name="channel_name_xizhi">Xizhi</string>
+    <string name="channel_name_pushplus">PushPlus</string>
+    <string name="channel_name_qqbot">QQ Bot</string>
+    <string name="channel_name_cmcc">CMCC Message</string>
 </resources>
