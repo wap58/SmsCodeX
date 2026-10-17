@@ -20,15 +20,15 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <!--
-        内容区：底部留出 76dp（底栏 56dp + 上下边距），避免内容被悬浮胶囊遮住。
-        这与传信 activity_home.xml 的 paddingBottom=86dp 同思路，只是这里用 padding
-        而非滚动区 padding，因为记录页是 RecyclerView 铺满的。
+        内容区：不预留底部内边距 —— 内容会流到悬浮胶囊下方，
+        这样才能真正"透过"半透明胶囊看到后面的列表（用户 2026-10-17 明确要求）。
+        列表底部由 CodeRecordFragment 用 clipToPadding=false + paddingBottom 留白，
+        保证最后一条能滚出来，不被胶囊永远压住。
     -->
     <FrameLayout
         android:id="@+id/home_content"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:paddingBottom="76dp"
         android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         app:layout_constraintBottom_toBottomOf="parent"

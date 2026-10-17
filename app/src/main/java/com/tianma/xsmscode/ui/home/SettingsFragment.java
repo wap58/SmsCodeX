@@ -303,6 +303,17 @@ public class SettingsFragment extends BasePreferenceFragment implements
         mActivity = (HomeActivity) requireActivity();
         updateKillSummary();
 
+        // 悬浮胶囊底栏（2026-10-17）：设置列表同样延伸到胶囊下方，最后一项可滚出
+        if (view instanceof android.view.ViewGroup) {
+            android.view.View list = ((android.view.ViewGroup) view)
+                    .findViewById(androidx.preference.R.id.recycler_view);
+            if (list != null) {
+                list.setClipToPadding(false);
+                list.setPadding(list.getPaddingLeft(), list.getPaddingTop(),
+                        list.getPaddingRight(),
+                        (int) (76 * getResources().getDisplayMetrics().density));
+            }
+        }
 
         mPresenter.handleArguments(getArguments());
     }
