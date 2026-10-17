@@ -132,6 +132,12 @@ public class SingleChoiceDialog extends AppCompatDialogFragment {
             label.setTextColor(mTextColor);
             syncCheck(check, value != null && value.equals(mCurrent));
 
+            // 单选场景没有"每项配置"，隐藏齿轮
+            View cfg = row.findViewById(R.id.channel_option_config);
+            if (cfg != null) {
+                cfg.setVisibility(View.GONE);
+            }
+
             row.setOnClickListener(v -> {
                 if (mListener != null) {
                     mListener.onPicked(value);

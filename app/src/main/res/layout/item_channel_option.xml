@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 转发通道选择弹窗里的一行选项：文字 + 选中标记 -->
+<!-- 通道选项行（多选弹窗用）：勾选标记 + 名称 + 右侧齿轮（进该通道配置页）
+     2026-10-17：齿轮让「配置」与「勾选」解耦——不必先单选再配置 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -9,23 +10,39 @@
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingStart="20dp"
-    android:paddingEnd="20dp"
-    android:paddingTop="14dp"
-    android:paddingBottom="14dp">
+    android:paddingEnd="8dp"
+    android:paddingTop="6dp"
+    android:paddingBottom="6dp">
 
     <TextView
         android:id="@+id/channel_option_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textSize="15sp" />
+        android:minHeight="44dp"
+        android:gravity="center_vertical"
+        android:textSize="15sp"/>
+
+    <!-- 配置入口：独立点击，不改变勾选状态 -->
+    <ImageView
+        android:id="@+id/channel_option_config"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="9dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:contentDescription="@string/forward_channel_config_title"
+        android:src="@drawable/ic_settings"
+        android:visibility="gone"/>
 
     <ImageView
         android:id="@+id/channel_option_check"
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:contentDescription="@null"
         android:src="@drawable/ic_check_plain"
-        android:visibility="invisible" />
+        android:visibility="invisible"/>
 </LinearLayout>

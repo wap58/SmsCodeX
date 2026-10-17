@@ -149,8 +149,31 @@ public class ForwardChannelDialog extends AppCompatDialogFragment {
                 // 只刷新本行，避免整体重建导致闪烁
                 syncCheck(check, mSelected.contains(id));
             });
+
+            // ★ 齿轮：直接进该通道的参数配置页（2026-10-17）
+            //   解决"多通道后必须先单选再配置"的繁琐：勾选与配置互不干扰。
+            ImageView cfg = row.findViewById(R.id.channel_option_config);
+            if (cfg != null) {
+                cfg.setVisibility(View.VISIBLE);
+                tintIcon(cfg, mTextColor);
+                cfg.setOnClickListener(v -> {
+                    // setResult 由宿主 onResume 重新拉取，故这里无需回传
+                    ChannelSettingsActivity.open(requireContext(), id);
+                });
+            }
             mOptions.addView(row);
         }
+    }
+
+    /** 图标按主题文字色着色（原图标是纯黑填充，深色主题下不可见） */
+    private void tintIcon(ImageView iv, int color) {
+        Drawable d = iv.getDrawable();
+        if (d == null) {
+            return;
+        }
+        d = DrawableCompat.wrap(d.mutate());
+        DrawableCompat.setTint(d, color);
+        iv.setImageDrawable(d);
     }
 
     private void syncCheck(ImageView check, boolean on) {
