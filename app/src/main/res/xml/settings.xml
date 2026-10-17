@@ -147,11 +147,10 @@
             android:summary="@string/pref_forward_scope_summary"
             android:title="@string/pref_forward_scope_title"/>
 
-        <com.tianma.xsmscode.ui.forward.ForwardChannelListPreference
-            android:defaultValue="wecom_agent"
+        <!-- 2026-10-17：多选替代单选，自定义类型不再需要（点击由 SettingsFragment 拦截弹多选框） -->
+        <Preference
             android:dependency="@string/pref_enable_forward"
-            android:entries="@array/forward_channel_entries"
-            android:entryValues="@array/forward_channel_values"
+            android:persistent="false"
             android:icon="@drawable/ic_forward"
             android:key="@string/pref_forward_channel_type"
             android:summary="@string/pref_forward_channel_summary"

@@ -445,9 +445,9 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 autoLinkKillOff();
             }
         } else if (PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(key)) {
-            // 多选弹窗已自行落盘并触发导出（见 onChannelsPicked），这里只刷新摘要
-            com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 转发通道 changed to %s", newValue);
-            refreshForwardSummaries();
+            // 普通 Preference 不触发 onDisplayPreferenceDialog，必须显式弹多选框（2026-10-17）
+            showChannelMultiDialog(preference);
+            return true;
         } else {
             return false;
         }
@@ -481,21 +481,30 @@ public class SettingsFragment extends BasePreferenceFragment implements
         // "转发通道"改用自绘圆角多选弹窗（2026-10-17）：
         // 原生 ListPreference 是单选语义，且弹窗圆角极小，无法与"通道参数"弹窗统一。
         if (!handled && PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(preference.getKey())) {
-            android.content.SharedPreferences sp =
-                    androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext());
-            String csv = sp.getString("pref_forward_channels",
-                    sp.getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent"));
-            com.tianma.xsmscode.ui.forward.ForwardChannelDialog dialog =
-                    com.tianma.xsmscode.ui.forward.ForwardChannelDialog.newInstance(
-                            preference.getTitle() == null ? null : preference.getTitle().toString(),
-                            csv);
-            dialog.setOnChannelsPickedListener(this::onChannelsPicked);
-            dialog.show(getChildFragmentManager(), "ForwardChannelDialog");
+            showChannelMultiDialog(preference);
             handled = true;
         }
         if (!handled) {
             super.onDisplayPreferenceDialog(preference);
         }
+    }
+
+    /** 弹出转发通道多选框（2026-10-17） */
+    private void showChannelMultiDialog(Preference preference) {
+        if (getChildFragmentManager().findFragmentByTag("ForwardChannelDialog") != null) {
+            return;
+        }
+        android.content.SharedPreferences sp =
+                androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext());
+        String csv = sp.getString("pref_forward_channels",
+                sp.getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent"));
+        com.tianma.xsmscode.ui.forward.ForwardChannelDialog dialog =
+                com.tianma.xsmscode.ui.forward.ForwardChannelDialog.newInstance(
+                        preference == null || preference.getTitle() == null
+                                ? null : preference.getTitle().toString(),
+                        csv);
+        dialog.setOnChannelsPickedListener(this::onChannelsPicked);
+        dialog.show(getChildFragmentManager(), "ForwardChannelDialog");
     }
 
     /**
