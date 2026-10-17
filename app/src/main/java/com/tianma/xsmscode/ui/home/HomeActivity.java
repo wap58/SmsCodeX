@@ -25,6 +25,7 @@ import com.smscodf.zhuxf.R;
 import com.tianma.xsmscode.common.constant.Const;
 import com.tianma.xsmscode.common.constant.PrefConst;
 import com.tianma.xsmscode.common.utils.PackageUtils;
+import com.tianma.xsmscode.common.utils.ThemeColors;
 import com.tianma.xsmscode.common.utils.Utils;
 import com.tianma.xsmscode.xp.hook.ActivationService;
 import com.tianma.xsmscode.ui.app.base.BaseActivity;
@@ -110,37 +111,45 @@ public class HomeActivity extends BaseActivity {
     }
 
     /**
-     * 底栏选中态切换（2026-10-17）：
-     * 视觉全部由 xml 资源决定——底色用 {@code @drawable/bg_nav_bar_glass}，
-     * 选中胶囊用 {@code @drawable/bg_nav_item_selected}，颜色见
-     * {@code values/colors_nav.xml} 与 {@code values-night/colors_nav.xml}
-     * （逐值照搬「传信」），深色由系统自动切换。
+     * 底栏视觉（2026-10-17）：完全照搬传信的色值与结构。
      *
-     * <p>这里只做一件事：把胶囊从一项挪到另一项。
+     * <p>★ 明暗不由 {@code values-night} 决定：智码通的主题由 Cyanea 管理，
+     * 可能与系统 uiMode 不一致（实测：系统深色 + 应用白底，走 night 目录会把
+     * 深色玻璃叠在白色页面上，看起来就是一块灰）。改为按 Cyanea 背景亮度显式选资源。
+     *
+     * <p>颜色见 drawable/bg_nav_bar_glass[_dark].xml 与
+     * drawable/bg_nav_item_selected[_dark].xml，数值即传信原值。
      */
     private void applyNavTheme() {
-        if (mNavRecords == null || mNavSettings == null) {
+        if (mBottomBar == null) {
             return;
         }
-        mNavRecords.setBackgroundResource(
-                mRecordsSelected ? R.drawable.bg_nav_item_selected : 0);
-        mNavSettings.setBackgroundResource(
-                mRecordsSelected ? 0 : R.drawable.bg_nav_item_selected);
+        boolean dark = ThemeColors.isDark();
 
-        // 文字/图标随选中态换色（传信用的是静态色，这里保留一项区分，色值同传信）
+        mBottomBar.setBackgroundResource(dark
+                ? R.drawable.bg_nav_bar_glass_dark
+                : R.drawable.bg_nav_bar_glass);
+
+        mNavRecords.setBackgroundResource(mRecordsSelected
+                ? (dark ? R.drawable.bg_nav_item_selected_dark : R.drawable.bg_nav_item_selected)
+                : 0);
+        mNavSettings.setBackgroundResource(!mRecordsSelected
+                ? (dark ? R.drawable.bg_nav_item_selected_dark : R.drawable.bg_nav_item_selected)
+                : 0);
+
+        int sel = dark ? 0xFF4CC97B : 0xFF2F9D56;
+        int normal = 0xFF8D97A6;
         if (mNavRecordsText != null) {
-            mNavRecordsText.setTextColor(getColor(mRecordsSelected
-                    ? R.color.nav_text_selected : R.color.nav_text_normal));
+            mNavRecordsText.setTextColor(mRecordsSelected ? sel : normal);
         }
         if (mNavSettingsText != null) {
-            mNavSettingsText.setTextColor(getColor(!mRecordsSelected
-                    ? R.color.nav_text_selected : R.color.nav_text_normal));
+            mNavSettingsText.setTextColor(!mRecordsSelected ? sel : normal);
         }
-        tint(mNavRecordsIcon, mRecordsSelected);
-        tint(mNavSettingsIcon, !mRecordsSelected);
+        tint(mNavRecordsIcon, mRecordsSelected, sel, normal);
+        tint(mNavSettingsIcon, !mRecordsSelected, sel, normal);
     }
 
-    private void tint(ImageView iv, boolean selected) {
+    private void tint(ImageView iv, boolean selected, int selectedColor, int normalColor) {
         if (iv == null) {
             return;
         }
@@ -149,8 +158,7 @@ public class HomeActivity extends BaseActivity {
             return;
         }
         d = DrawableCompat.wrap(d.mutate());
-        DrawableCompat.setTint(d, getColor(selected
-                ? R.color.nav_text_selected : R.color.nav_text_normal));
+        DrawableCompat.setTint(d, selected ? selectedColor : normalColor);
         iv.setImageDrawable(d);
     }
 

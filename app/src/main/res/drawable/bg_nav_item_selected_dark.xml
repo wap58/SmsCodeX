@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 深色选中胶囊（#2E4CC97B / 26dp），见 bg_nav_bar_glass_dark.xml 的说明 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#2E4CC97B" />
+    <corners android:radius="26dp" />
+</shape>
