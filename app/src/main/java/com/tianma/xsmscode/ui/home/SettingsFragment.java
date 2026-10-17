@@ -163,8 +163,14 @@ public class SettingsFragment extends BasePreferenceFragment implements
             });
             // "通道参数"行摘要改为固定说明文字（2026-09-18 用户定稿），由 xml 的 android:summary 绑定，不再动态覆盖
         }
-        // "转发通道"改为多选（2026-10-17）：不能用 SimpleSummaryProvider（只显示单选值），
-        // 摘要由 refreshForwardSummaries() 按 pref_forward_channels 拼「A、B、C」。
+        // "转发通道"改为多选（2026-10-17）：
+        //   ① 摘要不能用 SimpleSummaryProvider（只反映单选值），由 refreshForwardSummaries() 拼「A、B、C」
+        //   ② 原来的自定义 ListPreference 子类已换成普通 Preference，
+        //      普通 Preference 不走 onDisplayPreferenceDialog，必须显式注册点击监听
+        Preference chEntry = findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
+        if (chEntry != null) {
+            chEntry.setOnPreferenceClickListener(this);
+        }
         refreshForwardSummaries();
         // "转发范围"行摘要实时显示当前选项（2026-09-19）
         bindForwardScopeSummary();
