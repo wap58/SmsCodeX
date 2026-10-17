@@ -47,7 +47,7 @@
         android:layout_height="56dp"
         android:layout_marginStart="96dp"
         android:layout_marginEnd="96dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="22dp"
         android:background="@drawable/bg_nav_bar_glass"
         android:gravity="center_vertical"
         android:orientation="horizontal"
