@@ -149,20 +149,7 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 PrefConst.KEY_NOTIFICATION_RETENTION_TIME);
         makeCollapsible(PrefConst.KEY_FORWARD_HEADER,
                 PrefConst.KEY_ENABLE_FORWARD, PrefConst.KEY_FORWARD_SCOPE,
-                PrefConst.KEY_FORWARD_CHANNEL_TYPE,
-                PrefConst.KEY_FORWARD_CHANNEL_CONFIG);
-        // "通道参数"入口显式绑定点击监听（2026-09-16：用户反馈点击无反应，不再依赖隐式事件链）
-        Preference cfgEntry = findPreference(PrefConst.KEY_FORWARD_CHANNEL_CONFIG);
-        if (cfgEntry != null) {
-            cfgEntry.setOnPreferenceClickListener(p -> {
-                com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 通道参数 clicked");
-                String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
-                        .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
-                com.tianma.xsmscode.ui.forward.ChannelSettingsDialog.showDialog(getChildFragmentManager(), ch);
-                return true;
-            });
-            // "通道参数"行摘要改为固定说明文字（2026-09-18 用户定稿），由 xml 的 android:summary 绑定，不再动态覆盖
-        }
+                PrefConst.KEY_FORWARD_CHANNEL_TYPE);
         // "转发通道"改为多选（2026-10-17）：
         //   ① 摘要不能用 SimpleSummaryProvider（只反映单选值），由 refreshForwardSummaries() 拼「A、B、C」
         //   ② 原来的自定义 ListPreference 子类已换成普通 Preference，
@@ -369,12 +356,6 @@ public class SettingsFragment extends BasePreferenceFragment implements
         } else if (PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(key)) {
             // 普通 Preference 不触发 onDisplayPreferenceDialog，点击时显式弹多选框（2026-10-17）
             showChannelMultiDialog(preference);
-        } else if (PrefConst.KEY_FORWARD_CHANNEL_CONFIG.equals(key)) {
-            com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 通道参数 onPreferenceClick");
-            // 显式入口：进入当前所选通道的独立参数配置页（2026-09-16，用户反馈"找不到配置的地方"）
-            String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
-                    .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
-            com.tianma.xsmscode.ui.forward.ChannelSettingsDialog.showDialog(getChildFragmentManager(), ch);
         } else if (PrefConst.KEY_ENTRY_CODE_RECORDS.equals(key)) {
             CodeRecordActivity.startToMe(mActivity);
         } else if (PrefConst.KEY_APP_BLOCK_ENTRY.equals(key)) {

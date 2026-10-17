@@ -98,25 +98,25 @@ public final class ForwardChannels {
                 com.tianma.xsmscode.common.constant.PrefConst.PREF_NAME, Context.MODE_PRIVATE);
         switch (id) {
             case "wecom_agent":
-                return !sp.getString(PrefKeys.WECOM_CORPID, "").trim().isEmpty()
-                        && !sp.getString(PrefKeys.WECOM_AGENTID, "").trim().isEmpty()
-                        && !sp.getString(PrefKeys.WECOM_SECRET, "").trim().isEmpty();
+                return !sp.getString(ForwardDispatcher.PrefKeys.WECOM_CORPID, "").trim().isEmpty()
+                        && !sp.getString(ForwardDispatcher.PrefKeys.WECOM_AGENTID, "").trim().isEmpty()
+                        && !sp.getString(ForwardDispatcher.PrefKeys.WECOM_SECRET, "").trim().isEmpty();
             case "wecom_robot":
-                return !sp.getString(PrefKeys.WECOM_ROBOT_WEBHOOK, "").trim().isEmpty();
+                return !sp.getString(ForwardDispatcher.PrefKeys.WECOM_ROBOT_WEBHOOK, "").trim().isEmpty();
             case "dingtalk":
-                return !sp.getString(PrefKeys.DINGTALK_WEBHOOK, "").trim().isEmpty();
+                return !sp.getString(ForwardDispatcher.PrefKeys.DINGTALK_WEBHOOK, "").trim().isEmpty();
             case "feishu":
-                return !sp.getString(PrefKeys.FEISHU_WEBHOOK, "").trim().isEmpty();
+                return !sp.getString(ForwardDispatcher.PrefKeys.FEISHU_WEBHOOK, "").trim().isEmpty();
             case "xizhi":
-                return !sp.getString(PrefKeys.XIZHI_KEY, "").trim().isEmpty();
+                return !sp.getString(ForwardDispatcher.PrefKeys.XIZHI_KEY, "").trim().isEmpty();
             case "pushplus":
-                return !sp.getString(PrefKeys.PUSHPLUS_TOKEN, "").trim().isEmpty();
+                return !sp.getString(ForwardDispatcher.PrefKeys.PUSHPLUS_TOKEN, "").trim().isEmpty();
             case "qqbot":
-                return !sp.getString(PrefKeys.QQBOT_APPID, "").trim().isEmpty()
-                        && !sp.getString(PrefKeys.QQBOT_SECRET, "").trim().isEmpty()
-                        && !sp.getString(PrefKeys.QQBOT_OPENID, "").trim().isEmpty();
+                return !sp.getString(ForwardDispatcher.PrefKeys.QQBOT_APPID, "").trim().isEmpty()
+                        && !sp.getString(ForwardDispatcher.PrefKeys.QQBOT_SECRET, "").trim().isEmpty()
+                        && !sp.getString(ForwardDispatcher.PrefKeys.QQBOT_OPENID, "").trim().isEmpty();
             case "cmcc":
-                return !sp.getString(PrefKeys.CMCC_API_KEY, "").trim().isEmpty();
+                return !sp.getString(ForwardDispatcher.PrefKeys.CMCC_API_KEY, "").trim().isEmpty();
             default:
                 return false;
         }
