@@ -490,6 +490,20 @@ public class SettingsFragment extends BasePreferenceFragment implements
             showChannelMultiDialog(preference);
             handled = true;
         }
+        // 其余 ListPreference（通知保留时长 / 转发范围）同样改用自绘单选弹窗
+        // （2026-10-17）：原生对话框是 Material 粉圈 9-patch，与整体卡片风格不符
+        if (!handled && preference instanceof androidx.preference.ListPreference) {
+            androidx.preference.ListPreference lp =
+                    (androidx.preference.ListPreference) preference;
+            com.tianma.xsmscode.ui.forward.SingleChoiceDialog.show(
+                    getChildFragmentManager(),
+                    lp.getTitle() == null ? null : lp.getTitle().toString(),
+                    toStringArray(lp.getEntries()),
+                    toStringArray(lp.getEntryValues()),
+                    lp.getValue(),
+                    lp::setValue);
+            handled = true;
+        }
         if (!handled) {
             super.onDisplayPreferenceDialog(preference);
         }
