@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 深色底栏色值（逐值照搬「传信」values-night/colors.xml） -->
+<resources>
+    <color name="nav_bar">#F2272A31</color>
+    <color name="nav_stroke">#1AFFFFFF</color>
+    <color name="nav_bar_glass">#8A2B2F37</color>
+    <color name="nav_stroke_glass">#2EFFFFFF</color>
+    <color name="nav_glass_top">#8A2F333B</color>
+    <color name="nav_glass_bottom">#661A1D22</color>
+    <color name="nav_glass_highlight">#33FFFFFF</color>
+    <color name="nav_pill">#2E4CC97B</color>
+    <color name="nav_text_selected">#4CC97B</color>
+    <color name="nav_text_normal">#8D97A6</color>
+</resources>

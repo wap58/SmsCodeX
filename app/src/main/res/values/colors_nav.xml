@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    底栏配色（2026-10-17）：逐值照搬「传信」values/colors.xml，不做任何改动。
+    与传信同名同值，便于两边对照维护。
+-->
+<resources>
+    <color name="nav_bar">#F2FFFFFF</color>
+    <color name="nav_stroke">#14000000</color>
+    <!-- 液态玻璃渐变（浅色模式：白玻璃） -->
+    <color name="nav_glass_top">#80FFFFFF</color>
+    <color name="nav_glass_bottom">#59FFFFFF</color>
+    <color name="nav_glass_highlight">#55FFFFFF</color>
+    <color name="nav_stroke_glass">#66FFFFFF</color>
+    <color name="nav_bar_glass">#99FFFFFF</color>
+    <color name="nav_pill">#1A2F9D56</color>
+    <color name="nav_text_selected">#2F9D56</color>
+    <color name="nav_text_normal">#8D97A6</color>
+</resources>

@@ -3,10 +3,7 @@ package com.tianma.xsmscode.ui.home;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -28,7 +25,6 @@ import com.smscodf.zhuxf.R;
 import com.tianma.xsmscode.common.constant.Const;
 import com.tianma.xsmscode.common.constant.PrefConst;
 import com.tianma.xsmscode.common.utils.PackageUtils;
-import com.tianma.xsmscode.common.utils.ThemeColors;
 import com.tianma.xsmscode.common.utils.Utils;
 import com.tianma.xsmscode.xp.hook.ActivationService;
 import com.tianma.xsmscode.ui.app.base.BaseActivity;
@@ -114,43 +110,37 @@ public class HomeActivity extends BaseActivity {
     }
 
     /**
-     * 底栏配色（2026-10-17）：对齐传信 —— 悬浮胶囊玻璃 + 选中项圆角高亮。
+     * 底栏选中态切换（2026-10-17）：
+     * 视觉全部由 xml 资源决定——底色用 {@code @drawable/bg_nav_bar_glass}，
+     * 选中胶囊用 {@code @drawable/bg_nav_item_selected}，颜色见
+     * {@code values/colors_nav.xml} 与 {@code values-night/colors_nav.xml}
+     * （逐值照搬「传信」），深色由系统自动切换。
      *
-     * <p>颜色全部现算，不用 {@code ?attr/}：本项目 Cyanea 主题下主题属性取色会回退失败
-     * （见 ChannelDialogTheme 的实测记录）。深色判定用背景亮度，而非 Cyanea.isDark()，
-     * 因为用户可能选"浅色基底 + 深色背景"。
+     * <p>这里只做一件事：把胶囊从一项挪到另一项。
      */
     private void applyNavTheme() {
-        if (mBottomBar == null) {
+        if (mNavRecords == null || mNavSettings == null) {
             return;
         }
-        boolean dark = isDarkBackground();
-        int accent = ThemeColors.accent();
+        mNavRecords.setBackgroundResource(
+                mRecordsSelected ? R.drawable.bg_nav_item_selected : 0);
+        mNavSettings.setBackgroundResource(
+                mRecordsSelected ? 0 : R.drawable.bg_nav_item_selected);
 
-        // 导航条：半透明底 + 细描边 + 27dp 圆角
-        GradientDrawable bar = new GradientDrawable();
-        bar.setShape(GradientDrawable.RECTANGLE);
-        bar.setCornerRadius(dp(27));
-        bar.setColor(dark ? 0xF2272A31 : 0xF2FFFFFF);
-        bar.setStroke(Math.max(1, (int) dp(0.8f)), dark ? 0x1AFFFFFF : 0x14000000);
-        mBottomBar.setBackground(bar);
-
-        // 选中项：accent 20% 透明度的胶囊
-        GradientDrawable pill = new GradientDrawable();
-        pill.setShape(GradientDrawable.RECTANGLE);
-        pill.setCornerRadius(dp(26));
-        pill.setColor((accent & 0x00FFFFFF) | 0x1A000000);
-
-        mNavRecords.setBackground(mRecordsSelected ? pill : null);
-        mNavSettings.setBackground(mRecordsSelected ? null : pill);
-
-        tint(mNavRecordsIcon, mRecordsSelected, accent, dark);
-        tint(mNavSettingsIcon, !mRecordsSelected, accent, dark);
-        mNavRecordsText.setTextColor(mRecordsSelected ? accent : (dark ? 0xFF8D97A6 : 0xFF8D97A6));
-        mNavSettingsText.setTextColor(mRecordsSelected ? 0xFF8D97A6 : accent);
+        // 文字/图标随选中态换色（传信用的是静态色，这里保留一项区分，色值同传信）
+        if (mNavRecordsText != null) {
+            mNavRecordsText.setTextColor(getColor(mRecordsSelected
+                    ? R.color.nav_text_selected : R.color.nav_text_normal));
+        }
+        if (mNavSettingsText != null) {
+            mNavSettingsText.setTextColor(getColor(!mRecordsSelected
+                    ? R.color.nav_text_selected : R.color.nav_text_normal));
+        }
+        tint(mNavRecordsIcon, mRecordsSelected);
+        tint(mNavSettingsIcon, !mRecordsSelected);
     }
 
-    private void tint(ImageView iv, boolean selected, int accent, boolean dark) {
+    private void tint(ImageView iv, boolean selected) {
         if (iv == null) {
             return;
         }
@@ -159,24 +149,9 @@ public class HomeActivity extends BaseActivity {
             return;
         }
         d = DrawableCompat.wrap(d.mutate());
-        DrawableCompat.setTint(d, selected ? accent : 0xFF8D97A6);
+        DrawableCompat.setTint(d, getColor(selected
+                ? R.color.nav_text_selected : R.color.nav_text_normal));
         iv.setImageDrawable(d);
-    }
-
-    private boolean isDarkBackground() {
-        try {
-            int bg = com.jaredrummler.cyanea.Cyanea.getInstance().getBackgroundColor();
-            float lum = (0.299f * Color.red(bg) + 0.587f * Color.green(bg)
-                    + 0.114f * Color.blue(bg)) / 255f;
-            return lum < 0.5f;
-        } catch (Throwable ignored) {
-            int mode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-            return mode == Configuration.UI_MODE_NIGHT_YES;
-        }
-    }
-
-    private float dp(float v) {
-        return v * getResources().getDisplayMetrics().density;
     }
 
     private void handleIntent(Intent intent) {
