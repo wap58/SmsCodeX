@@ -305,9 +305,11 @@ public class SettingsFragment extends BasePreferenceFragment implements
 
         // 悬浮胶囊底栏（2026-10-17）：设置列表同样延伸到胶囊下方，最后一项可滚出
         if (view instanceof android.view.ViewGroup) {
-            android.view.View list = ((android.view.ViewGroup) view)
+            android.view.View found = ((android.view.ViewGroup) view)
                     .findViewById(androidx.preference.R.id.recycler_view);
-            if (list != null) {
+            // setClipToPadding 是 ViewGroup 的方法，这里必须强转
+            if (found instanceof android.view.ViewGroup) {
+                android.view.ViewGroup list = (android.view.ViewGroup) found;
                 list.setClipToPadding(false);
                 list.setPadding(list.getPaddingLeft(), list.getPaddingTop(),
                         list.getPaddingRight(),
