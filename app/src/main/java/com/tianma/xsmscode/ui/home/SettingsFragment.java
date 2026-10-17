@@ -366,6 +366,9 @@ public class SettingsFragment extends BasePreferenceFragment implements
             showSmsCodeTestDialog();
         } else if (PrefConst.KEY_SOURCE_CODE.equals(key)) {
             mPresenter.showSourceProject();
+        } else if (PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(key)) {
+            // 普通 Preference 不触发 onDisplayPreferenceDialog，点击时显式弹多选框（2026-10-17）
+            showChannelMultiDialog(preference);
         } else if (PrefConst.KEY_FORWARD_CHANNEL_CONFIG.equals(key)) {
             com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 通道参数 onPreferenceClick");
             // 显式入口：进入当前所选通道的独立参数配置页（2026-09-16，用户反馈"找不到配置的地方"）
@@ -450,10 +453,6 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 }
                 autoLinkKillOff();
             }
-        } else if (PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(key)) {
-            // 普通 Preference 不触发 onDisplayPreferenceDialog，必须显式弹多选框（2026-10-17）
-            showChannelMultiDialog(preference);
-            return true;
         } else {
             return false;
         }
