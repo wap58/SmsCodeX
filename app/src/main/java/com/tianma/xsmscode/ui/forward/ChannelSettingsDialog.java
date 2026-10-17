@@ -81,6 +81,10 @@ public class ChannelSettingsDialog extends AppCompatDialogFragment {
                 return R.string.forward_channel_page_xizhi;
             case "pushplus":
                 return R.string.forward_channel_page_pushplus;
+            case "qqbot":
+                return R.string.forward_channel_page_qqbot;
+            case "cmcc":
+                return R.string.forward_channel_page_cmcc;
             case "wecom_agent":
             default:
                 return R.string.forward_channel_page_wecom_agent;
@@ -111,6 +115,16 @@ public class ChannelSettingsDialog extends AppCompatDialogFragment {
             case "pushplus":
                 list.add(new Field(R.string.forward_pushplus_title,
                         PrefConst.KEY_FORWARD_PUSHPLUS_TOKEN, false));
+                break;
+            case "qqbot":
+                list.add(new Field(R.string.forward_qqbot_title,
+                        PrefConst.KEY_FORWARD_QQBOT_APPID, false));
+                list.add(new Field(R.string.forward_qqbot_secret_title,
+                        PrefConst.KEY_FORWARD_QQBOT_SECRET, true));
+                break;
+            case "cmcc":
+                list.add(new Field(R.string.forward_cmcc_title,
+                        PrefConst.KEY_FORWARD_CMCC_API_KEY, false));
                 break;
             case "wecom_agent":
             default:

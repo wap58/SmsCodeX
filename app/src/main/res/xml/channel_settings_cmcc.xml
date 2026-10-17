@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 中国移动 5G 新消息通道参数页（2026-10-17） -->
+    <EditTextPreference
+        android:defaultValue=""
+        android:key="@string/pref_forward_cmcc_api_key"
+        android:summary="@string/forward_cmcc_summary"
+        android:title="@string/forward_cmcc_title"/>
+
+    <Preference
+        android:key="pref_forward_cmcc_help"
+        android:persistent="false"
+        android:selectable="false"
+        android:summary="① 需为移动号并已开通 5G 消息；② 在 5G 消息里搜索并绑定应用号；③ 绑定后获得 ak_ 开头的 API Key 填到上面。联通/电信不支持。"
+        android:title="配置前提"/>
+</PreferenceScreen>

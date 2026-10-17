@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- QQ 官方机器人通道参数页（2026-10-17） -->
+    <EditTextPreference
+        android:defaultValue=""
+        android:key="@string/pref_forward_qqbot_appid"
+        android:summary="@string/forward_qqbot_summary"
+        android:title="@string/forward_qqbot_title"/>
+
+    <EditTextPreference
+        android:defaultValue=""
+        android:key="@string/pref_forward_qqbot_secret"
+        android:summary="@string/forward_qqbot_secret_title"
+        android:title="@string/forward_qqbot_secret_title"/>
+
+    <!-- 绑定入口：填写 AppID/Secret 后接入网关接收一次消息，自动抓取 openid -->
+    <Preference
+        android:key="pref_forward_qqbot_bind_entry"
+        android:persistent="false"
+        android:selectable="true"
+        android:summary="@string/forward_qqbot_bind_summary"
+        android:title="@string/forward_qqbot_bind_entry"/>
+</PreferenceScreen>

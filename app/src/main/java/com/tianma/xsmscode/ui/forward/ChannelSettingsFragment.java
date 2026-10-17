@@ -41,6 +41,12 @@ public class ChannelSettingsFragment extends BasePreferenceFragment {
             case "pushplus":
                 id = R.string.forward_channel_page_pushplus;
                 break;
+            case "qqbot":
+                id = R.string.forward_channel_page_qqbot;
+                break;
+            case "cmcc":
+                id = R.string.forward_channel_page_cmcc;
+                break;
             case "wecom_agent":
             default:
                 id = R.string.forward_channel_page_wecom_agent;
@@ -69,6 +75,22 @@ public class ChannelSettingsFragment extends BasePreferenceFragment {
                 break;
             case "pushplus":
                 addPreferencesFromResource(R.xml.channel_settings_pushplus);
+                break;
+            case "qqbot":
+                addPreferencesFromResource(R.xml.channel_settings_qqbot);
+                // 绑定入口：直达绑定页（需连网关抓 openid）
+                androidx.preference.Preference bind =
+                        findPreference("pref_forward_qqbot_bind_entry");
+                if (bind != null) {
+                    bind.setOnPreferenceClickListener(p -> {
+                        startActivity(new android.content.Intent(requireContext(),
+                                QQBotBindActivity.class));
+                        return true;
+                    });
+                }
+                break;
+            case "cmcc":
+                addPreferencesFromResource(R.xml.channel_settings_cmcc);
                 break;
             case "wecom_agent":
             default:

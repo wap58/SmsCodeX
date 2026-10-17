@@ -276,6 +276,8 @@ public class DBProvider extends ContentProvider {
                     com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_XIZHI_KEY, "");
             String pushplusToken = sp == null ? "" : sp.getString(
                     com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_PUSHPLUS_TOKEN, "");
+            String cmccKey = sp == null ? "" : sp.getString(
+                    com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_CMCC_API_KEY, "");
             String sender = extras == null ? "" : extras.getString("sender", "");
             String body = extras == null ? "" : extras.getString("body", "");
             String code = extras == null ? "" : extras.getString("code", "");
@@ -305,6 +307,13 @@ public class DBProvider extends ContentProvider {
                     break;
                 case "pushplus":
                     selectedOk = !pushplusToken.trim().isEmpty();
+                    break;
+                case "qqbot":
+                    selectedOk = com.tianma.xsmscode.feature.forward.qqbot.QQBotStore
+                            .isConfigured(ctx);
+                    break;
+                case "cmcc":
+                    selectedOk = !cmccKey.trim().isEmpty();
                     break;
                 default:
                     selectedOk = !corpId.trim().isEmpty()
@@ -340,6 +349,39 @@ public class DBProvider extends ContentProvider {
                 case "pushplus":
                     ok = com.tianma.xsmscode.feature.forward.ChannelSender.sendPushplus(pushplusToken, content);
                     break;
+                case "qqbot": {
+                    String qAppId = sp.getString(
+                            com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_QQBOT_APPID, "");
+                    String qSecret = sp.getString(
+                            com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_QQBOT_SECRET, "");
+                    String qOpenId = sp.getString(
+                            com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_QQBOT_OPENID, "");
+                    boolean qGroup = sp.getBoolean(
+                            com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_QQBOT_IS_GROUP, false);
+                    String qToken = sp.getString(
+                            com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_QQBOT_TOKEN, "");
+                    long qExpire = sp.getLong(
+                            com.tianma.xsmscode.common.constant.PrefConst.KEY_FORWARD_QQBOT_TOKEN_EXPIRE, 0L);
+                    if (System.currentTimeMillis() >= qExpire) {
+                        qToken = "";
+                    }
+                    com.tianma.xsmscode.feature.forward.qqbot.QQBotApi.SendResult qr =
+                            com.tianma.xsmscode.feature.forward.qqbot.QQBotApi.sendWithRetry(
+                                    qAppId, qSecret, qToken, qOpenId, qGroup, content);
+                    ok = qr.ok;
+                    if (!ok) {
+                        com.tianma.xsmscode.common.utils.XLog.w("QQBot: %s", qr.reason());
+                    }
+                    break;
+                }
+                case "cmcc": {
+                    String err = com.tianma.xsmscode.feature.forward.CmccSender.send(cmccKey, content);
+                    ok = err == null;
+                    if (!ok) {
+                        com.tianma.xsmscode.common.utils.XLog.w("Cmcc: %s", err);
+                    }
+                    break;
+                }
                 case "wecom_agent":
                 default:
                     if (corpId.trim().isEmpty() || agentId.trim().isEmpty() || secret.trim().isEmpty()) {

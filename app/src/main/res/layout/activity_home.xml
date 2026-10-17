@@ -19,25 +19,93 @@
             layout="@layout/toolbar"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-
+    <!--
+        内容区：底部留出 76dp（底栏 56dp + 上下边距），避免内容被悬浮胶囊遮住。
+        这与传信 activity_home.xml 的 paddingBottom=86dp 同思路，只是这里用 padding
+        而非滚动区 padding，因为记录页是 RecyclerView 铺满的。
+    -->
     <FrameLayout
         android:id="@+id/home_content"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:paddingBottom="76dp"
+        android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_nav"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/app_bar_layout"/>
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_nav"
+    <!--
+        ============ 底部导航（悬浮胶囊，对齐传信）============
+        ★ 背景/高亮/图标色全部由 HomeActivity#applyNavTheme 运行时按 Cyanea 主题染色：
+          本项目通过主题属性取色会回退失败（2026-09-15 实测），故不在 xml 里引 ?attr。
+    -->
+    <LinearLayout
+        android:id="@+id/bottom_bar"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="?android:attr/colorBackground"
-        app:labelVisibilityMode="labeled"
+        android:layout_height="56dp"
+        android:layout_marginStart="96dp"
+        android:layout_marginEnd="96dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_nav_bar"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/bottom_nav_home"/>
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:id="@+id/nav_records"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="3dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_nav_item_selected"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/nav_records_icon"
+                android:layout_width="21dp"
+                android:layout_height="21dp"
+                android:contentDescription="@string/tab_records"
+                android:src="@drawable/ic_records"/>
+
+            <TextView
+                android:id="@+id/nav_records_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/tab_records"
+                android:textSize="10sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_settings"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_marginStart="3dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/nav_settings_icon"
+                android:layout_width="21dp"
+                android:layout_height="21dp"
+                android:contentDescription="@string/tab_settings"
+                android:src="@drawable/ic_settings"/>
+
+            <TextView
+                android:id="@+id/nav_settings_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/tab_settings"
+                android:textSize="10sp"/>
+        </LinearLayout>
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

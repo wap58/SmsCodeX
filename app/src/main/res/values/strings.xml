@@ -416,6 +416,8 @@
         <item>feishu</item>
         <item>xizhi</item>
 <item>pushplus</item>
+<item>qqbot</item>
+<item>cmcc</item>
     </string-array>
     <string name="forward_killme_autodisabled">Kill switch was turned off automatically</string>
     <string name="pref_forward_channel_title">Forwarding channel</string>
@@ -446,4 +448,16 @@
     <string name="forward_channel_page_xizhi">Xizhi</string>
     <string name="forward_channel_page_pushplus">PushPlus</string>
     <string name="channel_settings_dialog_done">Done</string>
+    <string name="forward_qqbot_title">AppID / AppSecret</string>
+    <string name="forward_qqbot_summary">Get them after creating a bot on QQ Open Platform</string>
+    <string name="forward_qqbot_secret_title">AppSecret</string>
+    <string name="forward_channel_page_qqbot">QQ Bot</string>
+    <string name="forward_cmcc_title">5G Message API Key</string>
+    <string name="forward_cmcc_summary">Obtained after binding an app account in CMCC 5G Message (starts with ak_)</string>
+    <string name="forward_channel_page_cmcc">CMCC New Message</string>
+    <string name="forward_qqbot_bind_entry">QQ Bot Binding</string>
+    <string name="forward_qqbot_bind_summary">Fill in parameters and receive one message to capture the session</string>
+    <string name="pref_forward_qqbot_appid">pref_forward_qqbot_appid</string>
+    <string name="pref_forward_qqbot_secret">pref_forward_qqbot_secret</string>
+    <string name="pref_forward_cmcc_api_key">pref_forward_cmcc_api_key</string>
 </resources>

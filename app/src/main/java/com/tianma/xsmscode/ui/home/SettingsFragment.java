@@ -430,6 +430,11 @@ public class SettingsFragment extends BasePreferenceFragment implements
             com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 转发通道 changed to %s", newValue);
             // 摘要由 SummaryProvider 实时计算，无需手动设置；选中即持久化生效
             com.tianma.xsmscode.ui.forward.ChannelSettingsDialog.showDialog(getChildFragmentManager(), (String) newValue);
+            // QQ 机器人：选到该通道时直达绑定页（需连接网关抓 openid，弹窗里做不了）
+            if ("qqbot".equals(newValue)) {
+                mActivity.startActivity(new android.content.Intent(mActivity,
+                        com.tianma.xsmscode.ui.forward.QQBotBindActivity.class));
+            }
         } else {
             return false;
         }

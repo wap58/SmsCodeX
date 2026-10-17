@@ -37,8 +37,9 @@ sed -i 's|org.gradle.jvmargs=.*|org.gradle.jvmargs=-Xmx2600m -XX:MaxMetaspaceSiz
 echo "org.gradle.daemon=false" >> gradle.properties
 
 echo "== [4/6] Gradle 构建（首次较慢，耐心等待）=="
-chmod +x gradlew
-./gradlew assembleRelease --no-daemon --console=plain 2>&1 | tail -30
+# ★ /sdcard 是 FUSE，chmod +x 不生效 —— 必须用 bash 显式调用 gradlew
+GRADLE="$PREFIX/bin/bash ./gradlew"
+$GRADLE assembleRelease --no-daemon --console=plain 2>&1 | tail -40
 
 echo "== [5/6] 定位产物 =="
 APK=$(ls -t app/build/outputs/apk/release/*.apk 2>/dev/null | head -1)

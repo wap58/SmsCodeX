@@ -85,6 +85,34 @@ public final class DirectForwarder {
                     if (TextUtils.isEmpty(token)) return RESULT_SKIP;
                     return sendPushplus(token, content) ? RESULT_SENT : RESULT_FAILED;
                 }
+                case "qqbot": {
+                    String appId = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_QQBOT_APPID, "");
+                    String secret = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_QQBOT_SECRET, "");
+                    String openId = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_QQBOT_OPENID, "");
+                    if (TextUtils.isEmpty(appId) || TextUtils.isEmpty(secret) || TextUtils.isEmpty(openId)) {
+                        return RESULT_SKIP;
+                    }
+                    boolean group = com.tianma.xsmscode.common.utils.ModulePrefs.getBoolean(
+                            PKG, PF, PrefConst.KEY_FORWARD_QQBOT_IS_GROUP, false);
+                    // 电话进程无法回写 app 侧缓存，故每次都现取 token（短信频率低，可接受）
+                    String cached = "";
+                    com.tianma.xsmscode.feature.forward.qqbot.QQBotApi.SendResult sr =
+                            com.tianma.xsmscode.feature.forward.qqbot.QQBotApi.sendWithRetry(
+                                    appId, secret, cached, openId, group, content);
+                    if (!sr.ok) {
+                        XLog.w("QQBot(direct): %s", sr.reason());
+                    }
+                    return sr.ok ? RESULT_SENT : RESULT_FAILED;
+                }
+                case "cmcc": {
+                    String key = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_CMCC_API_KEY, "");
+                    if (TextUtils.isEmpty(key)) return RESULT_SKIP;
+                    String err = com.tianma.xsmscode.feature.forward.CmccSender.send(key, content);
+                    if (err != null) {
+                        XLog.w("Cmcc(direct): %s", err);
+                    }
+                    return err == null ? RESULT_SENT : RESULT_FAILED;
+                }
                 case "wecom_agent":
                 default: {
                     String corpId = com.tianma.xsmscode.common.utils.ModulePrefs.getString(PKG, PF, PrefConst.KEY_FORWARD_WECOM_CORPID, "");

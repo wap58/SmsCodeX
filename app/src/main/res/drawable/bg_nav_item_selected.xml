@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 选中项胶囊高亮（对齐传信 bg_nav_item_selected.xml）：颜色运行时赋值 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#1A2F9D56" />
+    <corners android:radius="26dp" />
+</shape>

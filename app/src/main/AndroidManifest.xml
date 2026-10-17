@@ -125,6 +125,12 @@
             android:label="@string/app_block_settings" />
 
         <activity
+            android:name="com.tianma.xsmscode.ui.forward.QQBotBindActivity"
+            android:exported="false"
+            android:label="@string/forward_channel_page_qqbot"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name="com.tianma.xsmscode.ui.forward.ChannelSettingsActivity"
             android:label="@string/forward_channel_settings" />
 
