@@ -60,12 +60,32 @@ public final class ForwardResultStore {
      * @param time    短信接收时间（SmsMsg#getDate），作为去重键
      * @param results 每个通道一项
      */
+    /** 跨进程互斥锁文件（app 与 phone 进程共用） */
+    private static final String LOCK_NAME = "forward_history.lock";
+
     public static synchronized void write(long time, List<ChannelResult> results) {
         File f = file();
         if (f == null) {
             return;
         }
+        // ★ 跨进程互斥（2026-10-18）：synchronized 只保证同进程内串行，
+        //   app 进程与 phone 进程可能同时「读-改-写」，后写者会覆盖前者的结果。
+        //   用 FileLock 做真正的跨进程锁（读-改-写整体加锁）。
+        java.io.RandomAccessFile lockRaf = null;
+        java.nio.channels.FileLock lock = null;
         try {
+            File lockFile = new File(f.getParentFile(), LOCK_NAME);
+            lockRaf = new java.io.RandomAccessFile(lockFile, "rw");
+            lock = lockRaf.getChannel().lock();
+        } catch (Throwable ignored) {
+            // 加锁失败不阻断写入（降级为无锁，至少原子写能保证不读到半截）
+        }
+        try {
+            // 先探测文件是否可解析（损坏时放弃本次覆盖，避免清空历史）
+            if (f.exists() && f.length() > 0 && !isReadable(f)) {
+                XLog.w("ForwardResultStore: history corrupted, skip write to avoid data loss");
+                return;
+            }
             JSONArray arr = readArray();
             JSONArray next = new JSONArray();
             boolean replaced = false;
@@ -99,14 +119,43 @@ public final class ForwardResultStore {
                 }
             }
 
-            try (FileOutputStream fos = new FileOutputStream(f)) {
+            // ★ 原子写（2026-10-18）：
+            //   app 进程与 phone 进程会同时写这个文件，synchronized 只在本进程内有效。
+            //   直接覆盖写有窗口期——另一进程此刻读会拿到截断的 JSON，
+            //   readArray 抛异常后历史整份丢失。
+            //   改为「写临时文件 → renameTo 原子替换」，读方要么拿到旧内容要么拿到新内容。
+            File tmp = new File(f.getParentFile(), f.getName() + ".tmp");
+            try (FileOutputStream fos = new FileOutputStream(tmp)) {
                 fos.write(trimmed.toString().getBytes(StandardCharsets.UTF_8));
                 fos.flush();
+                fos.getFD().sync();
+            }
+            StorageUtils.setFileWorldWritable(tmp, 0);
+            if (!tmp.renameTo(f)) {
+                // 少数文件系统上 rename 失败（目标存在且不允许覆盖）→ 退回删除后重试
+                //noinspection ResultOfMethodCallIgnored
+                f.delete();
+                if (!tmp.renameTo(f)) {
+                    throw new java.io.IOException("rename failed: " + tmp);
+                }
             }
             StorageUtils.setFileWorldWritable(f, 0);
             StorageUtils.setFileWorldWritable(f.getParentFile(), 2);
         } catch (Throwable t) {
             XLog.e("ForwardResultStore: write failed %s", t);
+        } finally {
+            if (lock != null) {
+                try {
+                    lock.release();
+                } catch (Throwable ignored) {
+                }
+            }
+            if (lockRaf != null) {
+                try {
+                    lockRaf.close();
+                } catch (Throwable ignored) {
+                }
+            }
         }
     }
 
@@ -129,6 +178,26 @@ public final class ForwardResultStore {
     }
 
     // ------------------------------------------------------------ 读
+
+    /** 文件内容能否解析成 JSONArray（用于写前校验，避免覆盖掉损坏文件的"剩余价值"） */
+    private static boolean isReadable(File f) {
+        try (FileInputStream fis = new FileInputStream(f)) {
+            ByteArrayOutputStream buf = new ByteArrayOutputStream();
+            byte[] chunk = new byte[4096];
+            int n;
+            while ((n = fis.read(chunk)) > 0) {
+                buf.write(chunk, 0, n);
+            }
+            String s = new String(buf.toByteArray(), StandardCharsets.UTF_8);
+            if (TextUtils.isEmpty(s)) {
+                return true;
+            }
+            new JSONArray(s);
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
 
     private static JSONArray readArray() {
         File f = file();

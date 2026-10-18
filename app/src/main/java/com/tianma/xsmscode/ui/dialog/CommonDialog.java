@@ -229,6 +229,8 @@ public class CommonDialog extends AppCompatDialogFragment {
             return d;
         }
 
+        private CommonDialog mShown;
+
         public void show() {
             if (mFm == null) {
                 return;
@@ -237,7 +239,15 @@ public class CommonDialog extends AppCompatDialogFragment {
             if (mFm.findFragmentByTag(TAG) != null) {
                 return;
             }
-            build().show(mFm, TAG);
+            mShown = build();
+            mShown.show(mFm, TAG);
+        }
+
+        /** 供 autoDismiss(false) 时手动关闭（在 positive 回调里调用） */
+        public void dismiss() {
+            if (mShown != null && mShown.isAdded()) {
+                mShown.dismissAllowingStateLoss();
+            }
         }
     }
 

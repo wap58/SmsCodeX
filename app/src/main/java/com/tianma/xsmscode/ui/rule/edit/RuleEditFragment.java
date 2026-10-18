@@ -119,8 +119,9 @@ public class RuleEditFragment extends DaggerFragment implements RuleEditContract
         final TextInputEditText[] codeLenRef = new TextInputEditText[1];
 
         // 2026-10-18：改用自绘弹窗；自定义视图在填充回调里绑监听
-        new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
-                getChildFragmentManager(), requireContext())
+        final com.tianma.xsmscode.ui.dialog.CommonDialog.Builder builder =
+                new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                        getChildFragmentManager(), requireContext())
                 .title(R.string.quick_choose)
                 .customView(R.layout.dialog_code_regex_quick_chcoose, container -> {
                     AppCompatSpinner spinner = container.findViewById(R.id.rule_code_type_spinner);
@@ -152,9 +153,11 @@ public class RuleEditFragment extends DaggerFragment implements RuleEditContract
                     String format = "(?<!%s)%s{%s}(?!%s)";
                     String codeRegex = String.format(format, codeType, codeType, codeLenText, codeType);
                     setText(mCodeRegexEditText, codeRegex);
+                    // 校验通过后手动关闭（autoDismiss=false 不会自动关）
+                    builder.dismiss();
                 })
-                .autoDismiss(false)
-                .show();
+                .autoDismiss(false);
+        builder.show();
     }
 
     private void setText(EditText editText, CharSequence text) {
