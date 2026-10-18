@@ -230,13 +230,7 @@ public class QQBotBindActivity extends BaseActivity {
             JSONObject j = new JSONObject(raw);
             int op = j.optInt("op", -1);
 
-            if (op == 10) {   // Hello → 先起心跳，再鉴权
-                long hb = j.optJSONObject("d") == null ? 41250L
-                        : j.optJSONObject("d").optLong("heartbeat_interval", 41250L);
-                if (mWs != null) {
-                    mWs.startHeartbeat(hb);
-                    XLog.i("QQBot: heartbeat started interval=%dms", hb);
-                }
+            if (op == 10) {   // Hello → 鉴权
                 String token = QQBotStore.cachedToken(this);
                 JSONObject d = new JSONObject();
                 d.put("op", 2);
@@ -252,9 +246,6 @@ public class QQBotBindActivity extends BaseActivity {
             }
 
             if (op == 0) {   // 事件
-                if (mWs != null && j.has("s")) {
-                    mWs.updateSeq(j.optLong("s", 0));
-                }
                 String type = j.optString("t", "");
                 JSONObject d = j.optJSONObject("d");
                 if (d == null) {

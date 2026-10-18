@@ -46,11 +46,6 @@ public final class MiniWebSocket {
     private volatile boolean running = false;
     private Listener listener;
 
-    /** 心跳线程（2026-10-18）：QQ 网关要求按 heartbeat_interval 主动上报 op=1，
-     *  否则连接约 41 秒后被服务端断开 —— 这也是"发了几十条消息都绑不上"的根因 */
-    private java.util.Timer heartbeatTimer;
-    private volatile long heartbeatSeq = 0;
-
     /** 阻塞完成握手，失败抛异常 */
     public void connect(String wssUrl, Listener l) throws IOException {
         this.listener = l;
@@ -129,57 +124,6 @@ public final class MiniWebSocket {
         reader = new Thread(this::readLoop, "minis-ws");
         reader.setDaemon(true);
         reader.start();
-    }
-
-    /**
-     * 启动心跳（2026-10-18 新增）。
-     *
-     * <p>QQ 网关在 op=10 Hello 里下发 heartbeat_interval（单位毫秒），
-     * 客户端必须按该间隔发送 {@code {"op":1,"d":<上次序号或null>}}，
-     * 否则服务端判定连接失活并断开（实测约 41 秒）。
-     *
-     * <p>传信版本没有实现心跳，只在绑定窗口内被动收帧，
-     * 短超时下勉强能收到，稍慢就断开 —— 属于移植时漏掉的一环。
-     */
-    public void startHeartbeat(long intervalMs) {
-        stopHeartbeat();
-        if (intervalMs <= 0) {
-            intervalMs = 41250L;
-        }
-        heartbeatTimer = new java.util.Timer("minis-ws-hb", true);
-        heartbeatTimer.schedule(new java.util.TimerTask() {
-            @Override
-            public void run() {
-                if (!running) {
-                    cancel();
-                    return;
-                }
-                try {
-                    org.json.JSONObject d = new org.json.JSONObject();
-                    d.put("op", 1);
-                    if (heartbeatSeq > 0) {
-                        d.put("d", heartbeatSeq);
-                    } else {
-                        d.put("d", org.json.JSONObject.NULL);
-                    }
-                    sendText(d.toString());
-                } catch (Throwable ignored) {
-                    // 发送失败由 readLoop 的异常路径处理
-                }
-            }
-        }, intervalMs, intervalMs);
-    }
-
-    public void stopHeartbeat() {
-        if (heartbeatTimer != null) {
-            heartbeatTimer.cancel();
-            heartbeatTimer = null;
-        }
-    }
-
-    /** 记录事件序号（服务端 s 字段），心跳时回填 */
-    public void updateSeq(long seq) {
-        this.heartbeatSeq = seq;
     }
 
     private static String firstLine(String s) {
@@ -324,7 +268,6 @@ public final class MiniWebSocket {
 
     public void closeQuietly() {
         running = false;
-        stopHeartbeat();
         try {
             if (socket != null) socket.close();
         } catch (Throwable ignored) {
