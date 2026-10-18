@@ -102,7 +102,7 @@ public class CodeRecordAdapter extends RecyclerView.Adapter<CodeRecordAdapter.VH
             "平台", "服务"
     };
 
-    static String shortenCompany(String raw) {
+    public static String shortenCompany(String raw) {
         if (raw == null) {
             return "";
         }

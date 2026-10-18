@@ -218,12 +218,31 @@ public class HomeFragment extends Fragment {
 
         // ---- 最近转发 ----
         List<ForwardResultStore.Record> recent = ForwardResultStore.readRecent(20);
+
+        // 一次性把短信表读进来，按时间戳索引，避免每条记录都全表扫描
+        java.util.Map<Long, SmsMsg> byTime = new java.util.HashMap<>();
+        try {
+            for (SmsMsg m : DBManager.get(requireContext()).queryAllSmsMsg()) {
+                byTime.put(m.getDate(), m);
+            }
+        } catch (Throwable ignored) {
+        }
+
+        List<String> titles = new ArrayList<>();
+        List<String> senders = new ArrayList<>();
         List<String> codes = new ArrayList<>();
         for (ForwardResultStore.Record r : recent) {
-            codes.add(lookupCode(r.time));
+            SmsMsg m = byTime.get(r.time);
+            String company = m == null ? "" : (m.getCompany() == null ? "" : m.getCompany().trim());
+            String sender = m == null ? "" : (m.getSender() == null ? "" : m.getSender().trim());
+            // 标题优先公司名（去掉常见后缀，避免过长），没有则用号码
+            titles.add(company.isEmpty()
+                    ? sender : com.tianma.xsmscode.ui.record.CodeRecordAdapter.shortenCompany(company));
+            senders.add(sender);
+            codes.add(m == null || m.getSmsCode() == null ? "" : m.getSmsCode());
         }
         mAdapter.setColors(textPrimary, textHint, accent, dark);
-        mAdapter.setData(recent, codes);
+        mAdapter.setData(recent, titles, senders, codes);
         mEmptyHint.setVisibility(recent.isEmpty() ? View.VISIBLE : View.GONE);
     }
 

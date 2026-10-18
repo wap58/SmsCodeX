@@ -50,15 +50,27 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.VH> {
     }
 
     /** 用记录数据刷新列表 */
-    public void setData(List<ForwardResultStore.Record> records, List<String> codes) {
+    /**
+     * @param titles   标题（公司名优先，空则用发件号码）
+     * @param senders  发件号码（副标题）
+     * @param codes    验证码
+     */
+    public void setData(List<ForwardResultStore.Record> records,
+                        List<String> titles, List<String> senders, List<String> codes) {
         mItems.clear();
         for (int i = 0; i < records.size(); i++) {
             Item it = new Item();
             it.record = records.get(i);
-            it.code = (codes != null && i < codes.size()) ? codes.get(i) : "";
+            it.title = get(titles, i);
+            it.sender = get(senders, i);
+            it.code = get(codes, i);
             mItems.add(it);
         }
         notifyDataSetChanged();
+    }
+
+    private static String get(List<String> list, int i) {
+        return (list != null && i < list.size() && list.get(i) != null) ? list.get(i) : "";
     }
 
     @NonNull
@@ -77,42 +89,19 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.VH> {
         h.code.setText(it.code == null || it.code.isEmpty() ? "—" : it.code);
         h.code.setTextColor(mTextPrimary);
 
-        // 标题：取第一个成功通道的显示名；全失败则取第一个通道
-        String channelId = null;
-        for (ForwardResultStore.ChannelResult c : r.channels) {
-            if (c.ok) {
-                channelId = c.channel;
-                break;
-            }
+        // 标题：公司名（取不到则退回发件号码）；副标题：发件号码
+        // 2026-10-18：原来上下都写通道名，重复且信息量低
+        String title = it.title;
+        if (title.isEmpty()) {
+            title = it.sender.isEmpty()
+                    ? h.itemView.getContext().getString(R.string.home_recent)
+                    : it.sender;
         }
-        if (channelId == null && !r.channels.isEmpty()) {
-            channelId = r.channels.get(0).channel;
-        }
-        String title = channelId == null
-                ? h.itemView.getContext().getString(R.string.home_recent)
-                : ForwardChannels.name(h.itemView.getContext(), channelId);
         h.title.setText(title);
         h.title.setTextColor(mTextPrimary);
 
-        // 副标题：成功通道串联，如「QQ机器人#息知」
-        StringBuilder sub = new StringBuilder();
-        for (ForwardResultStore.ChannelResult c : r.channels) {
-            if (!c.ok) {
-                continue;
-            }
-            if (sub.length() > 0) {
-                sub.append('#');
-            }
-            sub.append(ForwardChannels.name(h.itemView.getContext(), c.channel));
-        }
-        if (sub.length() == 0) {
-            // 没有任何成功通道：如果全部失败，副标题写「全部失败」；
-            // 完全没结果才写「未转发」（2026-10-18 修：原来两者混在一起自相矛盾）
-            sub.append(r.channels.isEmpty()
-                    ? h.itemView.getContext().getString(R.string.home_state_pending)
-                    : h.itemView.getContext().getString(R.string.home_state_failed_all));
-        }
-        h.sub.setText(sub.toString());
+        String sub = it.sender.isEmpty() ? it.title : it.sender;
+        h.sub.setText(sub);
         h.sub.setTextColor(mTextHint);
 
         // 点整行打开短信详情（2026-10-18：右侧胶囊太占位，改为整行点击）
@@ -158,6 +147,8 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.VH> {
 
     private static final class Item {
         ForwardResultStore.Record record;
+        String title;
+        String sender;
         String code;
     }
 
