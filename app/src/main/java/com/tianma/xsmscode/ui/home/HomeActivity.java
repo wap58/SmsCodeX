@@ -272,13 +272,20 @@ public class HomeActivity extends BaseActivity {
         mStatusSub.setTextColor(textHint);
         mStatusSwitch.setChecked(enabled);
 
-        View iconBg = findViewById(R.id.status_icon);
-        if (iconBg != null) {
+        ImageView icon = findViewById(R.id.status_icon);
+        if (icon != null) {
             android.graphics.drawable.GradientDrawable circle =
                     new android.graphics.drawable.GradientDrawable();
             circle.setShape(android.graphics.drawable.GradientDrawable.OVAL);
             circle.setColor(enabled ? accent : (dark ? 0xFF4A4E57 : 0xFFBDBDBD));
-            iconBg.setBackground(circle);
+            icon.setBackground(circle);
+            // 图标本身是纯黑填充，在绿底上几乎不可见 —— 统一 tint 成白色
+            Drawable d = icon.getDrawable();
+            if (d != null) {
+                d = DrawableCompat.wrap(d.mutate());
+                DrawableCompat.setTint(d, 0xFFFFFFFF);
+                icon.setImageDrawable(d);
+            }
         }
 
         // 统计
