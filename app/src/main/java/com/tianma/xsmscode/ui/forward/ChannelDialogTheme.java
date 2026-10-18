@@ -16,7 +16,7 @@ import android.graphics.Color;
  * Theme.AppCompat.Dialog.Alert 取 android:colorBackgroundFloating，
  * 深色下为 Material 标准浮动色 #424242（比 Cyanea 的 #303030 更亮一档）。
  */
-final class ChannelDialogTheme {
+public final class ChannelDialogTheme {
 
     /** 深色下的弹窗底色：Material 标准浮动背景色 */
     static final int DIALOG_BG_DARK = 0xFF424242;
@@ -27,7 +27,7 @@ final class ChannelDialogTheme {
     }
 
     /** 当前界面是否为深色（按实际背景亮度判断） */
-    static boolean isDark() {
+    public static boolean isDark() {
         try {
             int bg = com.jaredrummler.cyanea.Cyanea.getInstance().getBackgroundColor();
             return luminance(bg) < 0.5f;
@@ -36,23 +36,23 @@ final class ChannelDialogTheme {
         }
     }
 
-    static int dialogBackground() {
+    public static int dialogBackground() {
         return isDark() ? DIALOG_BG_DARK : DIALOG_BG_LIGHT;
     }
 
-    static int textColor() {
+    public static int textColor() {
         return isDark() ? Color.WHITE : 0xFF212121;
     }
 
-    static int hintColor() {
+    public static int hintColor() {
         return isDark() ? 0x66FFFFFF : 0x66000000;
     }
 
-    static int dividerColor() {
+    public static int dividerColor() {
         return isDark() ? 0x22FFFFFF : 0x22000000;
     }
 
-    static int accentColor() {
+    public static int accentColor() {
         try {
             return com.jaredrummler.cyanea.Cyanea.getInstance().getAccent();
         } catch (Throwable ignored) {
