@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    首页（2026-10-18 改版，对齐传信布局）：
-      状态卡（转发开/关 + 副标题 + 开关）
-      统计卡（今日转发 / 累计 / 失败）
-      「最近转发」标题
-      列表卡（RecyclerView，卡片圆角内容器）
-    底栏仍是悬浮胶囊，内容可透出。
--->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -19,240 +11,36 @@
         android:id="@+id/app_bar_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:elevation="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <include layout="@layout/toolbar"/>
+        <include
+            layout="@layout/toolbar"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- 首页面板（记录 tab） -->
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/home_panel"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:fillViewport="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/app_bar_layout">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingStart="14dp"
-            android:paddingTop="10dp"
-            android:paddingEnd="14dp"
-            android:paddingBottom="90dp">
-
-            <!-- ========== 状态卡 ========== -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_status"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="0dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:id="@+id/status_icon"
-                        android:layout_width="46dp"
-                        android:layout_height="46dp"
-                        android:background="@drawable/bg_circle_brand"
-                        android:contentDescription="@null"
-                        android:padding="12dp"
-                        android:src="@drawable/ic_forward"/>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/status_title"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="17sp"
-                            android:textStyle="bold"/>
-
-                        <TextView
-                            android:id="@+id/status_sub"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="3dp"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:textSize="12.5sp"/>
-                    </LinearLayout>
-
-                    <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/status_switch"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:clickable="true"
-                        android:focusable="true"/>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ========== 统计卡 ========== -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_stats"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="0dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingTop="18dp"
-                    android:paddingBottom="16dp">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/stat_today"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="22sp"
-                            android:textStyle="bold"/>
-
-                        <TextView
-                            android:id="@+id/stat_today_label"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="@string/home_stat_today"
-                            android:textSize="12sp"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/stat_total"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="22sp"
-                            android:textStyle="bold"/>
-
-                        <TextView
-                            android:id="@+id/stat_total_label"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="@string/home_stat_total"
-                            android:textSize="12sp"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/stat_failed"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="22sp"
-                            android:textStyle="bold"/>
-
-                        <TextView
-                            android:id="@+id/stat_failed_label"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="@string/home_stat_failed"
-                            android:textSize="12sp"/>
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ========== 最近转发 ========== -->
-            <TextView
-                android:id="@+id/section_recent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_marginTop="18dp"
-                android:layout_marginBottom="8dp"
-                android:text="@string/home_recent"
-                android:textSize="12.5sp"
-                android:textStyle="bold"/>
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_recent"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="0dp">
-
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="120dp">
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/list_recent"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingTop="4dp"
-                        android:paddingBottom="4dp"/>
-
-                    <TextView
-                        android:id="@+id/empty_hint"
-                        android:layout_width="match_parent"
-                        android:layout_height="132dp"
-                        android:gravity="center"
-                        android:text="@string/home_empty"
-                        android:textSize="13.5sp"
-                        android:visibility="gone"/>
-                </FrameLayout>
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-
-    <!-- 设置 tab 的 Fragment 容器（与首页面板互斥显示） -->
+    <!--
+        内容区：不预留底部内边距 —— 内容会流到悬浮胶囊下方，
+        这样才能真正"透过"半透明胶囊看到后面的列表（用户 2026-10-17 明确要求）。
+        列表底部由 CodeRecordFragment 用 clipToPadding=false + paddingBottom 留白，
+        保证最后一条能滚出来，不被胶囊永远压住。
+    -->
     <FrameLayout
         android:id="@+id/home_content"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/app_bar_layout"/>
 
-    <!-- ========== 悬浮胶囊底栏（内容可从四周透出） ========== -->
+    <!--
+        ============ 底部导航（悬浮胶囊，对齐传信）============
+        ★ 背景/高亮/图标色全部由 HomeActivity#applyNavTheme 运行时按 Cyanea 主题染色：
+          本项目通过主题属性取色会回退失败（2026-09-15 实测），故不在 xml 里引 ?attr。
+    -->
     <LinearLayout
         android:id="@+id/bottom_bar"
         android:layout_width="0dp"
@@ -267,6 +55,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
+        <!-- 记录（左） -->
         <LinearLayout
             android:id="@+id/nav_records"
             android:layout_width="0dp"
@@ -274,7 +63,6 @@
             android:layout_marginStart="6dp"
             android:layout_marginEnd="3dp"
             android:layout_weight="1"
-            android:background="@drawable/bg_nav_item_selected"
             android:gravity="center"
             android:orientation="vertical">
 
@@ -294,6 +82,35 @@
                 android:textSize="10sp"/>
         </LinearLayout>
 
+        <!-- 首页（中，2026-10-18 新增，默认选中） -->
+        <LinearLayout
+            android:id="@+id/nav_home"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_marginStart="3dp"
+            android:layout_marginEnd="3dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_nav_item_selected"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/nav_home_icon"
+                android:layout_width="21dp"
+                android:layout_height="21dp"
+                android:contentDescription="@string/tab_home"
+                android:src="@drawable/ic_tab_home"/>
+
+            <TextView
+                android:id="@+id/nav_home_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/tab_home"
+                android:textSize="10sp"/>
+        </LinearLayout>
+
+        <!-- 设置（右） -->
         <LinearLayout
             android:id="@+id/nav_settings"
             android:layout_width="0dp"
