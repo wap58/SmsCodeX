@@ -139,6 +139,10 @@ public final class ForwardDispatcher {
                     com.tianma.xsmscode.feature.forward.qqbot.QQBotApi.SendResult sr =
                             com.tianma.xsmscode.feature.forward.qqbot.QQBotApi.sendWithRetry(
                                     appId, secret, cached, openId, group, content);
+                    if (!sr.ok) {
+                        // 记进日志便于诊断（HTTP 0 时 sr.reason() 会带出底层异常）
+                        XLog.w("QQBot send failed: %s", sr.reason());
+                    }
                     return new ForwardResultStore.ChannelResult(id, sr.ok,
                             sr.ok ? null : sr.reason());
                 }

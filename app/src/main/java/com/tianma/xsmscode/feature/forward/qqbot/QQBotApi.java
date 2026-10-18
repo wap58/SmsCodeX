@@ -25,6 +25,10 @@ import java.nio.charset.StandardCharsets;
  * <p>鉴权头：{@code Authorization: QQBot <access_token>}
  *
  * <p>★ 成功判据：QQ 平台失败时同样返回 HTTP 200，必须看 body 里的 {@code code}。
+ *
+ * <p>★ 超时（2026-10-18）：电话进程（radio uid）在息屏/弱网下建连较慢，
+ * 原来 8 秒偏短，实测出现过 HTTP 0（连接层失败）。改为 15 秒，
+ * 并对「取 token」与「发消息」各做一次重试。
  */
 public final class QQBotApi {
 
@@ -33,6 +37,9 @@ public final class QQBotApi {
 
     /** msg_type：0=文本 */
     private static final int MSG_TEXT = 0;
+
+    /** 连接/读取超时（2026-10-18：8s → 15s） */
+    private static final int TIMEOUT_MS = 15000;
 
     private QQBotApi() {
     }
@@ -67,8 +74,8 @@ public final class QQBotApi {
         try {
             conn = (HttpURLConnection) new URL(url).openConnection();
             conn.setRequestMethod(method);
-            conn.setConnectTimeout(8000);
-            conn.setReadTimeout(8000);
+            conn.setConnectTimeout(TIMEOUT_MS);
+            conn.setReadTimeout(TIMEOUT_MS);
             conn.setRequestProperty("User-Agent", "SmsCodeX/3.1");
             if (body != null) {
                 conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
@@ -121,8 +128,22 @@ public final class QQBotApi {
         public String error;
     }
 
-    /** appId + clientSecret 换 access_token，有效期通常 7200 秒。 */
+    /** appId + clientSecret 换 access_token，有效期通常 7200 秒。失败自动重试一次。 */
     public static Token getAccessToken(String appId, String clientSecret) {
+        Token last = getAccessTokenOnce(appId, clientSecret);
+        if (!TextUtils.isEmpty(last.accessToken)) {
+            return last;
+        }
+        // 连接层失败（HTTP 0）时重试一次，规避息屏/弱网首次建连失败
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ignored) {
+        }
+        Token retry = getAccessTokenOnce(appId, clientSecret);
+        return TextUtils.isEmpty(retry.accessToken) ? last : retry;
+    }
+
+    private static Token getAccessTokenOnce(String appId, String clientSecret) {
         Token t = new Token();
         try {
             JSONObject b = new JSONObject();
@@ -180,6 +201,13 @@ public final class QQBotApi {
             if (out.ok) {
                 return out;
             }
+            // ★ httpCode == 0 表示连接层就失败了（DNS/超时/TLS），
+            //   此时 r.error 才是真正原因，必须透出，否则只看到"HTTP 0"
+            if (out.httpCode == 0) {
+                out.errmsg = TextUtils.isEmpty(r.error)
+                        ? "无法连接（网络不可达）" : r.error;
+                return out;
+            }
             if (r.json != null) {
                 int code = r.json.optInt("code", 0);
                 if (code == 11244) {
@@ -221,7 +249,13 @@ public final class QQBotApi {
         return TextUtils.isEmpty(url) ? null : url;
     }
 
-    /** token 失效（40034）时清缓存重试一次的一体化发送。 */
+    /**
+     * 发送（带 token 失效重试与连接层重试）。
+     *
+     * <p>★ 2026-10-18：电话进程无法把新 token 写回配置，所以传进来的 cachedToken
+     * 往往是过期快照；这里对「连接层失败（HTTP 0）」也重试一次，
+     * 并且只要 cachedToken 为空就现取，避免拿到过期 token 白跑一趟。
+     */
     public static SendResult sendWithRetry(String appId, String secret,
                                            String cachedToken, String openid, boolean group,
                                            String content) {
@@ -235,17 +269,38 @@ public final class QQBotApi {
             }
             token = t.accessToken;
         }
+
         SendResult sr = group ? sendGroup(token, openid, content) : sendC2C(token, openid, content);
         if (sr.ok) {
             return sr;
         }
+
+        // ① token 失效 → 重新取 token 再发一次
         String reason = sr.reason();
         if (reason != null && reason.contains("40034")) {
             Token t2 = getAccessToken(appId, secret);
             if (!TextUtils.isEmpty(t2.accessToken)) {
-                return group ? sendGroup(t2.accessToken, openid, content)
+                SendResult retry = group ? sendGroup(t2.accessToken, openid, content)
                         : sendC2C(t2.accessToken, openid, content);
+                if (retry.ok) {
+                    return retry;
+                }
+                sr = retry;
             }
+        }
+
+        // ② 连接层失败（HTTP 0）→ 稍等重试一次（弱网/息屏常见）
+        if (sr.httpCode == 0) {
+            try {
+                Thread.sleep(800);
+            } catch (InterruptedException ignored) {
+            }
+            SendResult retry = group ? sendGroup(token, openid, content)
+                    : sendC2C(token, openid, content);
+            if (retry.ok) {
+                return retry;
+            }
+            return retry;
         }
         return sr;
     }
