@@ -106,7 +106,11 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.VH> {
             sub.append(ForwardChannels.name(h.itemView.getContext(), c.channel));
         }
         if (sub.length() == 0) {
-            sub.append(h.itemView.getContext().getString(R.string.home_state_pending));
+            // 没有任何成功通道：如果全部失败，副标题写「全部失败」；
+            // 完全没结果才写「未转发」（2026-10-18 修：原来两者混在一起自相矛盾）
+            sub.append(r.channels.isEmpty()
+                    ? h.itemView.getContext().getString(R.string.home_state_pending)
+                    : h.itemView.getContext().getString(R.string.home_state_failed_all));
         }
         h.sub.setText(sub.toString());
         h.sub.setTextColor(mTextHint);
@@ -131,6 +135,12 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.VH> {
         pill.setColor(withAlpha(color, mDark ? 0.22f : 0.14f));
         h.state.setBackground(pill);
         h.state.setTextColor(color);
+
+        // 分隔线：最后一项不画；颜色随主题
+        if (h.divider != null) {
+            h.divider.setVisibility(position == mItems.size() - 1 ? View.GONE : View.VISIBLE);
+            h.divider.setBackgroundColor(mDark ? 0x1FFFFFFF : 0x14000000);
+        }
     }
 
     @Override
@@ -158,6 +168,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.VH> {
         final TextView sub;
         final TextView detail;
         final TextView state;
+        final View divider;
 
         VH(@NonNull View v) {
             super(v);
@@ -166,6 +177,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.VH> {
             sub = v.findViewById(R.id.item_sub);
             detail = v.findViewById(R.id.item_detail);
             state = v.findViewById(R.id.item_state);
+            divider = v.findViewById(R.id.item_divider);
         }
     }
 }

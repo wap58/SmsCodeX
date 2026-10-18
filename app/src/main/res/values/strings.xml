@@ -493,4 +493,5 @@
     <string name="home_state_sent">Delivered</string>
     <string name="home_state_failed">Failed</string>
     <string name="home_state_pending">Not forwarded</string>
+    <string name="home_state_failed_all">All failed</string>
 </resources>
