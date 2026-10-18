@@ -76,7 +76,14 @@ public final class QQBotApi {
             conn.setRequestMethod(method);
             conn.setConnectTimeout(TIMEOUT_MS);
             conn.setReadTimeout(TIMEOUT_MS);
+            // ★★ 顺序很重要（2026-10-18 修）：所有 setRequestProperty 必须在
+            //    getOutputStream() / getResponseCode() 之前完成。
+            //    写出 body 会隐式建立连接，之后再设头会抛
+            //    IllegalStateException: Cannot set request property after connection is made
             conn.setRequestProperty("User-Agent", "SmsCodeX/3.1");
+            if (!TextUtils.isEmpty(auth)) {
+                conn.setRequestProperty("Authorization", auth);
+            }
             if (body != null) {
                 conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
                 conn.setDoOutput(true);
@@ -86,9 +93,6 @@ public final class QQBotApi {
                 os.write(bs);
                 os.flush();
                 os.close();
-            }
-            if (!TextUtils.isEmpty(auth)) {
-                conn.setRequestProperty("Authorization", auth);
             }
             r.httpCode = conn.getResponseCode();
             InputStream is = (r.httpCode >= 200 && r.httpCode < 400)
