@@ -274,6 +274,45 @@ public class HomeActivity extends BaseActivity {
         }
     }
 
+    /**
+     * 隐藏多任务（2026-10-18）。
+     *
+     * <p>Android 没有"运行期开关 excludeFromRecents"的官方 API
+     * （{@code android:excludeFromRecents} 只能写死在清单里）。
+     * 等效做法：离开本页时调用 {@link #finishAndRemoveTask()}，
+     * 把自身任务从最近任务栈里摘掉 —— 用户切多任务时看不到本应用，
+     * 后台进程本身不受影响，短信转发照常。
+     *
+     * <p>延迟 500ms 再摘，避免和返回动画抢帧。
+     */
+    private void maybeRemoveFromRecents() {
+        boolean hide = getSharedPreferences(PrefConst.PREF_NAME, Context.MODE_PRIVATE)
+                .getBoolean(PrefConst.KEY_HIDE_RECENTS, false);
+        if (!hide) {
+            return;
+        }
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (!isFinishing() && !isDestroyed()) {
+                try {
+                    finishAndRemoveTask();
+                } catch (Throwable ignored) {
+                    try {
+                        finish();
+                    } catch (Throwable ignored2) {
+                    }
+                }
+            }
+        }, 500L);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (!isFinishing()) {
+            maybeRemoveFromRecents();
+        }
+    }
+
     @Override
     public void onBackPressed() {
         if (mFragmentManager == null || mFragmentManager.getBackStackEntryCount() == 0) {

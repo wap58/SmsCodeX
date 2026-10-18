@@ -497,4 +497,7 @@
     <string name="home_state_failed_all">全部失败</string>
     <string name="activation_api">API %1$d</string>
     <string name="activation_api_unknown">API 版本未知</string>
+    <string name="pref_hide_recents">pref_hide_recents</string>
+    <string name="pref_hide_recents_title">隐藏多任务</string>
+    <string name="pref_hide_recents_summary">开启后本应用不出现在最近任务列表（多任务）中</string>
 </resources>

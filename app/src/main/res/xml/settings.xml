@@ -23,6 +23,14 @@
             android:summary="@string/pref_hide_launcher_icon_summary"
             android:title="@string/pref_hide_launcher_icon_title"/>
 
+        <!-- 2026-10-18 新增：隐藏多任务（默认关闭） -->
+        <SwitchPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_hide"
+            android:key="@string/pref_hide_recents"
+            android:summary="@string/pref_hide_recents_summary"
+            android:title="@string/pref_hide_recents_title"/>
+
         <Preference
             android:icon="@drawable/ic_palette"
             android:key="@string/pref_choose_theme"

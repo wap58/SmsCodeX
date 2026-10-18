@@ -138,7 +138,8 @@ public class SettingsFragment extends BasePreferenceFragment implements
 
         // 全部分类可折叠：默认折叠，点击分类头切换子项显隐
         makeCollapsible(PrefConst.KEY_GENERAL_HEADER,
-                PrefConst.KEY_ENABLE, PrefConst.KEY_HIDE_LAUNCHER_ICON, PrefConst.KEY_CHOOSE_THEME);
+                PrefConst.KEY_ENABLE, PrefConst.KEY_HIDE_LAUNCHER_ICON,
+                PrefConst.KEY_HIDE_RECENTS, PrefConst.KEY_CHOOSE_THEME);
         makeCollapsible(PrefConst.KEY_SMS_CODE_HEADER,
                 PrefConst.KEY_SHOW_TOAST, PrefConst.KEY_COPY_TO_CLIPBOARD,
                 PrefConst.KEY_BLOCK_SMS, PrefConst.KEY_DEDUPLICATE_SMS);

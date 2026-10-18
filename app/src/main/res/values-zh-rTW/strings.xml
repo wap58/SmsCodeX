@@ -497,4 +497,7 @@
     <string name="home_state_failed_all">全部失敗</string>
     <string name="activation_api">API %1$d</string>
     <string name="activation_api_unknown">API 版本未知</string>
+    <string name="pref_hide_recents">pref_hide_recents</string>
+    <string name="pref_hide_recents_title">隱藏多工</string>
+    <string name="pref_hide_recents_summary">開啟後本應用不會出現在最近工作清單中</string>
 </resources>

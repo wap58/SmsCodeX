@@ -496,4 +496,7 @@
     <string name="home_state_failed_all">All failed</string>
     <string name="activation_api">API %1$d</string>
     <string name="activation_api_unknown">API version unknown</string>
+    <string name="pref_hide_recents">pref_hide_recents</string>
+    <string name="pref_hide_recents_title">Hide from Recents</string>
+    <string name="pref_hide_recents_summary">Prevent this app from appearing in the recent tasks list</string>
 </resources>

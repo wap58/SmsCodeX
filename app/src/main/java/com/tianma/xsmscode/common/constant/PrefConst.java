@@ -12,6 +12,8 @@ public interface PrefConst {
     // General
     String KEY_ENABLE = "pref_enable";
     String KEY_HIDE_LAUNCHER_ICON = "pref_hide_launcher_icon";
+    /** 隐藏多任务（2026-10-18）：不出现在最近任务列表，默认关闭 */
+    String KEY_HIDE_RECENTS = "pref_hide_recents";
     String KEY_CHOOSE_THEME = "pref_choose_theme";
 
     // SMS Code
