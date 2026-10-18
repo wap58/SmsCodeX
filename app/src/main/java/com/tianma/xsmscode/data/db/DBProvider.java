@@ -265,9 +265,18 @@ public class DBProvider extends ContentProvider {
                 return result;
             }
             // 2026-10-17：改为多通道分发（逐通道串行、单通道失败不影响其他）
+            //
+            // ★ 2026-10-18：放到独立线程执行并限时等待。
+            //   call() 跑在 binder 线程上，各通道超时加起来（QQ 机器人 15s×2 重试）
+            //   可能阻塞 30 秒以上，会拖住调用方（电话进程）的转发链路。
+            //   这里给它 25 秒上限，超时按失败返回，不把 binder 线程长期占住。
             final android.content.SharedPreferences spRef = sp;
-            java.util.List<com.tianma.xsmscode.feature.forward.ForwardResultStore.ChannelResult> results =
-                    com.tianma.xsmscode.feature.forward.ForwardDispatcher.send(
+            final java.util.List<com.tianma.xsmscode.feature.forward.ForwardResultStore.ChannelResult>[] box =
+                    new java.util.List[1];
+            final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+            new Thread(() -> {
+                try {
+                    box[0] = com.tianma.xsmscode.feature.forward.ForwardDispatcher.send(
                             new com.tianma.xsmscode.feature.forward.ForwardDispatcher.Cfg() {
                                 @Override
                                 public String getStr(String key, String def) {
@@ -287,6 +296,31 @@ public class DBProvider extends ContentProvider {
                             com.tianma.xsmscode.feature.forward.WeComForwarder.buildContent(
                                     sender, body, code, time),
                             sender, body, code, time);
+                } catch (Throwable t) {
+                    com.tianma.xsmscode.common.utils.XLog.e("DBProvider forward: %s", t);
+                } finally {
+                    latch.countDown();
+                }
+            }, "smscodf-forward").start();
+
+            try {
+                if (!latch.await(25, java.util.concurrent.TimeUnit.SECONDS)) {
+                    result.putBoolean("ok", false);
+                    result.putString("reason", "send_failed");
+                    com.tianma.xsmscode.common.utils.XLog.w(
+                            "DBProvider forward: timeout after 25s");
+                    return result;
+                }
+            } catch (InterruptedException e) {
+                result.putBoolean("ok", false);
+                result.putString("reason", "send_failed");
+                return result;
+            }
+
+            java.util.List<com.tianma.xsmscode.feature.forward.ForwardResultStore.ChannelResult> results =
+                    box[0] == null
+                            ? new java.util.ArrayList<>()
+                            : box[0];
 
             // 写结果文件供「短信详情」展示（电话进程也会写，这里覆盖为最新一条）
             com.tianma.xsmscode.feature.forward.ForwardResultStore.write(time, results);

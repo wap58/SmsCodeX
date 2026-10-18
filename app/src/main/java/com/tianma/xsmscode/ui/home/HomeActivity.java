@@ -20,7 +20,6 @@ import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.smscodf.zhuxf.R;
 import com.tianma.xsmscode.common.constant.Const;
 import com.tianma.xsmscode.common.constant.PrefConst;
@@ -332,13 +331,15 @@ public class HomeActivity extends BaseActivity {
     }
 
     void onTaichiUsersNoticeSelected() {
-        new MaterialDialog.Builder(this)
+        // 2026-10-18：改用自绘弹窗，与整体卡片风格一致
+        new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                getSupportFragmentManager(), this)
                 .title(R.string.taichi_users_notice)
                 .content(R.string.taichi_users_notice_content)
-                .negativeText(R.string.add_apps_in_taichi)
-                .onNegative((dialog, which) -> PackageUtils.startAddAppsInTaiChi(HomeActivity.this))
-                .positiveText(R.string.check_module_in_taichi)
-                .onPositive((dialog, which) -> PackageUtils.startCheckModuleInTaiChi(HomeActivity.this))
+                .negative(R.string.add_apps_in_taichi,
+                        () -> PackageUtils.startAddAppsInTaiChi(this))
+                .positive(R.string.check_module_in_taichi,
+                        input -> PackageUtils.startCheckModuleInTaiChi(this))
                 .show();
     }
 
@@ -348,13 +349,13 @@ public class HomeActivity extends BaseActivity {
      * 菜单项 id 沿用 action_edxposed_users_notice 以保持兼容。
      */
     void onEdxposedUsersNoticeSelected() {
-        new MaterialDialog.Builder(this)
+        new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                getSupportFragmentManager(), this)
                 .title(R.string.about_software_title)
                 .content(R.string.about_software_content)
-                .positiveText(R.string.about_software_repo)
-                .onPositive((dialog, which) ->
-                        Utils.showWebPage(HomeActivity.this, Const.PROJECT_SOURCE_CODE_URL))
-                .negativeText(R.string.i_know)
+                .negative(R.string.i_know)
+                .positive(R.string.about_software_repo,
+                        input -> Utils.showWebPage(this, Const.PROJECT_SOURCE_CODE_URL))
                 .show();
     }
 

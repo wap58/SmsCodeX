@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    通用信息弹窗（2026-10-18）：替代 MaterialDialog 的原生样式。
+    结构与「通道参数」「短信详情」一致：20dp 圆角卡片 + 标题 + 内容 + 右下操作。
+    颜色全部由 CommonDialog 运行时按 Cyanea 赋值。
+
+    内容区可放：
+      · 纯文本（tv_content）
+      · 单个输入框（et_input，默认隐藏）
+      · 选项列表（box_items，默认隐藏）
+-->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/common_dialog_card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/common_dialog_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="12dp"
+            android:textSize="18sp"/>
+
+        <View
+            android:id="@+id/common_dialog_divider_top"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"/>
+
+        <com.tianma.xsmscode.ui.forward.MaxHeightScrollView
+            android:id="@+id/common_dialog_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbarStyle="outsideOverlay">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingTop="14dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="14dp">
+
+                <TextView
+                    android:id="@+id/common_dialog_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:lineSpacingExtra="3dp"
+                    android:textIsSelectable="true"
+                    android:textSize="14sp"
+                    android:visibility="gone"/>
+
+                <EditText
+                    android:id="@+id/common_dialog_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_field_input"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:minLines="2"
+                    android:paddingStart="12dp"
+                    android:paddingTop="10dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="10dp"
+                    android:textSize="14sp"
+                    android:visibility="gone"/>
+
+                <ProgressBar
+                    android:id="@+id/common_dialog_progress"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="4dp"
+                    android:indeterminate="true"
+                    android:visibility="gone"/>
+
+                <FrameLayout
+                    android:id="@+id/common_dialog_custom"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"/>
+
+                <LinearLayout
+                    android:id="@+id/common_dialog_items"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"/>
+            </LinearLayout>
+        </com.tianma.xsmscode.ui.forward.MaxHeightScrollView>
+
+        <View
+            android:id="@+id/common_dialog_divider_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <TextView
+                android:id="@+id/common_dialog_negative"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:minHeight="46dp"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textSize="15sp"/>
+
+            <TextView
+                android:id="@+id/common_dialog_positive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:minHeight="46dp"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

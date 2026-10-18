@@ -16,7 +16,7 @@ import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceScreen;
 
-import com.afollestad.materialdialogs.MaterialDialog;
+
 import com.smscodf.zhuxf.BuildConfig;
 import com.smscodf.zhuxf.R;
 import com.jaredrummler.cyanea.prefs.CyaneaSettingsActivity;
@@ -441,12 +441,14 @@ public class SettingsFragment extends BasePreferenceFragment implements
     }
 
     private void showSmsCodeTestDialog() {
-        new MaterialDialog.Builder(mActivity)
+        // 2026-10-18：自绘弹窗
+        new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                getChildFragmentManager(), requireContext())
                 .title(R.string.pref_smscode_test_title)
-                .input(R.string.sms_content_hint, 0, true,
-                        (dialog, input) -> mPresenter.performSmsCodeTest(input.toString()))
-                .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
-                .negativeText(R.string.cancel)
+                .input(getString(R.string.sms_content_hint), "", true)
+                .negative(R.string.cancel)
+                .positive(R.string.confirm,
+                        input -> mPresenter.performSmsCodeTest(input))
                 .show();
     }
 
@@ -563,31 +565,34 @@ public class SettingsFragment extends BasePreferenceFragment implements
 
     @Override
     public void showUpdateDialog(ApkVersion latestVersion) {
-        new MaterialDialog.Builder(mActivity)
+        new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                getChildFragmentManager(), requireContext())
                 .title(R.string.new_version_found)
                 .content(latestVersion.getVersionInfo())
-                .positiveText(R.string.update_from_github)
-                .onPositive((dialog, which) -> mPresenter.updateFromGithub())
+                .leftAligned()
+                .positive(R.string.update_from_github,
+                        input -> mPresenter.updateFromGithub())
                 .show();
     }
 
     @Override
     public void showPrivacyPolicy() {
         // 隐私政策
-        new MaterialDialog.Builder(mActivity)
-                .title(R.string.privacy_dialog_title)
-                .content(R.string.privacy_dialog_content)
-                .positiveText(R.string.privacy_dialog_confirm)
-                .onPositive((dialog, which) -> {
-                    SPUtils.setPrivacyPolicyAccepted(mActivity, true);
-                })
-                .cancelable(false)
-                .canceledOnTouchOutside(false)
-                .negativeText(R.string.privacy_dialog_cancel)
-                .onNegative((dialog, which) -> {
-                    SPUtils.setPrivacyPolicyAccepted(mActivity, false);
-                    mActivity.finish();
-                })
-                .show();
+        com.tianma.xsmscode.ui.dialog.CommonDialog d =
+                new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                        getChildFragmentManager(), requireContext())
+                        .title(R.string.privacy_dialog_title)
+                        .content(R.string.privacy_dialog_content)
+                        .leftAligned()
+                        .negative(R.string.privacy_dialog_cancel, () -> {
+                            SPUtils.setPrivacyPolicyAccepted(mActivity, false);
+                            mActivity.finish();
+                        })
+                        .positive(R.string.privacy_dialog_confirm,
+                                input -> SPUtils.setPrivacyPolicyAccepted(mActivity, true))
+                        .build();
+        // 隐私政策必须明确选择，禁止点外部或返回键关闭
+        d.setCancelable(false);
+        d.show(getChildFragmentManager(), "CommonDialog");
     }
 }

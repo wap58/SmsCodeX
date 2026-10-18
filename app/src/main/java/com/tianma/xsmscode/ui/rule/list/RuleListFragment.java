@@ -28,9 +28,6 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
-import com.afollestad.materialdialogs.internal.MDButton;
 import com.smscodf.zhuxf.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -81,7 +78,6 @@ public class RuleListFragment extends DaggerFragment implements RuleListContract
     View mEmptyView;
 
     private Activity mActivity;
-    private MaterialDialog mProgressDialog;
     private RuleAdapter mRuleAdapter;
 
     private int mSelectedPosition = -1;
@@ -313,35 +309,28 @@ public class RuleListFragment extends DaggerFragment implements RuleListContract
 
             final String defaultFilename = BackupManager.getDefaultBackupFilename();
             String hint = getString(R.string.backup_file_name);
-            String content = getString(R.string.backup_file_dir, BackupManager.getBackupDir().getAbsolutePath());
-            final MaterialDialog exportFilenameDialog = new MaterialDialog.Builder(mActivity)
+            String content = getString(R.string.backup_file_dir,
+                    BackupManager.getBackupDir().getAbsolutePath());
+
+            // 2026-10-18：改用自绘弹窗；文件名校验由 positive 回调自己处理
+            new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                    getChildFragmentManager(), requireContext())
                     .title(R.string.backup_file_name)
                     .content(content)
-                    .input(hint, defaultFilename, (dialog, input) -> {
-                        File file = new File(BackupManager.getBackupDir(), input.toString());
-                        mPresenter.exportRulesBelowQ(mRuleAdapter.getRuleList(), file, getString(R.string.exporting));
+                    .leftAligned()
+                    .input(hint, defaultFilename, false)
+                    .negative(R.string.cancel)
+                    .positive(R.string.confirm, input -> {
+                        if (!Utils.isValidFilename(input)) {
+                            SnackbarHelper.makeShort(mRecyclerView,
+                                    R.string.backup_file_name).show();
+                            return;
+                        }
+                        File file = new File(BackupManager.getBackupDir(), input);
+                        mPresenter.exportRulesBelowQ(mRuleAdapter.getRuleList(), file,
+                                getString(R.string.exporting));
                     })
-                    .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
-                    .negativeText(R.string.cancel)
-                    .build();
-
-            final EditText editText = exportFilenameDialog.getInputEditText();
-            if (editText != null) {
-                exportFilenameDialog.setOnShowListener(dialog -> {
-                    int stop = defaultFilename.length() - BackupManager.getBackupFileExtension().length();
-                    editText.setSelection(0, stop);
-                });
-
-                final MDButton positiveBtn = exportFilenameDialog.getActionButton(DialogAction.POSITIVE);
-
-                editText.addTextChangedListener(new TextWatcherAdapter() {
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        positiveBtn.setEnabled(Utils.isValidFilename(s.toString()));
-                    }
-                });
-            }
-            exportFilenameDialog.show();
+                    .show();
         }
     }
 
@@ -376,10 +365,10 @@ public class RuleListFragment extends DaggerFragment implements RuleListContract
                 filenames[i] = files[i].getName();
             }
 
-            new MaterialDialog.Builder(mActivity)
+            new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                    getChildFragmentManager(), requireContext())
                     .title(R.string.choose_backup_file)
-                    .items(filenames)
-                    .itemsCallback((dialog, itemView, position, text) -> {
+                    .items(filenames, (position, text) -> {
                         File file = files[position];
                         Uri uri = Uri.fromFile(file);
                         showImportDialogConfirm(uri);
@@ -411,13 +400,15 @@ public class RuleListFragment extends DaggerFragment implements RuleListContract
 
     @Override
     public void showImportDialogConfirm(final Uri uri) {
-        new MaterialDialog.Builder(mActivity)
+        new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                getChildFragmentManager(), requireContext())
                 .title(R.string.import_confirmation_title)
                 .content(R.string.import_confirmation_message)
-                .positiveText(R.string.yes)
-                .onPositive((dialog, which) -> mPresenter.importRules(uri, true, getString(R.string.importing)))
-                .negativeText(R.string.no)
-                .onNegative((dialog, which) -> mPresenter.importRules(uri, false, getString(R.string.importing)))
+                .leftAligned()
+                .negative(R.string.no,
+                        () -> mPresenter.importRules(uri, false, getString(R.string.importing)))
+                .positive(R.string.yes,
+                        input -> mPresenter.importRules(uri, true, getString(R.string.importing)))
                 .show();
     }
 
@@ -466,25 +457,32 @@ public class RuleListFragment extends DaggerFragment implements RuleListContract
         SnackbarHelper.makeLong(mRecyclerView, msg).show();
     }
 
+    private com.tianma.xsmscode.ui.dialog.CommonDialog mProgressDialog;
+
     @Override
     public void showProgress(String progressMsg) {
-        if (mProgressDialog == null) {
-            mProgressDialog = new MaterialDialog.Builder(mActivity)
-                    .content(progressMsg)
-                    .progress(true, 100)
-                    .cancelable(true)
-                    .build();
+        // 2026-10-18：改用自绘进度弹窗
+        if (getChildFragmentManager()
+                .findFragmentByTag("CommonDialog") != null) {
+            return;
         }
-        if (!mProgressDialog.isShowing()) {
-            mProgressDialog.show();
-        }
+        com.tianma.xsmscode.ui.dialog.CommonDialog d =
+                new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                        getChildFragmentManager(), requireContext())
+                        .content(progressMsg)
+                        .progress(true)
+                        .build();
+        d.setCancelable(true);
+        mProgressDialog = d;
+        d.show(getChildFragmentManager(), "CommonDialog");
     }
 
     @Override
     public void cancelProgress() {
-        if (mProgressDialog != null && mProgressDialog.isShowing()) {
-            mProgressDialog.cancel();
+        if (mProgressDialog != null && mProgressDialog.isAdded()) {
+            mProgressDialog.dismissAllowingStateLoss();
         }
+        mProgressDialog = null;
     }
 
     @Override
