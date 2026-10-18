@@ -115,9 +115,8 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.VH> {
         h.sub.setText(sub.toString());
         h.sub.setTextColor(mTextHint);
 
-        // 「短信详情」描边胶囊
-        h.detail.setTextColor(mAccent);
-        h.detail.setOnClickListener(v -> {
+        // 点整行打开短信详情（2026-10-18：右侧胶囊太占位，改为整行点击）
+        h.itemView.setOnClickListener(v -> {
             if (mListener != null) {
                 mListener.onDetail(r.time);
             }
@@ -166,7 +165,6 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.VH> {
         final TextView code;
         final TextView title;
         final TextView sub;
-        final TextView detail;
         final TextView state;
         final View divider;
 
@@ -175,7 +173,6 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.VH> {
             code = v.findViewById(R.id.item_code);
             title = v.findViewById(R.id.item_title);
             sub = v.findViewById(R.id.item_sub);
-            detail = v.findViewById(R.id.item_detail);
             state = v.findViewById(R.id.item_state);
             divider = v.findViewById(R.id.item_divider);
         }
