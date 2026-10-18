@@ -67,6 +67,9 @@ public class HomeActivity extends BaseActivity {
     private static final int TAB_SETTINGS = 2;
     private int mCurrentTab = TAB_HOME;
 
+    /** 上次停留的 tab（2026-10-18，进程回收后恢复用） */
+    private static final String KEY_LAST_TAB = "pref_home_last_tab";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -120,6 +123,11 @@ public class HomeActivity extends BaseActivity {
      */
     private void selectTab(int tab) {
         mCurrentTab = tab;
+        try {
+            getSharedPreferences(PrefConst.PREF_NAME, Context.MODE_PRIVATE)
+                    .edit().putInt(KEY_LAST_TAB, tab).apply();
+        } catch (Throwable ignored) {
+        }
         switch (tab) {
             case TAB_RECORDS:
                 switchTab(CodeRecordFragment.newInstance(), getString(R.string.app_name));
@@ -194,8 +202,14 @@ public class HomeActivity extends BaseActivity {
 
     private void handleIntent(Intent intent) {
         mFragmentManager = getSupportFragmentManager();
-        // 默认进入首页 tab（2026-10-18）
-        selectTab(TAB_HOME);
+        // 2026-10-18：记住上次停的 tab（进程被系统回收后重建时不至于跳回默认页）。
+        // 首次安装没有记录 → 默认首页。
+        int saved = getSharedPreferences(PrefConst.PREF_NAME, Context.MODE_PRIVATE)
+                .getInt(KEY_LAST_TAB, TAB_HOME);
+        if (saved != TAB_RECORDS && saved != TAB_HOME && saved != TAB_SETTINGS) {
+            saved = TAB_HOME;
+        }
+        selectTab(saved);
     }
 
     private void switchTab(Fragment fragment, String title) {
