@@ -27,6 +27,9 @@ public class SmsCodeApplication extends DaggerApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // 应用前后台跟踪（2026-10-18）：供"隐藏多任务"判断真正离开应用的时机
+        com.tianma.xsmscode.common.utils.AppForegroundTracker.install(this);
         // 2026-09-19 根治"模块读不到用户配置"：必须在 Application 启动时
         // 以 MODE_WORLD_READABLE 打开配置——LSPosed 会 hook ContextImpl
         // 的 getPreferencesDir()，把整个应用的配置目录切到世界可读位置

@@ -3,24 +3,28 @@ package com.tianma.xsmscode.ui.home;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.afollestad.materialdialogs.MaterialDialog;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.smscodf.zhuxf.R;
 import com.tianma.xsmscode.common.constant.Const;
 import com.tianma.xsmscode.common.constant.PrefConst;
 import com.tianma.xsmscode.common.utils.PackageUtils;
+import com.tianma.xsmscode.common.utils.ThemeColors;
 import com.tianma.xsmscode.common.utils.Utils;
 import com.tianma.xsmscode.xp.hook.ActivationService;
 import com.tianma.xsmscode.ui.app.base.BaseActivity;
@@ -37,13 +41,33 @@ public class HomeActivity extends BaseActivity {
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
 
-    @BindView(R.id.bottom_nav)
-    BottomNavigationView mBottomNav;
-
     private static final String TAG_FAQ = "tag_faq";
 
     private Fragment mCurrentFragment;
     private FragmentManager mFragmentManager;
+
+    /** 底栏（2026-10-17 改为传信同款悬浮胶囊） */
+    private View mNavRecords;
+    private View mNavHome;
+    private View mNavSettings;
+    private ImageView mNavRecordsIcon;
+    private ImageView mNavHomeIcon;
+    private ImageView mNavSettingsIcon;
+    private TextView mNavRecordsText;
+    private TextView mNavHomeText;
+    private TextView mNavSettingsText;
+    private View mBottomBar;
+    /**
+     * 当前选中 tab（2026-10-18 起为三个）：
+     * {@link #TAB_RECORDS} 记录（左）/ {@link #TAB_HOME} 首页（中）/ {@link #TAB_SETTINGS} 设置（右）
+     */
+    private static final int TAB_RECORDS = 0;
+    private static final int TAB_HOME = 1;
+    private static final int TAB_SETTINGS = 2;
+    private int mCurrentTab = TAB_HOME;
+
+    /** 上次停留的 tab（2026-10-18，进程回收后恢复用） */
+    private static final String KEY_LAST_TAB = "pref_home_last_tab";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,23 +96,119 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void setupBottomNav() {
-        mBottomNav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.bottom_nav_records) {
+        mNavRecords = findViewById(R.id.nav_records);
+        mNavHome = findViewById(R.id.nav_home);
+        mNavSettings = findViewById(R.id.nav_settings);
+        mNavRecordsIcon = findViewById(R.id.nav_records_icon);
+        mNavHomeIcon = findViewById(R.id.nav_home_icon);
+        mNavSettingsIcon = findViewById(R.id.nav_settings_icon);
+        mNavRecordsText = findViewById(R.id.nav_records_text);
+        mNavHomeText = findViewById(R.id.nav_home_text);
+        mNavSettingsText = findViewById(R.id.nav_settings_text);
+        mBottomBar = findViewById(R.id.bottom_bar);
+
+        mNavRecords.setOnClickListener(v -> selectTab(TAB_RECORDS));
+        mNavHome.setOnClickListener(v -> selectTab(TAB_HOME));
+        mNavSettings.setOnClickListener(v -> selectTab(TAB_SETTINGS));
+
+        applyNavTheme();
+    }
+
+    /**
+     * 切换 tab（2026-10-18 三个 tab：记录 / 首页 / 设置）。
+     *
+     * <p>记录页与首页都是 Fragment，设置页也是 Fragment，统一走
+     * {@link #switchTab}。首页默认选中。
+     */
+    private void selectTab(int tab) {
+        mCurrentTab = tab;
+        try {
+            getSharedPreferences(PrefConst.PREF_NAME, Context.MODE_PRIVATE)
+                    .edit().putInt(KEY_LAST_TAB, tab).apply();
+        } catch (Throwable ignored) {
+        }
+        switch (tab) {
+            case TAB_RECORDS:
                 switchTab(CodeRecordFragment.newInstance(), getString(R.string.app_name));
-                return true;
-            } else if (itemId == R.id.bottom_nav_settings) {
+                break;
+            case TAB_SETTINGS:
                 switchTab(SettingsFragment.newInstance(), getString(R.string.app_name));
-                return true;
-            }
-            return false;
-        });
+                break;
+            case TAB_HOME:
+            default:
+                switchTab(HomeFragment.newInstance(), getString(R.string.app_name));
+                break;
+        }
+        applyNavTheme();
+    }
+
+    /**
+     * 底栏视觉（2026-10-17）：完全照搬传信的色值与结构。
+     *
+     * <p>★ 明暗不由 {@code values-night} 决定：智码通的主题由 Cyanea 管理，
+     * 可能与系统 uiMode 不一致（实测：系统深色 + 应用白底，走 night 目录会把
+     * 深色玻璃叠在白色页面上，看起来就是一块灰）。改为按 Cyanea 背景亮度显式选资源。
+     *
+     * <p>颜色见 drawable/bg_nav_bar_glass[_dark].xml 与
+     * drawable/bg_nav_item_selected[_dark].xml，数值即传信原值。
+     */
+    private void applyNavTheme() {
+        if (mBottomBar == null) {
+            return;
+        }
+        boolean dark = ThemeColors.isDark();
+
+        mBottomBar.setBackgroundResource(dark
+                ? R.drawable.bg_nav_bar_glass_dark
+                : R.drawable.bg_nav_bar_glass);
+
+        int pill = dark ? R.drawable.bg_nav_item_selected_dark : R.drawable.bg_nav_item_selected;
+        mNavRecords.setBackgroundResource(mCurrentTab == TAB_RECORDS ? pill : 0);
+        mNavHome.setBackgroundResource(mCurrentTab == TAB_HOME ? pill : 0);
+        mNavSettings.setBackgroundResource(mCurrentTab == TAB_SETTINGS ? pill : 0);
+
+        int sel = dark ? 0xFF4CC97B : 0xFF2F9D56;
+        int normal = 0xFF8D97A6;
+        boolean r = mCurrentTab == TAB_RECORDS;
+        boolean h = mCurrentTab == TAB_HOME;
+        boolean st = mCurrentTab == TAB_SETTINGS;
+        if (mNavRecordsText != null) {
+            mNavRecordsText.setTextColor(r ? sel : normal);
+        }
+        if (mNavHomeText != null) {
+            mNavHomeText.setTextColor(h ? sel : normal);
+        }
+        if (mNavSettingsText != null) {
+            mNavSettingsText.setTextColor(st ? sel : normal);
+        }
+        tint(mNavRecordsIcon, r, sel, normal);
+        tint(mNavHomeIcon, h, sel, normal);
+        tint(mNavSettingsIcon, st, sel, normal);
+    }
+
+    private void tint(ImageView iv, boolean selected, int selectedColor, int normalColor) {
+        if (iv == null) {
+            return;
+        }
+        Drawable d = iv.getDrawable();
+        if (d == null) {
+            return;
+        }
+        d = DrawableCompat.wrap(d.mutate());
+        DrawableCompat.setTint(d, selected ? selectedColor : normalColor);
+        iv.setImageDrawable(d);
     }
 
     private void handleIntent(Intent intent) {
         mFragmentManager = getSupportFragmentManager();
-        // 默认进入记录 tab
-        mBottomNav.setSelectedItemId(R.id.bottom_nav_records);
+        // 2026-10-18：记住上次停的 tab（进程被系统回收后重建时不至于跳回默认页）。
+        // 首次安装没有记录 → 默认首页。
+        int saved = getSharedPreferences(PrefConst.PREF_NAME, Context.MODE_PRIVATE)
+                .getInt(KEY_LAST_TAB, TAB_HOME);
+        if (saved != TAB_RECORDS && saved != TAB_HOME && saved != TAB_SETTINGS) {
+            saved = TAB_HOME;
+        }
+        selectTab(saved);
     }
 
     private void switchTab(Fragment fragment, String title) {
@@ -131,24 +251,27 @@ public class HomeActivity extends BaseActivity {
      * 也不会被注入（官方文档亦确认 "module apps are no longer hooked by
      * themselves"），故 self-hook 方案在该框架下不可行。
      */
+    /**
+     * 标题栏副标题（2026-10-18）。
+     *
+     * <p>激活信息只在<b>首页</b>以卡片形式展示（{@code HomeFragment#bindActivation}），
+     * 标题栏所有页面一律不显示副标题。保留这个方法是为了让
+     * {@code checkModuleActivationStatus()} 的多次延时刷新仍然有落脚点
+     * （它同时触发首页卡片刷新）。
+     */
     private void refreshActivationStatus() {
         ActionBar actionBar = getSupportActionBar();
-        if (actionBar == null) {
-            return;
+        if (actionBar != null) {
+            actionBar.setSubtitle(null);
         }
-        boolean activated = ActivationService.isActivated();
-        String text;
-        if (activated) {
-            String fw = ActivationService.getFrameworkName();
-            String ver = ActivationService.getFrameworkVersion();
-            text = (fw == null)
-                    ? getString(R.string.module_status_active)
-                    : getString(R.string.module_status_active) + " · " + fw
-                      + (ver == null ? "" : " " + ver);
-        } else {
-            text = getString(R.string.module_status_inactive);
+        // 首页在前台时同步刷新激活卡
+        if (mCurrentTab == TAB_HOME) {
+            Fragment f = mFragmentManager == null ? null
+                    : mFragmentManager.findFragmentById(R.id.home_content);
+            if (f instanceof HomeFragment) {
+                ((HomeFragment) f).refreshActivationOnly();
+            }
         }
-        actionBar.setSubtitle(text);
     }
 
     @Override
@@ -208,13 +331,15 @@ public class HomeActivity extends BaseActivity {
     }
 
     void onTaichiUsersNoticeSelected() {
-        new MaterialDialog.Builder(this)
+        // 2026-10-18：改用自绘弹窗，与整体卡片风格一致
+        new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                getSupportFragmentManager(), this)
                 .title(R.string.taichi_users_notice)
                 .content(R.string.taichi_users_notice_content)
-                .negativeText(R.string.add_apps_in_taichi)
-                .onNegative((dialog, which) -> PackageUtils.startAddAppsInTaiChi(HomeActivity.this))
-                .positiveText(R.string.check_module_in_taichi)
-                .onPositive((dialog, which) -> PackageUtils.startCheckModuleInTaiChi(HomeActivity.this))
+                .negative(R.string.add_apps_in_taichi,
+                        () -> PackageUtils.startAddAppsInTaiChi(this))
+                .positive(R.string.check_module_in_taichi,
+                        input -> PackageUtils.startCheckModuleInTaiChi(this))
                 .show();
     }
 
@@ -224,13 +349,13 @@ public class HomeActivity extends BaseActivity {
      * 菜单项 id 沿用 action_edxposed_users_notice 以保持兼容。
      */
     void onEdxposedUsersNoticeSelected() {
-        new MaterialDialog.Builder(this)
+        new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                getSupportFragmentManager(), this)
                 .title(R.string.about_software_title)
                 .content(R.string.about_software_content)
-                .positiveText(R.string.about_software_repo)
-                .onPositive((dialog, which) ->
-                        Utils.showWebPage(HomeActivity.this, Const.PROJECT_SOURCE_CODE_URL))
-                .negativeText(R.string.i_know)
+                .negative(R.string.i_know)
+                .positive(R.string.about_software_repo,
+                        input -> Utils.showWebPage(this, Const.PROJECT_SOURCE_CODE_URL))
                 .show();
     }
 

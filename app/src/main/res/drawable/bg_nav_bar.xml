@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 悬浮导航条（对齐传信 bg_nav_bar.xml）：底色/描边由 HomeActivity#applyNavTheme 运行时赋值 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#F2FFFFFF" />
+    <stroke android:width="0.8dp" android:color="#14000000" />
+    <corners android:radius="27dp" />
+</shape>

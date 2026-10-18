@@ -17,7 +17,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.smscodf.zhuxf.R;
 import com.google.android.material.textfield.TextInputEditText;
 import com.tianma.xsmscode.common.constant.Const;
@@ -117,32 +116,38 @@ public class RuleEditFragment extends DaggerFragment implements RuleEditContract
 
     private void showQuickChooseDialog() {
         final String[] codeTypes = mActivity.getResources().getStringArray(R.array.sms_code_type_list);
+        final TextInputEditText[] codeLenRef = new TextInputEditText[1];
 
-        final View dialogView = LayoutInflater.from(mActivity).inflate(R.layout.dialog_code_regex_quick_chcoose, null);
-        final AppCompatSpinner spinner = dialogView.findViewById(R.id.rule_code_type_spinner);
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                mCodeTypeIndex = position;
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-
-        final TextInputEditText codeLenEditText = dialogView.findViewById(R.id.code_rule_length_edit_text);
-
-        new MaterialDialog.Builder(mActivity)
+        // 2026-10-18：改用自绘弹窗；自定义视图在填充回调里绑监听
+        // 用数组持有 Builder：lambda 内引用时它可能尚未完成赋值
+        final com.tianma.xsmscode.ui.dialog.CommonDialog.Builder[] builderRef =
+                new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder[1];
+        com.tianma.xsmscode.ui.dialog.CommonDialog.Builder builder =
+                builderRef[0] = new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                        getChildFragmentManager(), requireContext())
                 .title(R.string.quick_choose)
-                .customView(dialogView, false)
-                .negativeText(R.string.cancel)
-                .onNegative((dialog, which) -> dialog.dismiss())
-                .positiveText(R.string.confirm)
-                .onPositive((dialog, which) -> {
+                .customView(R.layout.dialog_code_regex_quick_chcoose, container -> {
+                    AppCompatSpinner spinner = container.findViewById(R.id.rule_code_type_spinner);
+                    spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+                            mCodeTypeIndex = position;
+                        }
+
+                        @Override
+                        public void onNothingSelected(AdapterView<?> parent) {
+                        }
+                    });
+                    codeLenRef[0] = container.findViewById(R.id.code_rule_length_edit_text);
+                })
+                .negative(R.string.cancel)
+                .positive(R.string.confirm, input -> {
+                    TextInputEditText codeLenEditText = codeLenRef[0];
+                    if (codeLenEditText == null) {
+                        return;
+                    }
                     String codeType = codeTypes[mCodeTypeIndex];
                     String codeLenText = codeLenEditText.getText().toString();
-
                     if (TextUtils.isEmpty(codeLenText)) {
                         codeLenEditText.setError(getString(R.string.code_length_empty_prompt));
                         return;
@@ -151,10 +156,13 @@ public class RuleEditFragment extends DaggerFragment implements RuleEditContract
                     String format = "(?<!%s)%s{%s}(?!%s)";
                     String codeRegex = String.format(format, codeType, codeType, codeLenText, codeType);
                     setText(mCodeRegexEditText, codeRegex);
-                    dialog.dismiss();
+                    // 校验通过后手动关闭（autoDismiss=false 不会自动关）
+                    if (builderRef[0] != null) {
+                        builderRef[0].dismiss();
+                    }
                 })
-                .autoDismiss(false)
-                .show();
+                .autoDismiss(false);
+        builder.show();
     }
 
     private void setText(EditText editText, CharSequence text) {

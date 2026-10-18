@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 选中项的胶囊高亮（逐行照搬「传信」bg_nav_item_selected.xml） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/nav_pill" />
+    <corners android:radius="26dp" />
+</shape>

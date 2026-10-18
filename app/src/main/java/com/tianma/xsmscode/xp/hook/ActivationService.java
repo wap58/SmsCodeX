@@ -115,6 +115,19 @@ public final class ActivationService {
         }
     }
 
+    /** 框架 API 版本（如 102），未激活或取不到返回 -1 */
+    public static int getApiVersion() {
+        XposedService s = sService;
+        if (s == null) {
+            return -1;
+        }
+        try {
+            return s.getApiVersion();
+        } catch (Throwable ignored) {
+            return -1;
+        }
+    }
+
     /** 当前作用域列表，未激活返回 null */
     public static List<String> getScope() {
         XposedService s = sService;

@@ -9,7 +9,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.smscodf.zhuxf.R;
 import com.google.android.material.snackbar.Snackbar;
 import com.tianma.xsmscode.common.adapter.BaseItemCallback;
@@ -72,6 +71,18 @@ public class CodeRecordFragment extends DaggerBackPressFragment implements CodeR
         View rootView = inflater.inflate(R.layout.fragment_code_records, container, false);
         ButterKnife.bind(this, rootView);
         mSwipeRefreshLayout.setOnRefreshListener(() -> mPresenter.loadData());
+
+        // 悬浮胶囊底栏（2026-10-17）：列表延伸到胶囊下方，透过半透明胶囊能看到内容；
+        // 用 padding 保证最后一条仍能滚出来，不被胶囊永久压住（clipToPadding=false）。
+        if (mRecyclerView != null) {
+            int bottom = (int) (76 * getResources().getDisplayMetrics().density);
+            mRecyclerView.setClipToPadding(false);
+            mRecyclerView.setPadding(
+                    mRecyclerView.getPaddingLeft(),
+                    mRecyclerView.getPaddingTop(),
+                    mRecyclerView.getPaddingRight(),
+                    bottom);
+        }
         return rootView;
     }
 
@@ -146,18 +157,23 @@ public class CodeRecordFragment extends DaggerBackPressFragment implements CodeR
         return true;
     }
 
+    /**
+     * 短信详情（2026-10-17 重做）：改用自绘卡片弹窗 {@link SmsDetailDialog}，
+     * 结构与传信一致——元信息 + 转发状态（逐通道）+ 短信正文 + 底部三项操作。
+     */
     private void showSmsDetails(final RecordItem recordItem) {
         SmsMsg smsMsg = recordItem.getSmsMsg();
-        new MaterialDialog.Builder(mActivity)
-                .title(R.string.message_details)
-                .content(smsMsg.getBody())
-                .positiveText(R.string.copy_smscode)
-                .onPositive((dialog, which) -> copySmsCode(recordItem))
-                .negativeText(R.string.forward_to_wecom)
-                .onNegative((dialog, which) -> forwardRecord(recordItem))
-                .neutralText(R.string.copy_sms)
-                .onNeutral((dialog, which) -> copySms(recordItem))
-                .show();
+        if (smsMsg == null) {
+            return;
+        }
+        SmsDetailDialog.show(getChildFragmentManager(),
+                smsMsg.getSender(), smsMsg.getBody(), smsMsg.getSmsCode(), smsMsg.getDate(),
+                new SmsDetailDialog.Actions() {
+                    @Override
+                    public void onForward() {
+                        forwardRecord(recordItem);
+                    }
+                });
     }
 
     /**

@@ -407,6 +407,8 @@
         <item>飛書機器人</item>
 <item>息知</item>
 <item>推送加</item>
+<item>QQ 機器人</item>
+<item>移動新訊息</item>
     </string-array>
     <string-array name="forward_channel_values">
         <item>wecom_agent</item>
@@ -415,6 +417,8 @@
         <item>feishu</item>
         <item>xizhi</item>
 <item>pushplus</item>
+<item>qqbot</item>
+<item>cmcc</item>
     </string-array>
     <string name="forward_killme_autodisabled">已自動關閉自殺開關</string>
     <string name="pref_forward_channel_title">轉發通道</string>
@@ -445,4 +449,55 @@
     <string name="forward_channel_page_xizhi">息知</string>
     <string name="forward_channel_page_pushplus">推送加</string>
     <string name="channel_settings_dialog_done">完成</string>
+    <string name="forward_qqbot_title">AppID / AppSecret</string>
+    <string name="forward_qqbot_summary">在 QQ 開放平台建立機器人後取得</string>
+    <string name="forward_qqbot_secret_title">AppSecret</string>
+    <string name="forward_channel_page_qqbot">QQ 機器人</string>
+    <string name="forward_cmcc_title">5G 訊息 API Key</string>
+    <string name="forward_cmcc_summary">中國移動 5G 訊息應用號綁定後取得（ak_ 開頭）</string>
+    <string name="forward_channel_page_cmcc">移動新訊息</string>
+    <string name="forward_qqbot_bind_entry">QQ 機器人綁定</string>
+    <string name="forward_qqbot_bind_summary">填寫參數並接收一次訊息以取得會話</string>
+    <string name="pref_forward_qqbot_appid">pref_forward_qqbot_appid</string>
+    <string name="pref_forward_qqbot_secret">pref_forward_qqbot_secret</string>
+    <string name="pref_forward_cmcc_api_key">pref_forward_cmcc_api_key</string>
+    <string name="close">關閉</string>
+    <string name="sms_detail_sender">寄件人</string>
+    <string name="sms_detail_time">時間</string>
+    <string name="sms_detail_forward_status">轉發狀態</string>
+    <string name="sms_detail_forward_not_sent">未轉發（未開啟或通道未設定）</string>
+    <string name="sms_detail_forward_unknown">尚無轉發記錄</string>
+    <string name="sms_detail_forward_success">成功</string>
+    <string name="sms_detail_forward_fail">失敗</string>
+    <string name="sms_detail_forward_now">已傳送</string>
+    <string name="channel_name_wecom_agent">企業微信應用</string>
+    <string name="channel_name_wecom_robot">企業微信機器人</string>
+    <string name="channel_name_dingtalk">釘釘機器人</string>
+    <string name="channel_name_feishu">飛書機器人</string>
+    <string name="channel_name_xizhi">息知</string>
+    <string name="channel_name_pushplus">推送加</string>
+    <string name="channel_name_qqbot">QQ 機器人</string>
+    <string name="channel_name_cmcc">移動新訊息</string>
+    <string name="channel_not_configured_hint">該通道參數未設定，請先點右側齒輪完成設定</string>
+    <string name="forward_note_title">備註</string>
+    <string name="forward_note_hint">給這條通道起個名，如「小號 A」</string>
+    <string name="tab_home">首頁</string>
+    <string name="home_service_running">轉發服務執行中</string>
+    <string name="home_service_stopped">轉發服務已停止</string>
+    <string name="home_service_running_sub">即時監聽簡訊，自動轉發到已選通道</string>
+    <string name="home_service_stopped_sub">監聽簡訊資料庫，目前未啟用轉發</string>
+    <string name="home_stat_today">今日轉發</string>
+    <string name="home_stat_total">累計</string>
+    <string name="home_stat_failed">失敗</string>
+    <string name="home_recent">最近轉發</string>
+    <string name="home_empty">尚無轉發記錄</string>
+    <string name="home_state_sent">已送達</string>
+    <string name="home_state_failed">有失敗</string>
+    <string name="home_state_pending">未轉發</string>
+    <string name="home_state_failed_all">全部失敗</string>
+    <string name="activation_api">API %1$d</string>
+    <string name="activation_api_unknown">API 版本未知</string>
+    <string name="pref_hide_recents">pref_hide_recents</string>
+    <string name="pref_hide_recents_title">隱藏多工</string>
+    <string name="pref_hide_recents_summary">開啟後本應用不會出現在最近工作清單中</string>
 </resources>

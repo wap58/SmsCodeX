@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 状态卡左侧圆形底（2026-10-18）：颜色运行时按强调色赋值 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="#2F9D56" />
+</shape>

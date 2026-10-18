@@ -12,6 +12,8 @@ public interface PrefConst {
     // General
     String KEY_ENABLE = "pref_enable";
     String KEY_HIDE_LAUNCHER_ICON = "pref_hide_launcher_icon";
+    /** 隐藏多任务（2026-10-18）：不出现在最近任务列表，默认关闭 */
+    String KEY_HIDE_RECENTS = "pref_hide_recents";
     String KEY_CHOOSE_THEME = "pref_choose_theme";
 
     // SMS Code
@@ -48,6 +50,17 @@ public interface PrefConst {
     String KEY_FORWARD_FEISHU_WEBHOOK = "pref_forward_feishu_webhook";
     String KEY_FORWARD_XIZHI_KEY = "pref_forward_xizhi_key";
     String KEY_FORWARD_PUSHPLUS_TOKEN = "pref_forward_pushplus_token";
+
+    // QQ 官方机器人（2026-10-17，自「传信」移植）
+    String KEY_FORWARD_QQBOT_APPID = "pref_forward_qqbot_appid";
+    String KEY_FORWARD_QQBOT_SECRET = "pref_forward_qqbot_secret";
+    String KEY_FORWARD_QQBOT_OPENID = "pref_forward_qqbot_openid";
+    String KEY_FORWARD_QQBOT_IS_GROUP = "pref_forward_qqbot_is_group";
+    String KEY_FORWARD_QQBOT_TOKEN = "pref_forward_qqbot_token";
+    String KEY_FORWARD_QQBOT_TOKEN_EXPIRE = "pref_forward_qqbot_token_expire";
+
+    // 中国移动 5G 新消息（2026-10-17，自「传信」移植）
+    String KEY_FORWARD_CMCC_API_KEY = "pref_forward_cmcc_api_key";
 
     // 转发范围（2026-09-19 新增）：仅验证码短信 / 全部短信
     String KEY_FORWARD_SCOPE = "pref_forward_scope";

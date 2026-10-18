@@ -416,6 +416,8 @@
         <item>feishu</item>
         <item>xizhi</item>
 <item>pushplus</item>
+<item>qqbot</item>
+<item>cmcc</item>
     </string-array>
     <string name="forward_killme_autodisabled">Kill switch was turned off automatically</string>
     <string name="pref_forward_channel_title">Forwarding channel</string>
@@ -446,4 +448,55 @@
     <string name="forward_channel_page_xizhi">Xizhi</string>
     <string name="forward_channel_page_pushplus">PushPlus</string>
     <string name="channel_settings_dialog_done">Done</string>
+    <string name="forward_qqbot_title">AppID / AppSecret</string>
+    <string name="forward_qqbot_summary">Get them after creating a bot on QQ Open Platform</string>
+    <string name="forward_qqbot_secret_title">AppSecret</string>
+    <string name="forward_channel_page_qqbot">QQ Bot</string>
+    <string name="forward_cmcc_title">5G Message API Key</string>
+    <string name="forward_cmcc_summary">Obtained after binding an app account in CMCC 5G Message (starts with ak_)</string>
+    <string name="forward_channel_page_cmcc">CMCC New Message</string>
+    <string name="forward_qqbot_bind_entry">QQ Bot Binding</string>
+    <string name="forward_qqbot_bind_summary">Fill in parameters and receive one message to capture the session</string>
+    <string name="pref_forward_qqbot_appid">pref_forward_qqbot_appid</string>
+    <string name="pref_forward_qqbot_secret">pref_forward_qqbot_secret</string>
+    <string name="pref_forward_cmcc_api_key">pref_forward_cmcc_api_key</string>
+    <string name="close">Close</string>
+    <string name="sms_detail_sender">Sender</string>
+    <string name="sms_detail_time">Time</string>
+    <string name="sms_detail_forward_status">Forward status</string>
+    <string name="sms_detail_forward_not_sent">Not forwarded (disabled or unconfigured)</string>
+    <string name="sms_detail_forward_unknown">No forwarding record</string>
+    <string name="sms_detail_forward_success">Success</string>
+    <string name="sms_detail_forward_fail">Failed</string>
+    <string name="sms_detail_forward_now">Sent</string>
+    <string name="channel_name_wecom_agent">WeCom App</string>
+    <string name="channel_name_wecom_robot">WeCom Robot</string>
+    <string name="channel_name_dingtalk">DingTalk</string>
+    <string name="channel_name_feishu">Feishu</string>
+    <string name="channel_name_xizhi">Xizhi</string>
+    <string name="channel_name_pushplus">PushPlus</string>
+    <string name="channel_name_qqbot">QQ Bot</string>
+    <string name="channel_name_cmcc">CMCC Message</string>
+    <string name="channel_not_configured_hint">This channel is not configured. Tap the gear on the right to set it up.</string>
+    <string name="forward_note_title">Note</string>
+    <string name="forward_note_hint">Name this channel, e.g. "Account A"</string>
+    <string name="tab_home">Home</string>
+    <string name="home_service_running">Forwarding is running</string>
+    <string name="home_service_stopped">Forwarding stopped</string>
+    <string name="home_service_running_sub">Listening for SMS and forwarding to selected channels</string>
+    <string name="home_service_stopped_sub">Monitoring SMS database; forwarding is off</string>
+    <string name="home_stat_today">Today</string>
+    <string name="home_stat_total">Total</string>
+    <string name="home_stat_failed">Failed</string>
+    <string name="home_recent">Recent</string>
+    <string name="home_empty">No records yet</string>
+    <string name="home_state_sent">Delivered</string>
+    <string name="home_state_failed">Failed</string>
+    <string name="home_state_pending">Not forwarded</string>
+    <string name="home_state_failed_all">All failed</string>
+    <string name="activation_api">API %1$d</string>
+    <string name="activation_api_unknown">API version unknown</string>
+    <string name="pref_hide_recents">pref_hide_recents</string>
+    <string name="pref_hide_recents_title">Hide from Recents</string>
+    <string name="pref_hide_recents_summary">Prevent this app from appearing in the recent tasks list</string>
 </resources>

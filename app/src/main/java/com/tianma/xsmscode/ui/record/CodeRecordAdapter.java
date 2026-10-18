@@ -84,6 +84,46 @@ public class CodeRecordAdapter extends RecyclerView.Adapter<CodeRecordAdapter.VH
         holder.bindListener(data, position);
     }
 
+    /**
+     * 记录列表的名称缩写（2026-10-17）。
+     *
+     * <p>背景：「抖音开放平台」6 个字在 1/4 屏宽的一列里放不下，换行后把整行撑高，
+     * 与其它行高度不一致。
+     *
+     * <p>做法：先去掉常见后缀（如「开放平台」「科技有限公司」「有限公司」），
+     * 仍超过 {@link #MAX_COMPANY_CHARS} 字时截断加省略号。布局侧再用
+     * singleLine + ellipsize=end 兜底，保证永不换行。
+     */
+    private static final int MAX_COMPANY_CHARS = 5;
+
+    private static final String[] COMPANY_SUFFIXES = {
+            "股份有限公司", "有限责任公司", "科技有限公司", "有限公司",
+            "开放平台", "服务平台", "信息技术", "网络科技", "科技",
+            "平台", "服务"
+    };
+
+    public static String shortenCompany(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        String s = raw.trim();
+        if (s.isEmpty()) {
+            return s;
+        }
+        // ① 去后缀（只在去掉后仍非空时才采用）
+        for (String suffix : COMPANY_SUFFIXES) {
+            if (s.endsWith(suffix) && s.length() > suffix.length()) {
+                s = s.substring(0, s.length() - suffix.length()).trim();
+                break;
+            }
+        }
+        // ② 仍超长则截断
+        if (s.length() > MAX_COMPANY_CHARS) {
+            s = s.substring(0, MAX_COMPANY_CHARS) + "…";
+        }
+        return s;
+    }
+
     class VH extends RecyclerView.ViewHolder {
 
         @BindView(R.id.company_text_view)
@@ -111,9 +151,9 @@ public class CodeRecordAdapter extends RecyclerView.Adapter<CodeRecordAdapter.VH
             mCompanyTv.setText(smsMsg.getCompany());
             String company = smsMsg.getCompany();
             if (company != null && company.trim().length() != 0) {
-                mCompanyTv.setText(company);
+                mCompanyTv.setText(shortenCompany(company));
             } else {
-                mCompanyTv.setText(smsMsg.getSender());
+                mCompanyTv.setText(shortenCompany(smsMsg.getSender()));
             }
             mSmsCodeTv.setText(smsMsg.getSmsCode());
             mDateTv.setText(mFormat.format(new Date(smsMsg.getDate())));

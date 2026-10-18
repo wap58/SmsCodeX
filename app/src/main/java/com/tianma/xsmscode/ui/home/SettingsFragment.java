@@ -16,7 +16,7 @@ import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceScreen;
 
-import com.afollestad.materialdialogs.MaterialDialog;
+
 import com.smscodf.zhuxf.BuildConfig;
 import com.smscodf.zhuxf.R;
 import com.jaredrummler.cyanea.prefs.CyaneaSettingsActivity;
@@ -138,7 +138,8 @@ public class SettingsFragment extends BasePreferenceFragment implements
 
         // 全部分类可折叠：默认折叠，点击分类头切换子项显隐
         makeCollapsible(PrefConst.KEY_GENERAL_HEADER,
-                PrefConst.KEY_ENABLE, PrefConst.KEY_HIDE_LAUNCHER_ICON, PrefConst.KEY_CHOOSE_THEME);
+                PrefConst.KEY_ENABLE, PrefConst.KEY_HIDE_LAUNCHER_ICON,
+                PrefConst.KEY_HIDE_RECENTS, PrefConst.KEY_CHOOSE_THEME);
         makeCollapsible(PrefConst.KEY_SMS_CODE_HEADER,
                 PrefConst.KEY_SHOW_TOAST, PrefConst.KEY_COPY_TO_CLIPBOARD,
                 PrefConst.KEY_BLOCK_SMS, PrefConst.KEY_DEDUPLICATE_SMS);
@@ -149,31 +150,16 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 PrefConst.KEY_NOTIFICATION_RETENTION_TIME);
         makeCollapsible(PrefConst.KEY_FORWARD_HEADER,
                 PrefConst.KEY_ENABLE_FORWARD, PrefConst.KEY_FORWARD_SCOPE,
-                PrefConst.KEY_FORWARD_CHANNEL_TYPE,
-                PrefConst.KEY_FORWARD_CHANNEL_CONFIG);
-        // "通道参数"入口显式绑定点击监听（2026-09-16：用户反馈点击无反应，不再依赖隐式事件链）
-        Preference cfgEntry = findPreference(PrefConst.KEY_FORWARD_CHANNEL_CONFIG);
-        if (cfgEntry != null) {
-            cfgEntry.setOnPreferenceClickListener(p -> {
-                com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 通道参数 clicked");
-                String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
-                        .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
-                com.tianma.xsmscode.ui.forward.ChannelSettingsDialog.showDialog(getChildFragmentManager(), ch);
-                return true;
-            });
-            // "通道参数"行摘要改为固定说明文字（2026-09-18 用户定稿），由 xml 的 android:summary 绑定，不再动态覆盖
+                PrefConst.KEY_FORWARD_CHANNEL_TYPE);
+        // "转发通道"改为多选（2026-10-17）：
+        //   ① 摘要不能用 SimpleSummaryProvider（只反映单选值），由 refreshForwardSummaries() 拼「A、B、C」
+        //   ② 原来的自定义 ListPreference 子类已换成普通 Preference，
+        //      普通 Preference 不走 onDisplayPreferenceDialog，必须显式注册点击监听
+        Preference chEntry = findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
+        if (chEntry != null) {
+            chEntry.setOnPreferenceClickListener(this);
         }
-        androidx.preference.ListPreference chLp =
-                (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
-        if (chLp != null) {
-            // "转发通道"行摘要实时显示当前选中项（SimpleSummaryProvider，1.2.1 支持）
-            chLp.setSummaryProvider(androidx.preference.ListPreference.SimpleSummaryProvider.getInstance());
-            if (chLp instanceof com.tianma.xsmscode.ui.forward.ForwardChannelListPreference) {
-                // 选中瞬间（值已持久化）确定性刷新"通道参数"行（2026-09-16）
-                ((com.tianma.xsmscode.ui.forward.ForwardChannelListPreference) chLp)
-                        .setOnChannelChangedListener(lp -> refreshForwardSummaries());
-            }
-        }
+        refreshForwardSummaries();
         // "转发范围"行摘要实时显示当前选项（2026-09-19）
         bindForwardScopeSummary();
         // 验证码历史记录入口已迁移至首页"记录" tab；设置里保留记录开关（2026-09-15）
@@ -268,15 +254,28 @@ public class SettingsFragment extends BasePreferenceFragment implements
         refreshForwardSummaries();
     }
 
+    /**
+     * 刷新"转发通道"行摘要（2026-10-17 改为多选）。
+     *
+     * <p>多选后 {@code getEntry()} 只反映单选值，会显示不全，因此直接按
+     * {@code pref_forward_channels} 拼「A、B、C」。未配置时给出提示。
+     */
     private void refreshForwardSummaries() {
-        // 两行摘要均由 SummaryProvider 实时计算；setSummary 在这里仅作为"强制重绑"触发器
         try {
-            // "通道参数"行摘要已固定（xml 绑定），此处不再动态 setSummary；"转发通道"行保持重绑触发器
-            androidx.preference.ListPreference ch =
-                    (androidx.preference.ListPreference) findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
-            if (ch != null) {
-                ch.setSummary(ch.getEntry() == null ? "" : ch.getEntry().toString());
+            androidx.preference.Preference ch = findPreference(PrefConst.KEY_FORWARD_CHANNEL_TYPE);
+            if (ch == null) {
+                return;
             }
+            android.content.SharedPreferences sp =
+                    androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext());
+            java.util.List<String> ids =
+                    com.tianma.xsmscode.feature.forward.ForwardChannels.effective(
+                            sp.getString("pref_forward_channels", ""),
+                            sp.getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent"));
+            String summary = com.tianma.xsmscode.feature.forward.ForwardChannels
+                    .summary(requireContext(), ids);
+            ch.setSummary(summary.isEmpty()
+                    ? getString(R.string.pref_forward_channel_summary) : summary);
         } catch (Throwable ignored) {
         }
     }
@@ -303,6 +302,19 @@ public class SettingsFragment extends BasePreferenceFragment implements
         mActivity = (HomeActivity) requireActivity();
         updateKillSummary();
 
+        // 悬浮胶囊底栏（2026-10-17）：设置列表同样延伸到胶囊下方，最后一项可滚出
+        if (view instanceof android.view.ViewGroup) {
+            android.view.View found = ((android.view.ViewGroup) view)
+                    .findViewById(androidx.preference.R.id.recycler_view);
+            // setClipToPadding 是 ViewGroup 的方法，这里必须强转
+            if (found instanceof android.view.ViewGroup) {
+                android.view.ViewGroup list = (android.view.ViewGroup) found;
+                list.setClipToPadding(false);
+                list.setPadding(list.getPaddingLeft(), list.getPaddingTop(),
+                        list.getPaddingRight(),
+                        (int) (76 * getResources().getDisplayMetrics().density));
+            }
+        }
 
         mPresenter.handleArguments(getArguments());
     }
@@ -342,12 +354,9 @@ public class SettingsFragment extends BasePreferenceFragment implements
             showSmsCodeTestDialog();
         } else if (PrefConst.KEY_SOURCE_CODE.equals(key)) {
             mPresenter.showSourceProject();
-        } else if (PrefConst.KEY_FORWARD_CHANNEL_CONFIG.equals(key)) {
-            com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 通道参数 onPreferenceClick");
-            // 显式入口：进入当前所选通道的独立参数配置页（2026-09-16，用户反馈"找不到配置的地方"）
-            String ch = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
-                    .getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent");
-            com.tianma.xsmscode.ui.forward.ChannelSettingsDialog.showDialog(getChildFragmentManager(), ch);
+        } else if (PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(key)) {
+            // 普通 Preference 不触发 onDisplayPreferenceDialog，点击时显式弹多选框（2026-10-17）
+            showChannelMultiDialog(preference);
         } else if (PrefConst.KEY_ENTRY_CODE_RECORDS.equals(key)) {
             CodeRecordActivity.startToMe(mActivity);
         } else if (PrefConst.KEY_APP_BLOCK_ENTRY.equals(key)) {
@@ -426,10 +435,6 @@ public class SettingsFragment extends BasePreferenceFragment implements
                 }
                 autoLinkKillOff();
             }
-        } else if (PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(key)) {
-            com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 转发通道 changed to %s", newValue);
-            // 摘要由 SummaryProvider 实时计算，无需手动设置；选中即持久化生效
-            com.tianma.xsmscode.ui.forward.ChannelSettingsDialog.showDialog(getChildFragmentManager(), (String) newValue);
         } else {
             return false;
         }
@@ -437,57 +442,133 @@ public class SettingsFragment extends BasePreferenceFragment implements
     }
 
     private void showSmsCodeTestDialog() {
-        new MaterialDialog.Builder(mActivity)
+        // 2026-10-18：自绘弹窗
+        new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                getChildFragmentManager(), requireContext())
                 .title(R.string.pref_smscode_test_title)
-                .input(R.string.sms_content_hint, 0, true,
-                        (dialog, input) -> mPresenter.performSmsCodeTest(input.toString()))
-                .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
-                .negativeText(R.string.cancel)
+                .input(getString(R.string.sms_content_hint), "", true)
+                .negative(R.string.cancel)
+                .positive(R.string.confirm,
+                        input -> mPresenter.performSmsCodeTest(input))
                 .show();
     }
 
     @Override
     public void onDisplayPreferenceDialog(Preference preference) {
         boolean handled = false;
+        // "验证码短信关键字"等可重置的输入项：改用自绘弹窗
+        // （2026-10-18：原来走 ResetEditPreferenceDialogFragCompat，
+        //   即 androidx 原生对话框，样式与其它弹窗不一致）
         if (preference instanceof ResetEditPreference) {
-            DialogFragment dialogFragment =
-                    ResetEditPreferenceDialogFragCompat.newInstance(preference.getKey());
+            final ResetEditPreference rep = (ResetEditPreference) preference;
+            final String key = rep.getKey();
+            final String defaultValue = rep.getDefaultValue();
+            final String current = rep.getText();
+            String hint = rep.getDialogMessage() == null
+                    ? getString(R.string.code_keywords_hint)
+                    : rep.getDialogMessage().toString();
 
-            FragmentManager fm = getFragmentManager();
-            if (fm != null) {
-                dialogFragment.setTargetFragment(this, 0);
-                dialogFragment.show(fm, "android.support.v7.preference.PreferenceFragment.DIALOG");
-                handled = true;
-            }
+            new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                    getChildFragmentManager(), requireContext())
+                    .title(preference.getTitle() == null ? null : preference.getTitle().toString())
+                    .input(hint, current, true)
+                    .negative(R.string.reset, () -> {
+                        // 重置为默认值并落盘
+                        if (key != null) {
+                            androidx.preference.PreferenceManager
+                                    .getDefaultSharedPreferences(requireContext())
+                                    .edit().putString(key, defaultValue).apply();
+                            rep.setText(defaultValue);
+                            try {
+                                com.tianma.xsmscode.common.utils.PrefsExporter
+                                        .export(requireContext());
+                            } catch (Throwable ignored) {
+                            }
+                        }
+                    })
+                    .positive(R.string.confirm, input -> {
+                        if (key != null) {
+                            androidx.preference.PreferenceManager
+                                    .getDefaultSharedPreferences(requireContext())
+                                    .edit().putString(key, input).apply();
+                            rep.setText(input);
+                            try {
+                                com.tianma.xsmscode.common.utils.PrefsExporter
+                                        .export(requireContext());
+                            } catch (Throwable ignored) {
+                            }
+                        }
+                    })
+                    .show();
+            handled = true;
         }
-        // "转发通道"改用自绘圆角弹窗（2026-09-19）：
-        // androidx.preference 默认弹窗背景取自 abc_dialog_material_background
-        // （9-patch，圆角极小），无法做成与"通道参数"弹窗一致的 20dp 圆角。
-        // 只拦截这一个 key，其余 preference 行为不变。
-        if (!handled && preference instanceof androidx.preference.ListPreference
-                && PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(preference.getKey())) {
-            androidx.preference.ListPreference lp = (androidx.preference.ListPreference) preference;
-            com.tianma.xsmscode.ui.forward.ForwardChannelDialog dialog =
-                    com.tianma.xsmscode.ui.forward.ForwardChannelDialog.newInstance(
-                            lp.getTitle() == null ? null : lp.getTitle().toString(),
-                            toStringArray(lp.getEntries()),
-                            toStringArray(lp.getEntryValues()),
-                            lp.getValue());
-            // 选中后持久化并通知原 ListPreference，
-            // 保留既有回调链（摘要与"通道参数"行照常刷新）
-            dialog.setOnChannelPickedListener(value -> {
-                lp.setValue(value);
-                if (lp instanceof com.tianma.xsmscode.ui.forward.ForwardChannelListPreference) {
-                    ((com.tianma.xsmscode.ui.forward.ForwardChannelListPreference) lp)
-                            .notifyChannelChanged();
-                }
-            });
-            dialog.show(getChildFragmentManager(), "ForwardChannelDialog");
+        // "转发通道"改用自绘圆角多选弹窗（2026-10-17）：
+        // 原生 ListPreference 是单选语义，且弹窗圆角极小，无法与"通道参数"弹窗统一。
+        if (!handled && PrefConst.KEY_FORWARD_CHANNEL_TYPE.equals(preference.getKey())) {
+            showChannelMultiDialog(preference);
+            handled = true;
+        }
+        // 其余 ListPreference（通知保留时长 / 转发范围）同样改用自绘单选弹窗
+        // （2026-10-17）：原生对话框是 Material 粉圈 9-patch，与整体卡片风格不符
+        if (!handled && preference instanceof androidx.preference.ListPreference) {
+            androidx.preference.ListPreference lp =
+                    (androidx.preference.ListPreference) preference;
+            com.tianma.xsmscode.ui.forward.SingleChoiceDialog.show(
+                    getChildFragmentManager(),
+                    lp.getTitle() == null ? null : lp.getTitle().toString(),
+                    toStringArray(lp.getEntries()),
+                    toStringArray(lp.getEntryValues()),
+                    lp.getValue(),
+                    lp::setValue);
             handled = true;
         }
         if (!handled) {
             super.onDisplayPreferenceDialog(preference);
         }
+    }
+
+    /** 弹出转发通道多选框（2026-10-17） */
+    private void showChannelMultiDialog(Preference preference) {
+        if (getChildFragmentManager().findFragmentByTag("ForwardChannelDialog") != null) {
+            return;
+        }
+        android.content.SharedPreferences sp =
+                androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext());
+        String csv = sp.getString("pref_forward_channels",
+                sp.getString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, "wecom_agent"));
+        com.tianma.xsmscode.ui.forward.ForwardChannelDialog dialog =
+                com.tianma.xsmscode.ui.forward.ForwardChannelDialog.newInstance(
+                        preference == null || preference.getTitle() == null
+                                ? null : preference.getTitle().toString(),
+                        csv);
+        dialog.setOnChannelsPickedListener(this::onChannelsPicked);
+        dialog.show(getChildFragmentManager(), "ForwardChannelDialog");
+    }
+
+    /**
+     * 多选通道确定后的回调（2026-10-17）。
+     *
+     * <p>写入 {@code pref_forward_channels}（逗号分隔），
+     * 同时把第一项同步到旧的单选键，保证老逻辑与备份兼容。
+     */
+    private void onChannelsPicked(String csv) {
+        java.util.List<String> ids = com.tianma.xsmscode.feature.forward.ForwardChannels.parse(csv);
+        android.content.SharedPreferences sp =
+                androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext());
+        android.content.SharedPreferences.Editor ed = sp.edit();
+        ed.putString("pref_forward_channels", csv == null ? "" : csv);
+        if (!ids.isEmpty()) {
+            ed.putString(PrefConst.KEY_FORWARD_CHANNEL_TYPE, ids.get(0));
+        }
+        ed.apply();
+
+        // 导出给电话进程读（息屏直发依赖）
+        try {
+            com.tianma.xsmscode.common.utils.PrefsExporter.export(requireContext());
+        } catch (Throwable ignored) {
+        }
+        refreshForwardSummaries();
+        com.tianma.xsmscode.common.utils.XLog.i("SmsCodeX: 多通道选定 %s", csv);
     }
 
     private static String[] toStringArray(CharSequence[] src) {
@@ -520,31 +601,34 @@ public class SettingsFragment extends BasePreferenceFragment implements
 
     @Override
     public void showUpdateDialog(ApkVersion latestVersion) {
-        new MaterialDialog.Builder(mActivity)
+        new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                getChildFragmentManager(), requireContext())
                 .title(R.string.new_version_found)
                 .content(latestVersion.getVersionInfo())
-                .positiveText(R.string.update_from_github)
-                .onPositive((dialog, which) -> mPresenter.updateFromGithub())
+                .leftAligned()
+                .positive(R.string.update_from_github,
+                        input -> mPresenter.updateFromGithub())
                 .show();
     }
 
     @Override
     public void showPrivacyPolicy() {
         // 隐私政策
-        new MaterialDialog.Builder(mActivity)
-                .title(R.string.privacy_dialog_title)
-                .content(R.string.privacy_dialog_content)
-                .positiveText(R.string.privacy_dialog_confirm)
-                .onPositive((dialog, which) -> {
-                    SPUtils.setPrivacyPolicyAccepted(mActivity, true);
-                })
-                .cancelable(false)
-                .canceledOnTouchOutside(false)
-                .negativeText(R.string.privacy_dialog_cancel)
-                .onNegative((dialog, which) -> {
-                    SPUtils.setPrivacyPolicyAccepted(mActivity, false);
-                    mActivity.finish();
-                })
-                .show();
+        com.tianma.xsmscode.ui.dialog.CommonDialog d =
+                new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                        getChildFragmentManager(), requireContext())
+                        .title(R.string.privacy_dialog_title)
+                        .content(R.string.privacy_dialog_content)
+                        .leftAligned()
+                        .negative(R.string.privacy_dialog_cancel, () -> {
+                            SPUtils.setPrivacyPolicyAccepted(mActivity, false);
+                            mActivity.finish();
+                        })
+                        .positive(R.string.privacy_dialog_confirm,
+                                input -> SPUtils.setPrivacyPolicyAccepted(mActivity, true))
+                        .build();
+        // 隐私政策必须明确选择，禁止点外部或返回键关闭
+        d.setCancelable(false);
+        d.show(getChildFragmentManager(), "CommonDialog");
     }
 }
