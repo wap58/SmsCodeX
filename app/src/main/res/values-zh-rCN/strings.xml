@@ -481,4 +481,16 @@
     <string name="channel_not_configured_hint">该通道参数未配置，请先点右侧齿轮完成配置</string>
     <string name="forward_note_title">备注</string>
     <string name="forward_note_hint">给这条通道起个名，如「小号 A」</string>
+    <string name="home_service_running">转发服务运行中</string>
+    <string name="home_service_stopped">转发服务已停止</string>
+    <string name="home_service_running_sub">实时监听短信，自动转发到已选通道</string>
+    <string name="home_service_stopped_sub">监听短信数据库，当前未启用转发</string>
+    <string name="home_stat_today">今日转发</string>
+    <string name="home_stat_total">累计</string>
+    <string name="home_stat_failed">失败</string>
+    <string name="home_recent">最近转发</string>
+    <string name="home_empty">暂无转发记录</string>
+    <string name="home_state_sent">已送达</string>
+    <string name="home_state_failed">有失败</string>
+    <string name="home_state_pending">未转发</string>
 </resources>

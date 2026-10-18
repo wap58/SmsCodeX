@@ -480,4 +480,16 @@
     <string name="channel_not_configured_hint">This channel is not configured. Tap the gear on the right to set it up.</string>
     <string name="forward_note_title">Note</string>
     <string name="forward_note_hint">Name this channel, e.g. "Account A"</string>
+    <string name="home_service_running">Forwarding is running</string>
+    <string name="home_service_stopped">Forwarding stopped</string>
+    <string name="home_service_running_sub">Listening for SMS and forwarding to selected channels</string>
+    <string name="home_service_stopped_sub">Monitoring SMS database; forwarding is off</string>
+    <string name="home_stat_today">Today</string>
+    <string name="home_stat_total">Total</string>
+    <string name="home_stat_failed">Failed</string>
+    <string name="home_recent">Recent</string>
+    <string name="home_empty">No records yet</string>
+    <string name="home_state_sent">Delivered</string>
+    <string name="home_state_failed">Failed</string>
+    <string name="home_state_pending">Not forwarded</string>
 </resources>

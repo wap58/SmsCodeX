@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 送达状态胶囊（实底淡色）：颜色运行时赋值 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#1F2F9D56" />
+    <corners android:radius="14dp" />
+</shape>
