@@ -494,4 +494,6 @@
     <string name="home_state_failed">Failed</string>
     <string name="home_state_pending">Not forwarded</string>
     <string name="home_state_failed_all">All failed</string>
+    <string name="activation_api">API %1$d</string>
+    <string name="activation_api_unknown">API version unknown</string>
 </resources>

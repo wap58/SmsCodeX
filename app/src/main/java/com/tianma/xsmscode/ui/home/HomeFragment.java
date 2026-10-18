@@ -50,6 +50,10 @@ import java.util.List;
  */
 public class HomeFragment extends Fragment {
 
+    private TextView mActivationTitle;
+    private TextView mActivationVer;
+    private TextView mActivationApi;
+    private View mActivationCard;
     private TextView mStatusTitle;
     private TextView mStatusSub;
     private SwitchMaterial mStatusSwitch;
@@ -79,6 +83,10 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        mActivationTitle = view.findViewById(R.id.activation_title);
+        mActivationVer = view.findViewById(R.id.activation_ver);
+        mActivationApi = view.findViewById(R.id.activation_api);
+        mActivationCard = view.findViewById(R.id.card_activation);
         mStatusTitle = view.findViewById(R.id.status_title);
         mStatusSub = view.findViewById(R.id.status_sub);
         mStatusSwitch = view.findViewById(R.id.status_switch);
@@ -152,6 +160,9 @@ public class HomeFragment extends Fragment {
         c2.setCardBackgroundColor(cardBg);
         c3.setCardBackgroundColor(cardBg);
 
+        // ---- 激活卡（2026-10-18：从标题栏副标题移过来） ----
+        bindActivation(root, dark);
+
         // ---- 状态卡 ----
         boolean enabled = getPrefs().getBoolean(PrefConst.KEY_ENABLE_FORWARD, false);
         mStatusTitle.setText(enabled
@@ -214,6 +225,65 @@ public class HomeFragment extends Fragment {
         mAdapter.setColors(textPrimary, textHint, accent, dark);
         mAdapter.setData(recent, codes);
         mEmptyHint.setVisibility(recent.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * 激活卡（2026-10-18）。
+     *
+     * <p>原来这段信息是标题栏的副标题（{@code actionBar.setSubtitle}），
+     * 现在挪到首页卡片上，信息量更大且不占标题栏。
+     *
+     * <p>版式：深绿渐变底 + 白字；右侧白色勾号圆环（右下角溢出裁切）。
+     * 未激活时改为中性灰底，文案提示去启用。
+     */
+    private void bindActivation(View root, boolean dark) {
+        boolean activated = com.tianma.xsmscode.xp.hook.ActivationService.isActivated();
+        String fw = com.tianma.xsmscode.xp.hook.ActivationService.getFrameworkName();
+        String ver = com.tianma.xsmscode.xp.hook.ActivationService.getFrameworkVersion();
+        int api = com.tianma.xsmscode.xp.hook.ActivationService.getApiVersion();
+
+        mActivationTitle.setText(activated
+                ? R.string.module_status_active : R.string.module_status_inactive);
+        mActivationTitle.setTextColor(0xFFFFFFFF);
+        mActivationVer.setTextColor(0xCCFFFFFF);
+
+        StringBuilder verText = new StringBuilder();
+        if (ver != null) {
+            verText.append(ver);
+        } else if (fw != null) {
+            verText.append(fw);
+        }
+        if (api > 0) {
+            if (verText.length() > 0) {
+                verText.append(" (").append(api).append(')');
+            } else {
+                verText.append("API ").append(api);
+            }
+        }
+        mActivationVer.setText(verText.length() == 0 ? "—" : verText.toString());
+        mActivationApi.setText(api > 0
+                ? getString(R.string.activation_api, api)
+                : getString(R.string.activation_api_unknown));
+
+        MaterialCardView card = (MaterialCardView) mActivationCard;
+        GradientDrawable bg = new GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT,
+                activated
+                        ? new int[]{0xFF1E5C3A, 0xFF17492E}
+                        : new int[]{dark ? 0xFF33363D : 0xFFE0E0E0,
+                        dark ? 0xFF2A2D34 : 0xFFD6D6D6});
+        bg.setCornerRadius(dp(18));
+        card.setCardBackgroundColor(0);
+        mActivationCard.setBackground(bg);
+
+        View badge = root.findViewById(R.id.activation_badge);
+        if (badge != null) {
+            badge.setVisibility(activated ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private float dp(float v) {
+        return v * getResources().getDisplayMetrics().density;
     }
 
     private void onSwitchToggled(boolean checked) {

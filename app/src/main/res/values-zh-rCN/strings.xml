@@ -495,4 +495,6 @@
     <string name="home_state_failed">有失败</string>
     <string name="home_state_pending">未转发</string>
     <string name="home_state_failed_all">全部失败</string>
+    <string name="activation_api">API %1$d</string>
+    <string name="activation_api_unknown">API 版本未知</string>
 </resources>

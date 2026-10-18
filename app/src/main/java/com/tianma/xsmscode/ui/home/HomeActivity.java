@@ -252,24 +252,18 @@ public class HomeActivity extends BaseActivity {
      * 也不会被注入（官方文档亦确认 "module apps are no longer hooked by
      * themselves"），故 self-hook 方案在该框架下不可行。
      */
+    /**
+     * 标题栏副标题（2026-10-18 起不再显示激活状态）。
+     *
+     * <p>激活信息已移到首页的激活卡（见 {@code HomeFragment#bindActivation}），
+     * 标题栏只保留应用名，视觉更干净。
+     */
     private void refreshActivationStatus() {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar == null) {
             return;
         }
-        boolean activated = ActivationService.isActivated();
-        String text;
-        if (activated) {
-            String fw = ActivationService.getFrameworkName();
-            String ver = ActivationService.getFrameworkVersion();
-            text = (fw == null)
-                    ? getString(R.string.module_status_active)
-                    : getString(R.string.module_status_active) + " · " + fw
-                      + (ver == null ? "" : " " + ver);
-        } else {
-            text = getString(R.string.module_status_inactive);
-        }
-        actionBar.setSubtitle(text);
+        actionBar.setSubtitle(null);
     }
 
     @Override
