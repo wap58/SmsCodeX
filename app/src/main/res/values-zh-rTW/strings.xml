@@ -482,4 +482,16 @@
     <string name="forward_note_title">備註</string>
     <string name="forward_note_hint">給這條通道起個名，如「小號 A」</string>
     <string name="tab_home">首頁</string>
+    <string name="home_service_running">轉發服務執行中</string>
+    <string name="home_service_stopped">轉發服務已停止</string>
+    <string name="home_service_running_sub">即時監聽簡訊，自動轉發到已選通道</string>
+    <string name="home_service_stopped_sub">監聽簡訊資料庫，目前未啟用轉發</string>
+    <string name="home_stat_today">今日轉發</string>
+    <string name="home_stat_total">累計</string>
+    <string name="home_stat_failed">失敗</string>
+    <string name="home_recent">最近轉發</string>
+    <string name="home_empty">尚無轉發記錄</string>
+    <string name="home_state_sent">已送達</string>
+    <string name="home_state_failed">有失敗</string>
+    <string name="home_state_pending">未轉發</string>
 </resources>
