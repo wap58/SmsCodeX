@@ -455,16 +455,51 @@ public class SettingsFragment extends BasePreferenceFragment implements
     @Override
     public void onDisplayPreferenceDialog(Preference preference) {
         boolean handled = false;
+        // "验证码短信关键字"等可重置的输入项：改用自绘弹窗
+        // （2026-10-18：原来走 ResetEditPreferenceDialogFragCompat，
+        //   即 androidx 原生对话框，样式与其它弹窗不一致）
         if (preference instanceof ResetEditPreference) {
-            DialogFragment dialogFragment =
-                    ResetEditPreferenceDialogFragCompat.newInstance(preference.getKey());
+            final ResetEditPreference rep = (ResetEditPreference) preference;
+            final String key = rep.getKey();
+            final String defaultValue = rep.getDefaultValue();
+            final String current = rep.getText();
+            String hint = rep.getDialogMessage() == null
+                    ? getString(R.string.code_keywords_hint)
+                    : rep.getDialogMessage().toString();
 
-            FragmentManager fm = getFragmentManager();
-            if (fm != null) {
-                dialogFragment.setTargetFragment(this, 0);
-                dialogFragment.show(fm, "android.support.v7.preference.PreferenceFragment.DIALOG");
-                handled = true;
-            }
+            new com.tianma.xsmscode.ui.dialog.CommonDialog.Builder(
+                    getChildFragmentManager(), requireContext())
+                    .title(preference.getTitle() == null ? null : preference.getTitle().toString())
+                    .input(hint, current, true)
+                    .negative(R.string.reset, () -> {
+                        // 重置为默认值并落盘
+                        if (key != null) {
+                            androidx.preference.PreferenceManager
+                                    .getDefaultSharedPreferences(requireContext())
+                                    .edit().putString(key, defaultValue).apply();
+                            rep.setText(defaultValue);
+                            try {
+                                com.tianma.xsmscode.common.utils.PrefsExporter
+                                        .export(requireContext());
+                            } catch (Throwable ignored) {
+                            }
+                        }
+                    })
+                    .positive(R.string.confirm, input -> {
+                        if (key != null) {
+                            androidx.preference.PreferenceManager
+                                    .getDefaultSharedPreferences(requireContext())
+                                    .edit().putString(key, input).apply();
+                            rep.setText(input);
+                            try {
+                                com.tianma.xsmscode.common.utils.PrefsExporter
+                                        .export(requireContext());
+                            } catch (Throwable ignored) {
+                            }
+                        }
+                    })
+                    .show();
+            handled = true;
         }
         // "转发通道"改用自绘圆角多选弹窗（2026-10-17）：
         // 原生 ListPreference 是单选语义，且弹窗圆角极小，无法与"通道参数"弹窗统一。
