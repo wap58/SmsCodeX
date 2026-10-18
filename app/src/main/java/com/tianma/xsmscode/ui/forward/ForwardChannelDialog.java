@@ -148,7 +148,16 @@ public class ForwardChannelDialog extends AppCompatDialogFragment {
             TextView label = row.findViewById(R.id.channel_option_text);
             ImageView check = row.findViewById(R.id.channel_option_check);
 
-            label.setText(ForwardChannels.name(requireContext(), id));
+            // 标题 = 通道名 [+ 备注]，备注用于区分多个账号（2026-10-18）
+            String displayName = ForwardChannels.name(requireContext(), id);
+            String note = requireContext().getSharedPreferences(
+                    com.tianma.xsmscode.common.constant.PrefConst.PREF_NAME,
+                    android.content.Context.MODE_PRIVATE)
+                    .getString(ChannelSettingsDialog.noteKey(id), "");
+            if (note != null && !note.trim().isEmpty()) {
+                displayName = displayName + " · " + note.trim();
+            }
+            label.setText(displayName);
             label.setTextColor(mTextColor);
 
             boolean configured = ForwardChannels.isConfigured(requireContext(), id);
@@ -185,8 +194,8 @@ public class ForwardChannelDialog extends AppCompatDialogFragment {
                 cfg.setVisibility(View.VISIBLE);
                 tintIcon(cfg, mTextColor);
                 cfg.setOnClickListener(v -> {
-                    // setResult 由宿主 onResume 重新拉取，故这里无需回传
-                    ChannelSettingsActivity.open(requireContext(), id);
+                    // 2026-10-18：改为弹窗配置，不再跳整页（浅层参数一个弹窗足够）
+                    ChannelSettingsDialog.showDialog(getChildFragmentManager(), id);
                 });
             }
             mOptions.addView(row);

@@ -56,6 +56,23 @@
             android:gravity="end"
             android:orientation="horizontal">
 
+            <!-- QQ 机器人专用：取会话需连网关等消息，故给个绑定入口（2026-10-18） -->
+            <TextView
+                android:id="@+id/channel_settings_dialog_bind"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingStart="20dp"
+                android:paddingTop="14dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="14dp"
+                android:text="@string/forward_qqbot_bind_entry"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
             <TextView
                 android:id="@+id/channel_settings_dialog_done"
                 android:layout_width="wrap_content"
