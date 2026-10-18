@@ -131,26 +131,6 @@
                         </LinearLayout>
 
                         <!-- ★ 转发状态：单独成块（用户 2026-10-17 要求），放在短信内容上方 -->
-                        <View
-                            android:id="@+id/sms_detail_divider"
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:layout_marginTop="12dp"/>
-
-                        <TextView
-                            android:id="@+id/sms_detail_label_forward"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:text="@string/sms_detail_forward_status"
-                            android:textSize="12.5sp"/>
-
-                        <LinearLayout
-                            android:id="@+id/sms_detail_forward_box"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:orientation="vertical"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -171,6 +151,37 @@
                         android:padding="14dp"
                         android:textIsSelectable="true"
                         android:textSize="14sp"/>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- 转发状态独立卡片（2026-10-18 用户要求：从元信息里拆出来，放在正文下方） -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/sms_detail_forward_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:id="@+id/sms_detail_label_forward"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/sms_detail_forward_status"
+                            android:textSize="12.5sp"/>
+
+                        <LinearLayout
+                            android:id="@+id/sms_detail_forward_box"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:orientation="vertical"/>
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
         </com.tianma.xsmscode.ui.forward.MaxHeightScrollView>

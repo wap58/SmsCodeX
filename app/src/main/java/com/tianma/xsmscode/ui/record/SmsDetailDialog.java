@@ -146,8 +146,11 @@ public class SmsDetailDialog extends AppCompatDialogFragment {
         timeView.setText(time <= 0 ? "-" : new SimpleDateFormat(
                 "yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date(time)));
 
-        view.findViewById(R.id.sms_detail_divider).setBackgroundColor(divider);
-
+        com.google.android.material.card.MaterialCardView forwardCard =
+                view.findViewById(R.id.sms_detail_forward_card);
+        if (forwardCard != null) {
+            forwardCard.setCardBackgroundColor(cardBg);
+        }
         TextView labelForward = view.findViewById(R.id.sms_detail_label_forward);
         labelForward.setTextColor(textHint);
 
