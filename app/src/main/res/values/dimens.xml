@@ -10,4 +10,6 @@
     <dimen name="dp_16">16dp</dimen>
     <dimen name="dp_20">20dp</dimen>
     <dimen name="dp_24">24dp</dimen>
+    <!-- 首页三张卡（激活/转发/统计）统一高度，以中间的转发状态卡为准 -->
+    <dimen name="home_card_height">84dp</dimen>
 </resources>
