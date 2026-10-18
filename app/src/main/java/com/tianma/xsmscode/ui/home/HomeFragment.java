@@ -236,6 +236,21 @@ public class HomeFragment extends Fragment {
      * <p>版式：深绿渐变底 + 白字；右侧白色勾号圆环（右下角溢出裁切）。
      * 未激活时改为中性灰底，文案提示去启用。
      */
+    /**
+     * 只刷新激活卡（2026-10-18）。
+     *
+     * <p>LSPosed 的服务是异步绑定的，{@code HomeActivity#checkModuleActivationStatus}
+     * 会在 2s/5s/10s 复查，这里提供入口让那几次复查能单独刷新这张卡，
+     * 而不必重跑整页（避免反复查数据库）。
+     */
+    public void refreshActivationOnly() {
+        View root = getView();
+        if (root == null || mActivationTitle == null) {
+            return;
+        }
+        bindActivation(root, ThemeColors.isDark());
+    }
+
     private void bindActivation(View root, boolean dark) {
         boolean activated = com.tianma.xsmscode.xp.hook.ActivationService.isActivated();
         String fw = com.tianma.xsmscode.xp.hook.ActivationService.getFrameworkName();

@@ -253,17 +253,26 @@ public class HomeActivity extends BaseActivity {
      * themselves"），故 self-hook 方案在该框架下不可行。
      */
     /**
-     * 标题栏副标题（2026-10-18 起不再显示激活状态）。
+     * 标题栏副标题（2026-10-18）。
      *
-     * <p>激活信息已移到首页的激活卡（见 {@code HomeFragment#bindActivation}），
-     * 标题栏只保留应用名，视觉更干净。
+     * <p>激活信息只在<b>首页</b>以卡片形式展示（{@code HomeFragment#bindActivation}），
+     * 标题栏所有页面一律不显示副标题。保留这个方法是为了让
+     * {@code checkModuleActivationStatus()} 的多次延时刷新仍然有落脚点
+     * （它同时触发首页卡片刷新）。
      */
     private void refreshActivationStatus() {
         ActionBar actionBar = getSupportActionBar();
-        if (actionBar == null) {
-            return;
+        if (actionBar != null) {
+            actionBar.setSubtitle(null);
         }
-        actionBar.setSubtitle(null);
+        // 首页在前台时同步刷新激活卡
+        if (mCurrentTab == TAB_HOME) {
+            Fragment f = mFragmentManager == null ? null
+                    : mFragmentManager.findFragmentById(R.id.home_content);
+            if (f instanceof HomeFragment) {
+                ((HomeFragment) f).refreshActivationOnly();
+            }
+        }
     }
 
     @Override
