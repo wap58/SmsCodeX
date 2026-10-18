@@ -163,10 +163,10 @@ public class HomeActivity extends BaseActivity {
                                         getContentResolver().call(android.net.Uri.parse(
                                                         "content://" + com.tianma.xsmscode.data.db.DBProvider.AUTHORITY),
                                                 "forward", null, args);
-                                        android.widget.Toast.makeText(this, R.string.forward_succeed,
+                                        android.widget.Toast.makeText(HomeActivity.this, R.string.forward_succeed,
                                                 android.widget.Toast.LENGTH_SHORT).show();
                                     } catch (Throwable t) {
-                                        android.widget.Toast.makeText(this,
+                                        android.widget.Toast.makeText(HomeActivity.this,
                                                 R.string.forward_failed,
                                                 android.widget.Toast.LENGTH_SHORT).show();
                                     }
