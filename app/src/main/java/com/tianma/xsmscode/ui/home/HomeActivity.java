@@ -279,11 +279,9 @@ public class HomeActivity extends BaseActivity {
      *
      * <p>Android 没有"运行期开关 excludeFromRecents"的官方 API
      * （{@code android:excludeFromRecents} 只能写死在清单里）。
-     * 等效做法：离开本页时调用 {@link #finishAndRemoveTask()}，
-     * 把自身任务从最近任务栈里摘掉 —— 用户切多任务时看不到本应用，
-     * 后台进程本身不受影响，短信转发照常。
-     *
-     * <p>延迟 500ms 再摘，避免和返回动画抢帧。
+     * 等效做法：用户真正离开应用时调用 {@link #finishAndRemoveTask()}，
+     * 把自身任务从最近任务栈摘掉 —— 多任务里看不到本应用，
+     * 后台进程不受影响，短信转发照常。
      */
     private void maybeRemoveFromRecents() {
         boolean hide = getSharedPreferences(PrefConst.PREF_NAME, Context.MODE_PRIVATE)
@@ -291,26 +289,28 @@ public class HomeActivity extends BaseActivity {
         if (!hide) {
             return;
         }
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            if (!isFinishing() && !isDestroyed()) {
-                try {
-                    finishAndRemoveTask();
-                } catch (Throwable ignored) {
-                    try {
-                        finish();
-                    } catch (Throwable ignored2) {
-                    }
-                }
+        try {
+            finishAndRemoveTask();
+        } catch (Throwable ignored) {
+            try {
+                finish();
+            } catch (Throwable ignored2) {
             }
-        }, 500L);
+        }
     }
 
+    /**
+     * 用户"主动离开"本应用（按 Home、切到其他应用）时触发。
+     *
+     * <p>★ 用它而不是 onPause：onPause 在"跳到本应用内其他 Activity"
+     * （主题页、设置页、规则页）时也会触发，那时摘任务会把目标页一起杀掉
+     * —— 实测表现为"点主题闪退"。
+     * onUserLeaveHint 只在真正离开应用时回调，语义正好。
+     */
     @Override
-    protected void onPause() {
-        super.onPause();
-        if (!isFinishing()) {
-            maybeRemoveFromRecents();
-        }
+    protected void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        maybeRemoveFromRecents();
     }
 
     @Override
